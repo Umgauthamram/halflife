@@ -6,12 +6,16 @@
     "dev": "next dev",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run"
   },
   "dependencies": {
+    "@auth/mongodb-adapter": "^3.11.3",
     "@half-life/governor": "workspace:*",
     "@half-life/shared": "workspace:*",
+    "mongodb": "^6.22.0",
     "next": "16.4.5",
+    "next-auth": "5.0.0-beta.32",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
@@ -24,6 +28,7 @@
     "eslint-config-next": "16.4.5",
     "postcss": "^8.5.32",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.0.0"
   }
 }
