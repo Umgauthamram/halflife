@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.11.3",
+    "@half-life/bench": "workspace:*",
     "@half-life/chain": "workspace:*",
     "@half-life/governor": "workspace:*",
     "@half-life/shared": "workspace:*",

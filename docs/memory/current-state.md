@@ -8,17 +8,16 @@
 - **Languages**: TypeScript
 
 ## 2. Active Feature / Milestone
-- **Current Focus**: Phase 3 Governor Execution Pipeline, API Keys, & Ledger/Decisions Explorers
+- **Current Focus**: Phase 4 Replay Benchmark & Evidence Pack Exporter
 - **Status**: Complete & Verified
 
 ## 3. Recent Progress (Rolling Snapshot - Max 5)
-- Implemented `/api/v1/ask` executing the complete Governor pipeline (auth, idempotency, kill switch, cache lookup, decision, atomic reservation, buy, ledger write)
-- Built API key security utilities (`api-key.ts`) with 256-bit entropy, SHA-256 hash-only storage, and timing-safe verification
-- Built Purchase Ledger Explorer (`/app/ledger`) with Sepolia Etherscan transaction links and verification badges
-- Built Governor Decisions Explorer (`/app/decisions`) showing mathematical rationale, drift, age, and noise floors
-- 36/36 tests passing across all workspace packages and clean Next.js production build
+- Built `@half-life/bench` (`simulator.ts`) implementing side-by-side simulation comparing Naive Agent vs Half-Life Governor
+- Implemented Evidence Pack exporter (`evidence-pack.ts`) generating cryptographically referenced bundles with Sepolia links
+- Created one-command CLI runner (`pnpm replay`) displaying live comparison tables and metrics
+- Built Replay Benchmarks UI page (`/app/benchmarks`) with KPI cards, comparative schedules, and raw bundle preview
+- All 38 tests across 7 workspace packages passing (100% success rate) and full production build passing
 
 ## 4. Next Immediate Steps
-- [ ] Build side-by-side replay benchmark harness and evidence pack exporter (`packages/bench`)
-- [ ] Implement Admin management pages (`/app/admin/users`, `/app/admin/sampler`, `/app/admin/audit`)
-- [ ] Phase 0 live Sepolia contract integration verification
+- [ ] Build Admin Management pages (`/app/admin/users`, `/app/admin/sampler`, `/app/admin/audit`)
+- [ ] Phase 0 live Sepolia contract integration verification with user credentials

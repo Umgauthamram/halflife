@@ -13,9 +13,11 @@
 - [x] Implement /api/v1/ask endpoint with complete Governor execution pipeline
 - [x] Implement Agent API Key generation & verification
 - [x] Build Purchase Ledger (/app/ledger) and Decisions Explorer (/app/decisions)
-- [ ] Implement Replay benchmark harness & evidence pack exporter (packages/bench)
+- [x] Implement Replay benchmark harness & evidence pack exporter (packages/bench)
+- [x] Build Replay Benchmarks UI page (/app/benchmarks)
+- [ ] Build Admin Management pages (/app/admin/users, /app/admin/sampler, /app/admin/audit)
 
 ## Backlog
-- [x] Set up testing suite (36 passing unit and property tests across 6 test suites)
+- [x] Set up testing suite (38 passing unit and property tests across 7 test suites)
 - [ ] Continuous integration workflow
 - [ ] Document production deployment & infrastructure guidelines

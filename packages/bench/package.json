@@ -1,0 +1,30 @@
+{
+  "name": "@half-life/bench",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "hl-bench": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "replay": "node dist/cli.js"
+  },
+  "dependencies": {
+    "@half-life/governor": "workspace:*",
+    "@half-life/shared": "workspace:*",
+    "@half-life/telegraph": "workspace:*",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "typescript": "^5",
+    "vitest": "^3.0.0"
+  }
+}
+
