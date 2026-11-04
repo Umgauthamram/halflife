@@ -15,9 +15,11 @@
 - [x] Build Purchase Ledger (/app/ledger) and Decisions Explorer (/app/decisions)
 - [x] Implement Replay benchmark harness & evidence pack exporter (packages/bench)
 - [x] Build Replay Benchmarks UI page (/app/benchmarks)
-- [ ] Build Admin Management pages (/app/admin/users, /app/admin/sampler, /app/admin/audit)
+- [x] Build Admin Management pages (/app/admin/users, /app/admin/sampler, /app/admin/audit)
+- [x] Implement Public TypeScript SDK & MCP Server wrapper (packages/sdk)
+- [x] Set up Continuous Integration workflow (.github/workflows/ci.yml)
 
 ## Backlog
-- [x] Set up testing suite (38 passing unit and property tests across 7 test suites)
-- [ ] Continuous integration workflow
+- [x] Set up testing suite (42 passing unit and property tests across 8 test suites)
+- [ ] Live Sepolia on-chain smoke test
 - [ ] Document production deployment & infrastructure guidelines

@@ -8,16 +8,17 @@
 - **Languages**: TypeScript
 
 ## 2. Active Feature / Milestone
-- **Current Focus**: Phase 4 Replay Benchmark & Evidence Pack Exporter
+- **Current Focus**: Admin Management, Public SDK & MCP Wrapper, CI Automation
 - **Status**: Complete & Verified
 
 ## 3. Recent Progress (Rolling Snapshot - Max 5)
-- Built `@half-life/bench` (`simulator.ts`) implementing side-by-side simulation comparing Naive Agent vs Half-Life Governor
-- Implemented Evidence Pack exporter (`evidence-pack.ts`) generating cryptographically referenced bundles with Sepolia links
-- Created one-command CLI runner (`pnpm replay`) displaying live comparison tables and metrics
-- Built Replay Benchmarks UI page (`/app/benchmarks`) with KPI cards, comparative schedules, and raw bundle preview
-- All 38 tests across 7 workspace packages passing (100% success rate) and full production build passing
+- Implemented Admin Management Console: User administration (`/app/admin/users`), Sampler operations (`/app/admin/sampler`), and immutable Audit trail (`/app/admin/audit`)
+- Built `@half-life/sdk` with `HalfLifeClient` and standard Model Context Protocol (MCP) server handler (`mcp.ts`)
+- Configured GitHub Actions CI workflow (`.github/workflows/ci.yml`) testing typecheck, lint, build, and Vitest test suites
+- Implemented last-admin demotion prevention and self-modification security guards in administrative actions
+- 42/42 tests passing across 8 workspace packages with 17 static and dynamic web routes compiling with 0 errors
 
 ## 4. Next Immediate Steps
-- [ ] Build Admin Management pages (`/app/admin/users`, `/app/admin/sampler`, `/app/admin/audit`)
-- [ ] Phase 0 live Sepolia contract integration verification with user credentials
+- [ ] Connect with live Ethereum Sepolia RPC and Telegraph credentials (when provided by user)
+- [ ] Run live unattended sampler testnet run
+- [ ] Final submission preparation (README, documentation, demo video outline)

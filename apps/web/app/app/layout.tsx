@@ -48,6 +48,14 @@ export default async function AppLayout({
               <Link href="/atlas" className="text-[var(--secondary)] hover:text-[var(--foreground)]">
                 Atlas
               </Link>
+              {user.role === "admin" && (
+                <Link
+                  href="/app/admin/users"
+                  className="rounded border border-purple-800 bg-purple-50 px-2 py-0.5 text-xs font-mono text-purple-900"
+                >
+                  Admin
+                </Link>
+              )}
             </nav>
           </div>
 
