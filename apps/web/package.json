@@ -1,14 +1,16 @@
 {
-  "name": "site",
+  "name": "@half-life/web",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
+    "@half-life/governor": "workspace:*",
+    "@half-life/shared": "workspace:*",
     "next": "16.4.5",
     "react": "19.3.0",
     "react-dom": "19.3.0"

@@ -1,5 +1,15 @@
 {
-  "dependencies": {
+  "name": "half-life",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.28.0",
+  "scripts": {
+    "dev:web": "pnpm --filter @half-life/web dev",
+    "build": "pnpm --filter \"@half-life/*\" build",
+    "test": "pnpm --filter \"@half-life/*\" test",
+    "lint": "pnpm --filter \"@half-life/*\" lint"
+  },
+  "devDependencies": {
     "veeshree": "^1.0.0-rc.1"
   }
 }
