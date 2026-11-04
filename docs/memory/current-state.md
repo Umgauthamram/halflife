@@ -13,6 +13,7 @@
 
 ## 3. Recent Progress (Rolling Snapshot - Max 5)
 - Initial setup / repository initialization
+- Configured Tailwind CSS v4 with PostCSS in `site` (`@tailwindcss/postcss` and `postcss.config.mjs`)
 
 ## 4. Next Immediate Steps
 - [ ] Define initial architectural constraints in `docs/memory/constraints.md`
