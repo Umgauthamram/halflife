@@ -8,17 +8,17 @@
 - **Languages**: TypeScript
 
 ## 2. Active Feature / Milestone
-- **Current Focus**: Phase 2 & 3 Worker Systems, Sampler & Agent Dashboard
+- **Current Focus**: Phase 3 Governor Execution Pipeline, API Keys, & Ledger/Decisions Explorers
 - **Status**: Complete & Verified
 
 ## 3. Recent Progress (Rolling Snapshot - Max 5)
-- Implemented AES-256-GCM envelope encryption for agent wallet private keys in worker (`crypto.ts` & `wallet.ts`)
-- Implemented atomic budget reservation (`budget.ts`) enforcing per-ask caps, daily caps, and kill switches
-- Built Freshness Atlas Sampler engine (`sampler.ts`) measuring 2-miner disagreement (noise floor) and gap logging
-- Built Authenticated Dashboard Shell (`/app`, `/app/agents`, `/app/agents/new`) and Public Freshness Atlas page (`/atlas`)
-- All 35 tests across 6 test suites passing (Governor, Chain Guard, Telegraph, Auth Absence, DAL, Worker Crypto/Budget/Sampler)
+- Implemented `/api/v1/ask` executing the complete Governor pipeline (auth, idempotency, kill switch, cache lookup, decision, atomic reservation, buy, ledger write)
+- Built API key security utilities (`api-key.ts`) with 256-bit entropy, SHA-256 hash-only storage, and timing-safe verification
+- Built Purchase Ledger Explorer (`/app/ledger`) with Sepolia Etherscan transaction links and verification badges
+- Built Governor Decisions Explorer (`/app/decisions`) showing mathematical rationale, drift, age, and noise floors
+- 36/36 tests passing across all workspace packages and clean Next.js production build
 
 ## 4. Next Immediate Steps
-- [ ] Connect `/api/v1/ask` implementing decide -> reserve -> buy -> verify -> store pipeline
-- [ ] Implement API key management (hash-only storage, 256-bit keys, show-once, instant revocation)
-- [ ] Build side-by-side replay benchmark harness (`packages/bench`)
+- [ ] Build side-by-side replay benchmark harness and evidence pack exporter (`packages/bench`)
+- [ ] Implement Admin management pages (`/app/admin/users`, `/app/admin/sampler`, `/app/admin/audit`)
+- [ ] Phase 0 live Sepolia contract integration verification

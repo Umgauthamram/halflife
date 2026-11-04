@@ -10,10 +10,12 @@
 - [x] Implement Worker wallet generation with envelope encryption
 - [x] Implement atomic budget reservation and Atlas sampler runner
 - [x] Build Agent dashboard UI (/app, /app/agents, /app/agents/new, /atlas)
-- [ ] Implement /api/v1/ask endpoint with complete Governor execution pipeline
-- [ ] Implement Agent API Key generation & verification
+- [x] Implement /api/v1/ask endpoint with complete Governor execution pipeline
+- [x] Implement Agent API Key generation & verification
+- [x] Build Purchase Ledger (/app/ledger) and Decisions Explorer (/app/decisions)
+- [ ] Implement Replay benchmark harness & evidence pack exporter (packages/bench)
 
 ## Backlog
-- [x] Set up testing suite (35 passing unit and property tests)
+- [x] Set up testing suite (36 passing unit and property tests across 6 test suites)
 - [ ] Continuous integration workflow
-- [ ] Replay benchmark harness & evidence pack exporter (packages/bench)
+- [ ] Document production deployment & infrastructure guidelines

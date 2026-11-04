@@ -17,12 +17,18 @@ importers:
       '@auth/mongodb-adapter':
         specifier: ^3.11.3
         version: 3.11.3(mongodb@6.22.0)
+      '@half-life/chain':
+        specifier: workspace:*
+        version: link:../../packages/chain
       '@half-life/governor':
         specifier: workspace:*
         version: link:../../packages/governor
       '@half-life/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@half-life/telegraph':
+        specifier: workspace:*
+        version: link:../../packages/telegraph
       mongodb:
         specifier: ^6.22.0
         version: 6.22.0

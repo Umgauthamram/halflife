@@ -36,6 +36,12 @@ export default async function AppLayout({
               <Link href="/app/agents" className="text-[var(--secondary)] hover:text-[var(--foreground)]">
                 Agents
               </Link>
+              <Link href="/app/ledger" className="text-[var(--secondary)] hover:text-[var(--foreground)]">
+                Ledger
+              </Link>
+              <Link href="/app/decisions" className="text-[var(--secondary)] hover:text-[var(--foreground)]">
+                Decisions
+              </Link>
               <Link href="/atlas" className="text-[var(--secondary)] hover:text-[var(--foreground)]">
                 Atlas
               </Link>

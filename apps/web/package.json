@@ -11,8 +11,10 @@
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.11.3",
+    "@half-life/chain": "workspace:*",
     "@half-life/governor": "workspace:*",
     "@half-life/shared": "workspace:*",
+    "@half-life/telegraph": "workspace:*",
     "mongodb": "^6.22.0",
     "next": "16.4.5",
     "next-auth": "5.0.0-beta.32",
