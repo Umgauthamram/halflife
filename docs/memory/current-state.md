@@ -8,17 +8,17 @@
 - **Languages**: TypeScript
 
 ## 2. Active Feature / Milestone
-- **Current Focus**: Phase 1 & 2 Core Systems (Auth.js, DAL, Chain Guard, Telegraph Client)
+- **Current Focus**: Phase 2 & 3 Worker Systems, Sampler & Agent Dashboard
 - **Status**: Complete & Verified
 
 ## 3. Recent Progress (Rolling Snapshot - Max 5)
-- Configured Auth.js v5 with Google-only provider, MongoDB database sessions, and admin allowlist role assignment
-- Implemented Data Access Layer (`lib/dal.ts`) with owner-scoped queries, self-demotion prevention, and last-admin guards
-- Built `/login` page per PRD specs (cream theme, Google-only action, testnet notice) and draft `/terms` and `/privacy`
-- Built `@half-life/chain` (Viem chain guard enforcing Sepolia chain ID 11155111, destination allowlists, and rejecting unlimited approvals)
-- Built `@half-life/telegraph` with schema validation for targeted intents and idempotent client execution (24/24 workspace tests passing)
+- Implemented AES-256-GCM envelope encryption for agent wallet private keys in worker (`crypto.ts` & `wallet.ts`)
+- Implemented atomic budget reservation (`budget.ts`) enforcing per-ask caps, daily caps, and kill switches
+- Built Freshness Atlas Sampler engine (`sampler.ts`) measuring 2-miner disagreement (noise floor) and gap logging
+- Built Authenticated Dashboard Shell (`/app`, `/app/agents`, `/app/agents/new`) and Public Freshness Atlas page (`/atlas`)
+- All 35 tests across 6 test suites passing (Governor, Chain Guard, Telegraph, Auth Absence, DAL, Worker Crypto/Budget/Sampler)
 
 ## 4. Next Immediate Steps
-- [ ] Implement Worker wallet generation with AES-256-GCM envelope encryption
-- [ ] Implement atomic budget reservation (`budgets.updateOne`) and sampler loop in `apps/worker`
-- [ ] Build Agent management dashboard UI in `apps/web/app/app/`
+- [ ] Connect `/api/v1/ask` implementing decide -> reserve -> buy -> verify -> store pipeline
+- [ ] Implement API key management (hash-only storage, 256-bit keys, show-once, instant revocation)
+- [ ] Build side-by-side replay benchmark harness (`packages/bench`)

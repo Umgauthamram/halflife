@@ -8,18 +8,22 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "start": "node dist/index.js",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@half-life/chain": "workspace:*",
     "@half-life/governor": "workspace:*",
     "@half-life/shared": "workspace:*",
+    "@half-life/telegraph": "workspace:*",
     "dotenv": "^16.4.7",
     "mongodb": "^6.13.0",
     "viem": "^2.23.5"
   },
   "devDependencies": {
     "@types/node": "^22",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.0.0"
   }
 }
 

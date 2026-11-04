@@ -7,10 +7,13 @@
 - [x] Connect Auth.js v5 Google provider & database sessions
 - [x] Implement MongoDB DAL with user role enforcement and owner scoping
 - [x] Implement Viem chain guard and Telegraph client
-- [ ] Implement Worker wallet generation with envelope encryption
-- [ ] Implement atomic budget reservation and Atlas sampler runner
+- [x] Implement Worker wallet generation with envelope encryption
+- [x] Implement atomic budget reservation and Atlas sampler runner
+- [x] Build Agent dashboard UI (/app, /app/agents, /app/agents/new, /atlas)
+- [ ] Implement /api/v1/ask endpoint with complete Governor execution pipeline
+- [ ] Implement Agent API Key generation & verification
 
 ## Backlog
-- [x] Set up testing suite (Vitest across all workspace packages - 24 passing tests)
+- [x] Set up testing suite (35 passing unit and property tests)
 - [ ] Continuous integration workflow
-- [ ] Document production deployment & infrastructure guidelines
+- [ ] Replay benchmark harness & evidence pack exporter (packages/bench)
