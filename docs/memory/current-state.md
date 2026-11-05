@@ -8,17 +8,17 @@
 - **Languages**: TypeScript
 
 ## 2. Active Feature / Milestone
-- **Current Focus**: Admin Management, Public SDK & MCP Wrapper, CI Automation
+- **Current Focus**: Phase 5 Hardening, Security Headers, Documentation & Submission Readiness
 - **Status**: Complete & Verified
 
 ## 3. Recent Progress (Rolling Snapshot - Max 5)
-- Implemented Admin Management Console: User administration (`/app/admin/users`), Sampler operations (`/app/admin/sampler`), and immutable Audit trail (`/app/admin/audit`)
-- Built `@half-life/sdk` with `HalfLifeClient` and standard Model Context Protocol (MCP) server handler (`mcp.ts`)
-- Configured GitHub Actions CI workflow (`.github/workflows/ci.yml`) testing typecheck, lint, build, and Vitest test suites
-- Implemented last-admin demotion prevention and self-modification security guards in administrative actions
-- 42/42 tests passing across 8 workspace packages with 17 static and dynamic web routes compiling with 0 errors
+- Configured strict production security headers in Next.js (CSP, HSTS, X-Content-Type-Options: nosniff, frame-ancestors: 'none')
+- Added automated production environment boot test (`env.test.ts`) guaranteeing zero missing secrets in production
+- Authored comprehensive root `README.md`, developer tutorial (`docs/tutorial.md`), and Gate 0 reality check (`docs/gate0.md`)
+- 47/47 unit, property, and security tests passing across all 8 workspace packages (100% test success rate)
+- Verified full production build of `@half-life/web` across all 17 static and dynamic routes
 
 ## 4. Next Immediate Steps
-- [ ] Connect with live Ethereum Sepolia RPC and Telegraph credentials (when provided by user)
-- [ ] Run live unattended sampler testnet run
-- [ ] Final submission preparation (README, documentation, demo video outline)
+- [ ] Connect live Ethereum Sepolia RPC and Telegraph node credentials into `.env` when available
+- [ ] Deploy web tier to Vercel and worker to container host
+- [ ] Record final demo video walk-through

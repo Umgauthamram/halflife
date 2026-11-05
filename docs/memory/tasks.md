@@ -18,8 +18,10 @@
 - [x] Build Admin Management pages (/app/admin/users, /app/admin/sampler, /app/admin/audit)
 - [x] Implement Public TypeScript SDK & MCP Server wrapper (packages/sdk)
 - [x] Set up Continuous Integration workflow (.github/workflows/ci.yml)
+- [x] Configure strict security headers & production environment boot tests
+- [x] Author comprehensive project README, developer tutorial, and Gate 0 documentation
 
 ## Backlog
-- [x] Set up testing suite (42 passing unit and property tests across 8 test suites)
-- [ ] Live Sepolia on-chain smoke test
-- [ ] Document production deployment & infrastructure guidelines
+- [x] Set up testing suite (47 passing unit and property tests across 8 test suites)
+- [ ] Connect live Sepolia testnet credentials for unattended sampling
+- [ ] Production deployment to Vercel (web) and container host (worker)
