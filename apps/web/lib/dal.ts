@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 import { auth } from "../auth";
 import { getDb } from "./mongodb";
-import type { User, UserRole } from "@half-life/shared";
+import type { User, UserRole, UserStatus } from "@half-life/shared";
 
 export class HttpError extends Error {
   constructor(public statusCode: number, message: string) {
@@ -16,35 +16,82 @@ export class HttpError extends Error {
  */
 export async function requireUser(): Promise<User> {
   const session = await auth();
-  if (!session?.user?.id) {
+  if (!session?.user?.id && !session?.user?.email) {
     throw new HttpError(401, "Authentication required");
   }
 
   const db = await getDb();
-  let queryId: string | ObjectId = session.user.id;
+  const email = (session.user.email || "").toLowerCase();
+
+  let queryId: string | ObjectId = session.user.id || "";
   try {
-    queryId = new ObjectId(session.user.id);
+    if (session.user.id && ObjectId.isValid(session.user.id)) {
+      queryId = new ObjectId(session.user.id);
+    }
   } catch {
     // Keep as string if not a valid ObjectId
   }
 
-  const userDoc = await db.collection("users").findOne({
-    $or: [{ _id: queryId as unknown as ObjectId }, { id: session.user.id }],
+  const queryConditions: Record<string, unknown>[] = [];
+  if (session.user.id) {
+    queryConditions.push({ id: session.user.id });
+    if (ObjectId.isValid(session.user.id)) {
+      queryConditions.push({ _id: queryId as unknown as ObjectId });
+    }
+  }
+  if (email) {
+    queryConditions.push({ email });
+  }
+
+  let userDoc = await db.collection("users").findOne({
+    $or: queryConditions,
   });
 
-  if (!userDoc || userDoc.status !== "active") {
+  const adminList = (process.env.ADMIN_EMAILS || "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+
+  const role: UserRole = (userDoc?.role as UserRole) || (adminList.includes(email) ? "admin" : "member");
+  const status: UserStatus = (userDoc?.status as UserStatus) || "active";
+
+  if (status !== "active") {
     throw new HttpError(403, "Account is not active or has been suspended");
   }
 
+  // Self-heal user document if newly created by adapter or missing role/status
+  if (!userDoc || !userDoc.role || !userDoc.status) {
+    await db.collection("users").updateOne(
+      { email },
+      {
+        $set: {
+          role,
+          status,
+          lastSignInAt: new Date(),
+          updatedAt: new Date(),
+        },
+        $setOnInsert: {
+          email,
+          name: session.user.name ?? null,
+          image: session.user.image ?? null,
+          createdAt: new Date(),
+        },
+      },
+      { upsert: true }
+    );
+
+    userDoc = await db.collection("users").findOne({ email });
+  }
+
   return {
-    id: userDoc._id.toString(),
-    email: userDoc.email,
-    name: userDoc.name ?? null,
-    image: userDoc.image ?? null,
-    role: (userDoc.role as UserRole) || "member",
-    status: userDoc.status,
-    lastSignInAt: userDoc.lastSignInAt,
-    createdAt: userDoc.createdAt ?? new Date(),
+    id: userDoc?._id?.toString() || session.user.id || "",
+    email: userDoc?.email || email,
+    name: userDoc?.name ?? session.user.name ?? null,
+    image: userDoc?.image ?? session.user.image ?? null,
+    role,
+    status,
+    lastSignInAt: userDoc?.lastSignInAt || new Date(),
+    createdAt: userDoc?.createdAt ?? new Date(),
   };
 }
 

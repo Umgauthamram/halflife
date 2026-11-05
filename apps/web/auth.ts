@@ -23,7 +23,9 @@ declare module "next-auth" {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: MongoDBAdapter(clientPromise),
+  adapter: MongoDBAdapter(clientPromise, {
+    databaseName: process.env.DB_NAME || "halflife",
+  }),
   providers: [
     Google({
       clientId: process.env.AUTH_GOOGLE_ID,
@@ -35,17 +37,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     strategy: "database",
     maxAge: 60 * 60 * 12, // 12 hours sliding expiry
     updateAge: 60 * 60, // update token every 1 hour
-  },
-  cookies: {
-    sessionToken: {
-      name: process.env.NODE_ENV === "production" ? "__Host-hl.session" : "hl.session",
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-      },
-    },
   },
   callbacks: {
     async signIn({ account, profile }) {
@@ -60,7 +51,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async session({ session, user }) {
       if (session.user && user) {
-        session.user.id = user.id;
+        session.user.id = user.id || (user as any)._id?.toString() || "";
         session.user.role = (user.role as UserRole) || "member";
         session.user.status = (user.status as UserStatus) || "active";
       }

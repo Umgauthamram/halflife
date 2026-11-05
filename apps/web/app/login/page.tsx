@@ -1,6 +1,7 @@
 import { Suspense } from "react";
-import { signIn } from "../../auth";
+import { signIn, auth } from "../../auth";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 interface LoginFormProps {
   searchParams: Promise<{ error?: string }>;
@@ -62,7 +63,12 @@ async function LoginForm({ searchParams }: LoginFormProps) {
   );
 }
 
-export default function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+  const session = await auth();
+  if (session?.user) {
+    redirect("/app");
+  }
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-[var(--background)] px-4 py-12 text-[var(--foreground)] selection:bg-[var(--foreground)] selection:text-[var(--background)]">
       <div className="w-full max-w-sm rounded border border-[var(--border)] bg-[var(--surface)] p-8">
