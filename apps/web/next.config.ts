@@ -38,6 +38,14 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  transpilePackages: [
+    "@half-life/shared",
+    "@half-life/governor",
+    "@half-life/chain",
+    "@half-life/telegraph",
+    "@half-life/bench",
+    "@half-life/sdk",
+  ],
   async headers() {
     return [
       {
