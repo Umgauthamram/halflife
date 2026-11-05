@@ -116,7 +116,7 @@ export declare const AgentSchema: z.ZodObject<{
     pausedBy?: string | undefined;
 }>;
 export type Agent = z.infer<typeof AgentSchema>;
-export declare const IntentSchema: z.ZodEnum<["FX_NOW", "WEATHER_FORECAST_VERIFY", "SANCTIONS_SCREENING_MATCH"]>;
+export declare const IntentSchema: z.ZodEnum<["FX_NOW", "WEATHER_FORECAST_VERIFY", "SANCTIONS_SCREENING_MATCH", "WEB_SEARCH", "QUESTION_ANSWERING", "WEATHER_CHECK", "CRYPTO_PRICE", "TASK_EXECUTION_QUALITY", "CONTENT_EXTRACTION", "URL_SAFE", "CODE_GENERATION", "TEXT_SUMMARIZATION", "AGENT_TASK", "LLM_OUTPUT_EVALUATION", "LIVE_SHELF_PRICE", "VENDOR_VERIFY", "CARRIER_SERVICEABILITY", "SHIP_RATE_ETA", "CLOUD_RESOURCE_USAGE"]>;
 export type KnownIntent = z.infer<typeof IntentSchema>;
 export declare const MinerSchema: z.ZodObject<{
     id: z.ZodString;

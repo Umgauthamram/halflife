@@ -31,7 +31,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Metric Cards */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-4">
         <div className="border border-[var(--border)] bg-[var(--surface)] p-6">
           <span className="font-mono text-xs uppercase text-[var(--secondary)]">Active Agents</span>
           <div className="mt-2 text-3xl font-semibold">{agentsCount}</div>
@@ -43,6 +43,15 @@ export default async function DashboardPage() {
         <div className="border border-[var(--border)] bg-[var(--surface)] p-6">
           <span className="font-mono text-xs uppercase text-[var(--secondary)]">Governor Decisions</span>
           <div className="mt-2 text-3xl font-semibold">{decisionsCount}</div>
+        </div>
+        <div className="border border-[var(--border)] bg-[var(--surface)] p-6">
+          <span className="font-mono text-xs uppercase text-[var(--secondary)]">Spend Leaderboard</span>
+          <div className="mt-2 flex items-center justify-between">
+            <span className="text-xl font-semibold text-green-700">Sepolia Proof</span>
+            <Link href="/app/leaderboard" className="text-xs font-mono text-blue-600 hover:underline">
+              View &rarr;
+            </Link>
+          </div>
         </div>
       </div>
 

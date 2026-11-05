@@ -29,6 +29,53 @@ export const SanctionsScreeningAnswerSchema = z.object({
   listName: z.string().optional(),
 });
 
+export const WebSearchParamsSchema = z.object({
+  query: z.string().min(1),
+});
+export const WebSearchAnswerSchema = z.object({
+  query: z.string(),
+  snippets: z.array(z.string()),
+  sources: z.array(z.string()).optional(),
+});
+
+export const QuestionAnsweringParamsSchema = z.object({
+  query: z.string().min(1),
+  context: z.string().optional(),
+});
+export const QuestionAnsweringAnswerSchema = z.object({
+  answer: z.string(),
+  confidence: z.number().min(0).max(1).optional(),
+  citations: z.array(z.string()).optional(),
+});
+
+export const WeatherCheckParamsSchema = z.object({
+  location: z.string().min(1),
+});
+export const WeatherCheckAnswerSchema = z.object({
+  location: z.string(),
+  temperatureC: z.number(),
+  condition: z.string(),
+});
+
+export const CryptoPriceParamsSchema = z.object({
+  symbol: z.string().min(1),
+});
+export const CryptoPriceAnswerSchema = z.object({
+  symbol: z.string(),
+  priceUsd: z.number().positive(),
+  timestamp: z.number().int().positive(),
+});
+
+export const TaskExecutionQualityParamsSchema = z.object({
+  output: z.string(),
+  rubric: z.string().optional(),
+});
+export const TaskExecutionQualityAnswerSchema = z.object({
+  score: z.number().min(0).max(100),
+  passed: z.boolean(),
+  reasoning: z.string().optional(),
+});
+
 export const IntentSchemas = {
   FX_NOW: {
     params: FxNowParamsSchema,
@@ -41,6 +88,26 @@ export const IntentSchemas = {
   SANCTIONS_SCREENING_MATCH: {
     params: SanctionsScreeningParamsSchema,
     answer: SanctionsScreeningAnswerSchema,
+  },
+  WEB_SEARCH: {
+    params: WebSearchParamsSchema,
+    answer: WebSearchAnswerSchema,
+  },
+  QUESTION_ANSWERING: {
+    params: QuestionAnsweringParamsSchema,
+    answer: QuestionAnsweringAnswerSchema,
+  },
+  WEATHER_CHECK: {
+    params: WeatherCheckParamsSchema,
+    answer: WeatherCheckAnswerSchema,
+  },
+  CRYPTO_PRICE: {
+    params: CryptoPriceParamsSchema,
+    answer: CryptoPriceAnswerSchema,
+  },
+  TASK_EXECUTION_QUALITY: {
+    params: TaskExecutionQualityParamsSchema,
+    answer: TaskExecutionQualityAnswerSchema,
   },
 } as const;
 

@@ -5,6 +5,23 @@ const DEFAULT_CONSERVATIVE_WINDOWS = {
     FX_NOW: 300, // 5 minutes
     WEATHER_FORECAST_VERIFY: 3600, // 1 hour
     SANCTIONS_SCREENING_MATCH: 86400, // 24 hours
+    // Mission 09 Personal Agent Intents
+    WEB_SEARCH: 1800, // 30 minutes
+    QUESTION_ANSWERING: 3600, // 1 hour
+    WEATHER_CHECK: 3600, // 1 hour
+    CRYPTO_PRICE: 60, // 1 minute
+    TASK_EXECUTION_QUALITY: 86400, // 24 hours
+    CONTENT_EXTRACTION: 86400, // 24 hours
+    URL_SAFE: 43200, // 12 hours
+    CODE_GENERATION: 86400, // 24 hours
+    TEXT_SUMMARIZATION: 86400, // 24 hours
+    AGENT_TASK: 3600, // 1 hour
+    LLM_OUTPUT_EVALUATION: 86400, // 24 hours
+    LIVE_SHELF_PRICE: 3600, // 1 hour
+    VENDOR_VERIFY: 604800, // 7 days
+    CARRIER_SERVICEABILITY: 86400, // 24 hours
+    SHIP_RATE_ETA: 7200, // 2 hours
+    CLOUD_RESOURCE_USAGE: 300, // 5 minutes
 };
 /**
  * Computes the expected drift from the monotonic drift curve for a given age in seconds.

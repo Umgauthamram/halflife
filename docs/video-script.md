@@ -67,18 +67,21 @@ $$\text{Condition: } (\text{Stake} \times \text{Expected Drift} > \text{Price}) 
 
 Now trigger an ask. Half-Life evaluates: *Age is 12 seconds, Drift = 0.085%, Value of Freshness = $0.0085 < Price ($0.05). **REJECT / SERVE CACHE**.*  
 Fast-forward elapsed time to 120 seconds. Age is now 120s, Expected Drift = 58.8%, Value of Freshness = $5.88 > Price ($0.05). **EXECUTE BUY**.  
-Cut to **Sepolia Etherscan** showing the live transaction hash verifying settlement on contract `0x3624EB012B5E998BB57B6bE6C9Cfc9c4bc5eb99b`.
+Cut to **Sepolia Etherscan** showing the live transaction hash `0x5b7bfd33ec11444a07117ac480f73eb8b7b5d73e7d50ec3642ddb31107845742` verifying settlement of 1 USDC to wallet `0xB980b2dBA0004e12f8efF99E5978aB1fa8179517` on contract `0x3624EB012B5E998BB57B6bE6C9Cfc9c4bc5eb99b`.
 
 **[Voiceover]**  
 "Here is the core Governor formula in action.  
 When an agent queries Half-Life, it supplies its financial stake. If the loss from expected drift is smaller than the oracle price, Half-Life serves the cached answer instantly for zero cost.  
 Only when Expected Drift exceeds the miner noise floor AND the financial risk exceeds the ask price does the agent dispatch a payment.  
-And notice our Chain Guard: purchases execute strictly on Ethereum Sepolia, with atomic allowance checks and zero unlimited token approvals."
+And notice our on-chain settlement: here is transaction 0x5b7b... on Sepolia Etherscan, verified with a real 1 USDC transfer to our agent wallet, directly interacting with node 13.237.89.59."
 
 ---
 
-### Act IV: Side-by-Side Replay Benchmark (2:20 – 3:15)
+### Act IV: Side-by-Side Replay & Live Spend Leaderboard (2:20 – 3:15)
 **[Visual Cue: 2:20]**  
+Navigate to `/app/leaderboard`. Show the **Live Agent Spend Leaderboard** on screen:
+- Multiple 24/7 personal agents (OpenClaw, Hermes, Kimi Claw) running heartbeat loops.
+- Live metered requests, receipts, and verified Sepolia tx links.
 Open terminal in `packages/bench`. Run:  
 `pnpm --filter @half-life/bench replay`  
 Watch the 180-errand side-by-side simulation execute live in 2 seconds.  

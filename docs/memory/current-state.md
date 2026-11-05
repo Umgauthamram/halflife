@@ -8,17 +8,17 @@
 - **Languages**: TypeScript
 
 ## 2. Active Feature / Milestone
-- **Current Focus**: Final Hackathon Deliverables, Video Script, Submission Package & Findings Report
+- **Current Focus**: Mission 09 Personal Agent Integration, ClawHub Skill & Live Spend Leaderboard
 - **Status**: Complete & Production-Verified
 
 ## 3. Recent Progress (Rolling Snapshot - Max 5)
-- Authored 2-to-5 minute video production script & scene-by-scene storyboard (`docs/video-script.md`) covering all 6 PRD-mandated acts
-- Completed official Hackathon Submission Package (`docs/submission.md`) with the Five-Question Commercial Summary, reviewer access instructions, and verifiable Sepolia evidence
-- Documented Empirical Decay Findings Report (`docs/findings.md`) detailing 2-miner disagreement sampling across the 3 mandatory intents
-- 53/53 tests passing across all 8 workspace packages (`shared`, `governor`, `chain`, `telegraph`, `worker`, `bench`, `sdk`, `web`)
-- Full production build (`pnpm build`) compiles all 18 Next.js static and dynamic routes and 7 TypeScript packages with zero errors
+- Implemented ClawHub skill (`openclaw-half-life-governor`) in `@half-life/sdk` and `skills/openclaw/SKILL.md` wiring Telegraph into OpenClaw 24/7 heartbeat loops
+- Built Live Agent Spend Leaderboard (`/app/leaderboard`) tracking on-chain settlements, requests, and verified transaction proofs
+- Integrated verified Sepolia transaction (`0x5b7bfd33ec11444a07117ac480f73eb8b7b5d73e7d50ec3642ddb31107845742`) and operator wallet `0xB980b2dBA0004e12f8efF99E5978aB1fa8179517`
+- Configured live Telegraph node `http://13.237.89.59:7148` (`wss://13.237.89.59:7148/ws`) and expanded schemas for `WEB_SEARCH`, `QUESTION_ANSWERING`, `WEATHER_CHECK`, `CRYPTO_PRICE`
+- 53/53 tests passing across all 8 workspace packages, all 19 Next.js routes compiled cleanly
 
 ## 4. Next Immediate Steps
 - [ ] Record final demo video following `docs/video-script.md`
-- [ ] Connect live Ethereum Sepolia RPC and Telegraph node credentials into `.env` when executing live on-chain sampling
-- [ ] Deploy web tier to Vercel and worker to container host
+- [ ] Deploy web tier to Vercel with environment variables
+- [ ] Submit package via Telegraph Hackathon portal using `docs/submission.md`

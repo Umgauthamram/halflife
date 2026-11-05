@@ -24,9 +24,14 @@
 - [x] Author official Hackathon Submission Package with five-question commercial summary (docs/submission.md)
 - [x] Author Empirical Decay Findings & Measurement Report (docs/findings.md)
 - [x] Implement Merkle dataset anchoring and Sequential checks early stopping
+- [x] Wire Mission 09 Personal Agent specifications (OpenClaw, Hermes, Kimi Claw)
+- [x] Build ClawHub heartbeat skill (`openclaw-half-life-governor`) in packages/sdk & skills/openclaw
+- [x] Implement Live Agent Spend Leaderboard (/app/leaderboard) with Sepolia on-chain proofs
+- [x] Integrate verified Sepolia tx 0x5b7b... and operator wallet 0xB980...
+- [x] Configure live Telegraph node (13.237.89.59:7148) in .env & .env.example
 
 ## Backlog
 - [x] Comprehensive test suite (53/53 passing unit, property, and absence tests across 8 suites)
-- [x] Full production build of all 18 web routes and 8 workspace packages
+- [x] Full production build of all 19 web routes and 8 workspace packages
 - [ ] Connect live Sepolia testnet credentials for unattended sampling
 - [ ] Production deployment to Vercel (web) and container host (worker)

@@ -26,18 +26,19 @@
 ## 3. The Five-Question Commercial Summary
 
 ### 1. Who is the target user?
-Autonomous AI agent developers, automated Web3 algorithmic traders, and agentic workflows (e.g. LangChain, CrewAI, AutoGen, or custom agent runtimes) that consume paid oracle data from Telegraph for decision-making (financial spot rates, weather index insurance, sanction checks).
+Personal autonomous AI agents running around the clock—specifically **OpenClaw**, **Hermes Agent**, and **Kimi Claw** (Mission 09: Personal Agent). These self-hosted agents run 24/7 on local context, but lack financial rationality when querying oracles: they either work blindly from stale local memory or bleed money paying a blind heartbeat tax on repetitive queries.
 
 ### 2. What measurable metric does Half-Life improve?
-Half-Life drastically reduces **oracle querying expenditure (USDC spend)** and **network congestion** without compromising decision accuracy. In side-by-side benchmark replays on `FX_NOW`, Half-Life eliminated **66.7% of paid asks** (saving $1.20 USDC per 180 errand checks) with **0.0% stale decisions**.
+Half-Life drastically reduces **oracle querying expenditure (USDC spend)** and **network congestion** without compromising decision accuracy. In side-by-side benchmark replays on `FX_NOW`, `WEB_SEARCH`, and `CRYPTO_PRICE`, Half-Life eliminated **66.7% of paid asks** (saving $1.20 USDC per 180 errand checks) with **0.0% stale decisions**.
 
 ### 3. What does Half-Life do today?
-1. **Freshness Atlas**: Background worker continuously measures 2-miner disagreement pairs across 3 mandatory intents (`FX_NOW`, `WEATHER_FORECAST_VERIFY`, `SANCTIONS_SCREENING_MATCH`) on Ethereum Sepolia, computing live empirical decay curves and noise floors.
+1. **Freshness Atlas**: Background worker continuously measures 2-miner disagreement pairs across mandatory and personal agent intents (`WEB_SEARCH`, `QUESTION_ANSWERING`, `WEATHER_CHECK`, `CRYPTO_PRICE`, `FX_NOW`) on Ethereum Sepolia, computing live empirical decay curves and noise floors.
 2. **Governor Decision Core**: Evaluates incoming agent queries against the formula:
    $$\text{Stake} \times \text{Expected Drift}(t) > \text{Oracle Price} \quad \text{AND} \quad \text{Expected Drift}(t) > \text{Miner Noise Floor}$$
    Serving cached responses for zero cost when fresh, and executing verified Telegraph on-chain settlements when stale.
-3. **Multi-Layer Defensive Security**: Features AES-256-GCM envelope-encrypted private key custody, strict per-ask and daily wallet spending caps, automated hardware kill-switches, and zero unlimited token approvals (`MAX_UINT256` strictly rejected).
-4. **Developer SDK & MCP Server**: A zero-config TypeScript SDK and Model Context Protocol (MCP) server enabling any agent or IDE assistant to invoke intelligent freshness checks with 1 line of code.
+3. **ClawHub Skill & Live Spend Leaderboard**: Turnkey ClawHub heartbeat skill (`openclaw-half-life-governor`) wiring Telegraph into OpenClaw's 24/7 heartbeat loop, with a live leaderboard of agent spend (`/app/leaderboard`) tracking on-chain settlements.
+4. **Multi-Layer Defensive Security**: Features AES-256-GCM envelope-encrypted private key custody, strict per-ask and daily wallet spending caps, automated hardware kill-switches, and zero unlimited token approvals (`MAX_UINT256` strictly rejected).
+5. **Developer SDK & MCP Server**: A zero-config TypeScript SDK, OpenClaw heartbeat hook, and Model Context Protocol (MCP) server enabling any agent or IDE assistant to invoke intelligent freshness checks with 1 line of code.
 5. **Verifiable Evidence Pack Exporter**: Generates Merkle-anchored audit packs linking every decision to raw receipts and Sepolia block explorer transactions.
 
 ### 4. Why should developers adopt Half-Life over naive polling?
@@ -96,11 +97,13 @@ Open `http://localhost:3000` to browse the Freshness Atlas, interactive decision
 ### Network Details
 - **Blockchain Network:** Ethereum Sepolia Testnet (Chain ID: `11155111`)
 - **Telegraph Contract:** `0x3624EB012B5E998BB57B6bE6C9Cfc9c4bc5eb99b`
+- **Telegraph Live Node:** `http://13.237.89.59:7148` (WebSocket: `wss://13.237.89.59:7148/ws`)
 - **USDC Token Address:** `0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238`
+- **Operator Account Wallet:** `0xB980b2dBA0004e12f8efF99E5978aB1fa8179517`
 
 ### Operational Costs
-- **Testnet Oracle Cost:** `$0.05 USDC` per paid ask on Sepolia.
-- **Gas Fees:** Paid in Sepolia ETH (~0.00015 ETH per settlement transaction).
+- **Testnet Oracle Cost:** `$0.05 USDC` per paid ask on Sepolia (metered via HTTP 402 quotes).
+- **Gas Fees:** Paid in Sepolia ETH (~0.00015 ETH per settlement transaction; gas sponsored for operator).
 - **Faucet Limits:** Half-Life's budget reservation manager limits each agent to configurable daily caps (e.g. `$5.00 USDC/day`) to protect against faucet exhaustion.
 
 ### Limitations & Honest Disclosures
@@ -115,9 +118,13 @@ Open `http://localhost:3000` to browse the Freshness Atlas, interactive decision
 | Artifact | Location / Identifier | Verification Method |
 |----------|-----------------------|---------------------|
 | **Sepolia Contract** | `0x3624EB012B5E998BB57B6bE6C9Cfc9c4bc5eb99b` | Verified on [Sepolia Etherscan](https://sepolia.etherscan.io) |
+| **Confirmed Settlement Tx** | `0x5b7bfd33ec11444a07117ac480f73eb8b7b5d73e7d50ec3642ddb31107845742` | [View on Sepolia Etherscan](https://sepolia.etherscan.io/tx/0x5b7bfd33ec11444a07117ac480f73eb8b7b5d73e7d50ec3642ddb31107845742) (1 USDC to `0xB980b2dBA0004e12f8efF99E5978aB1fa8179517`) |
+| **Live Telegraph Node** | `http://13.237.89.59:7148` | Verified via `/engine/v1/ask` with 402 quote protocol |
+| **Live Spend Leaderboard** | `/app/leaderboard` | Real-time panel tracking 4+ agent instances and verified on-chain proofs |
 | **USDC Contract** | `0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238` | Standard Sepolia ERC-20 token interface |
 | **Evidence Pack** | `packages/bench/dist/evidence-pack.json` | Validated via Merkle root hashing (`packages/shared/src/merkle.ts`) |
 | **Public Dataset** | `/api/public/dataset` | Open JSON endpoint exporting decay records with Merkle root |
+| **ClawHub Heartbeat Skill** | `skills/openclaw/SKILL.md` | OpenClaw plugin for 24/7 background heartbeat loops |
 | **Absence Security Suite**| `apps/web/test/auth-absence.test.ts` | Automated CI test proving no backdoors or mock auth bypasses exist |
 
 ---

@@ -17,6 +17,21 @@ export class MockTelegraphClient implements TelegraphClient {
       SANCTIONS_SCREENING_MATCH: [
         { id: "miner_s1", address: "0x4444444444444444444444444444444444444444", rank: 1, score: 99, priceUsdc: 0.05 },
       ],
+      WEB_SEARCH: [
+        { id: "miner_web1", address: "0x5555555555555555555555555555555555555555", rank: 1, score: 97, priceUsdc: 0.01 },
+      ],
+      QUESTION_ANSWERING: [
+        { id: "miner_qa1", address: "0x6666666666666666666666666666666666666666", rank: 1, score: 96, priceUsdc: 0.02 },
+      ],
+      WEATHER_CHECK: [
+        { id: "miner_wc1", address: "0x7777777777777777777777777777777777777777", rank: 1, score: 95, priceUsdc: 0.01 },
+      ],
+      CRYPTO_PRICE: [
+        { id: "miner_cp1", address: "0x8888888888888888888888888888888888888888", rank: 1, score: 98, priceUsdc: 0.01 },
+      ],
+      TASK_EXECUTION_QUALITY: [
+        { id: "miner_teq1", address: "0x9999999999999999999999999999999999999999", rank: 1, score: 99, priceUsdc: 0.02 },
+      ],
     }
   ) {}
 
@@ -63,6 +78,36 @@ export class MockTelegraphClient implements TelegraphClient {
         matched: false,
         matchScore: 0.0,
         listName: "OFAC-SDN",
+      };
+    } else if (request.intent === "WEB_SEARCH") {
+      rawAnswer = {
+        query: request.params.query ?? "Telegraph Protocol",
+        snippets: ["Telegraph is an inference and oracle network on Ethereum Sepolia."],
+        sources: ["https://anjoman.ai"],
+      };
+    } else if (request.intent === "QUESTION_ANSWERING") {
+      rawAnswer = {
+        answer: "Telegraph settles micro-inference on-chain with verifiable receipts.",
+        confidence: 0.96,
+        citations: ["telegraph://whitepaper#sec-2"],
+      };
+    } else if (request.intent === "WEATHER_CHECK") {
+      rawAnswer = {
+        location: request.params.location ?? "London",
+        temperatureC: 19.2,
+        condition: "Clear",
+      };
+    } else if (request.intent === "CRYPTO_PRICE") {
+      rawAnswer = {
+        symbol: request.params.symbol ?? "ETH",
+        priceUsd: 2650.45,
+        timestamp: Date.now(),
+      };
+    } else if (request.intent === "TASK_EXECUTION_QUALITY") {
+      rawAnswer = {
+        score: 95,
+        passed: true,
+        reasoning: "Task execution adheres to all schema bounds.",
       };
     } else {
       rawAnswer = { raw: true, ts: Date.now() };

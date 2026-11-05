@@ -45,6 +45,23 @@ export const IntentSchema = z.enum([
     "FX_NOW",
     "WEATHER_FORECAST_VERIFY",
     "SANCTIONS_SCREENING_MATCH",
+    // Mission 09 Personal Agent Intents
+    "WEB_SEARCH",
+    "QUESTION_ANSWERING",
+    "WEATHER_CHECK",
+    "CRYPTO_PRICE",
+    "TASK_EXECUTION_QUALITY",
+    "CONTENT_EXTRACTION",
+    "URL_SAFE",
+    "CODE_GENERATION",
+    "TEXT_SUMMARIZATION",
+    "AGENT_TASK",
+    "LLM_OUTPUT_EVALUATION",
+    "LIVE_SHELF_PRICE",
+    "VENDOR_VERIFY",
+    "CARRIER_SERVICEABILITY",
+    "SHIP_RATE_ETA",
+    "CLOUD_RESOURCE_USAGE",
 ]);
 export const MinerSchema = z.object({
     id: z.string(),
