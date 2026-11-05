@@ -20,8 +20,13 @@
 - [x] Set up Continuous Integration workflow (.github/workflows/ci.yml)
 - [x] Configure strict security headers & production environment boot tests
 - [x] Author comprehensive project README, developer tutorial, and Gate 0 documentation
+- [x] Author complete 2-5 minute video production script and storyboard (docs/video-script.md)
+- [x] Author official Hackathon Submission Package with five-question commercial summary (docs/submission.md)
+- [x] Author Empirical Decay Findings & Measurement Report (docs/findings.md)
+- [x] Implement Merkle dataset anchoring and Sequential checks early stopping
 
 ## Backlog
-- [x] Set up testing suite (47 passing unit and property tests across 8 test suites)
+- [x] Comprehensive test suite (53/53 passing unit, property, and absence tests across 8 suites)
+- [x] Full production build of all 18 web routes and 8 workspace packages
 - [ ] Connect live Sepolia testnet credentials for unattended sampling
 - [ ] Production deployment to Vercel (web) and container host (worker)
