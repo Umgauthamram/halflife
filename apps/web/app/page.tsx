@@ -16,7 +16,7 @@ export default function Home() {
 
       {/* Navigation */}
       <header className="border-b border-[var(--border)] bg-[var(--surface)]">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-8 lg:px-12 py-4">
           <div className="flex items-center gap-3">
             <span className="font-semibold text-lg tracking-tight">Half-Life</span>
             <span className="rounded border border-[var(--border)] px-1.5 py-0.5 text-[11px] font-mono text-[var(--secondary)]">
@@ -44,7 +44,7 @@ export default function Home() {
       </header>
 
       {/* Main Content */}
-      <main className="mx-auto flex max-w-6xl flex-1 flex-col px-6 py-16">
+      <main className="mx-auto flex max-w-7xl flex-1 flex-col px-8 lg:px-12 py-16">
         {/* Hero Section */}
         <section className="grid grid-cols-1 items-start gap-12 lg:grid-cols-12">
           <div className="flex flex-col gap-6 lg:col-span-7">
@@ -149,7 +149,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t border-[var(--border)] bg-[var(--surface)] py-8 text-center text-xs text-[var(--secondary)]">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-8 lg:px-12 sm:flex-row">
           <div>Half-Life &bull; Telegraph Hackathon Season II (Track 03: Apps &amp; Agents)</div>
           <div className="flex gap-4">
             <span>On-Chain Verified</span>

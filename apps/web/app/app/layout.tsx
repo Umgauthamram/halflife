@@ -24,7 +24,7 @@ export default async function AppLayout({
 
       {/* Main App Header */}
       <header className="border-b border-[var(--border)] bg-[var(--surface)]">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5">
+        <div className="flex w-full items-center justify-between px-6 lg:px-12 py-3.5">
           <div className="flex items-center gap-6">
             <Link href="/app" className="font-semibold text-lg tracking-tight">
               Half-Life
@@ -81,7 +81,7 @@ export default async function AppLayout({
       </header>
 
       {/* App Body */}
-      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
+      <main className="w-full flex-1 px-6 lg:px-12 py-8">
         {children}
       </main>
     </div>

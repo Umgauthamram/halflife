@@ -31,8 +31,8 @@ export default async function AtlasPage() {
   );
 
   return (
-    <div className="flex min-h-screen flex-col bg-[var(--background)] px-6 py-12 text-[var(--foreground)] selection:bg-[var(--foreground)] selection:text-[var(--background)]">
-      <div className="mx-auto max-w-5xl w-full">
+    <div className="flex min-h-screen flex-col bg-[var(--background)] px-6 lg:px-12 py-12 text-[var(--foreground)] selection:bg-[var(--foreground)] selection:text-[var(--background)]">
+      <div className="mx-auto w-full max-w-7xl">
         <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
           <div>
             <Link href="/" className="font-mono text-xs text-[var(--secondary)] hover:underline">
