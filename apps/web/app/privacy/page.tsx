@@ -20,7 +20,7 @@ export default function PrivacyPage() {
           </p>
           <h2 className="mt-4 font-semibold text-base text-[var(--foreground)]">2. Blockchain &amp; Public Ledger Data</h2>
           <p>
-            Purchases made on the Ethereum Sepolia testnet are permanently recorded on the public blockchain by the nature of distributed ledger technology.
+            Purchases made on the network are permanently recorded on the public blockchain by the nature of distributed ledger technology.
           </p>
         </div>
       </div>

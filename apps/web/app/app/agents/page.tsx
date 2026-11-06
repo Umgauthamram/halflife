@@ -52,7 +52,7 @@ export default async function AgentsPage() {
                 <th className="px-4 py-3">Name</th>
                 <th className="px-4 py-3">Mode</th>
                 <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Wallet Address (Sepolia)</th>
+                <th className="px-4 py-3">Wallet Address</th>
                 <th className="px-4 py-3 text-right">Daily Cap</th>
                 <th className="px-4 py-3 text-right">Per-Ask Cap</th>
                 <th className="px-4 py-3 text-right">Actions</th>

@@ -40,7 +40,7 @@ export default async function AtlasPage() {
             </Link>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight">Freshness Atlas</h1>
             <p className="mt-1 text-sm text-[var(--secondary)]">
-              Empirical answer decay and independent miner disagreement metrics on Telegraph (Ethereum Sepolia).
+              Empirical answer decay and independent miner disagreement metrics on Telegraph.
             </p>
           </div>
           <Link

@@ -66,7 +66,7 @@ export default async function BenchmarksPage() {
           <span className="mt-1 block text-xs text-[var(--secondary)]">from 180 down to 60 asks</span>
         </div>
         <div className="border border-[var(--border)] bg-[var(--surface)] p-6">
-          <span className="font-mono text-xs uppercase text-[var(--secondary)]">Testnet Spend Saved</span>
+          <span className="font-mono text-xs uppercase text-[var(--secondary)]">Spend Saved</span>
           <div className="mt-2 text-3xl font-semibold">${comparison.spendSavedUsdc.toFixed(2)}</div>
           <span className="mt-1 block text-xs text-[var(--secondary)]">{comparison.spendSavingsPercent}% budget reduction</span>
         </div>
@@ -133,10 +133,10 @@ export default async function BenchmarksPage() {
           <div>
             <h2 className="text-base font-semibold">Evidence Pack Bundle</h2>
             <p className="text-xs text-[var(--secondary)]">
-              Standardized bundle with verified on-chain settlement links on Sepolia.
+              Standardized bundle with verified on-chain settlement links.
             </p>
           </div>
-          <span className="font-mono text-xs text-[var(--secondary)]">Chain ID: 11155111</span>
+          <span className="font-mono text-xs text-[var(--secondary)]">On-Chain Verified</span>
         </div>
 
         <div className="mt-4">

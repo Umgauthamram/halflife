@@ -72,8 +72,8 @@ export default async function AdminSamplerPage() {
         </div>
         <div className="border border-[var(--border)] bg-[var(--surface)] p-6">
           <span className="font-mono text-xs uppercase text-[var(--secondary)]">Target Network</span>
-          <div className="mt-2 text-xl font-semibold">Ethereum Sepolia</div>
-          <span className="text-xs font-mono text-[var(--secondary)]">Chain ID 11155111</span>
+          <div className="mt-2 text-xl font-semibold">Telegraph Network</div>
+          <span className="text-xs font-mono text-[var(--secondary)]">Settlement Layer</span>
         </div>
         <div className="border border-[var(--border)] bg-[var(--surface)] p-6">
           <span className="font-mono text-xs uppercase text-[var(--secondary)]">Daily Cap Limit</span>

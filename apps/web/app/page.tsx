@@ -11,7 +11,7 @@ export default function Home() {
     <div className="flex min-h-screen flex-col bg-[var(--background)] text-[var(--foreground)] selection:bg-[var(--foreground)] selection:text-[var(--background)]">
       {/* Top Banner */}
       <div className="border-b border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-center text-xs font-mono uppercase tracking-wider text-[var(--secondary)]">
-        Ethereum Sepolia Testnet (Chain ID: 11155111) &bull; Testnet Funds Only
+        Telegraph Protocol &bull; Autonomous Freshness Decision Engine
       </div>
 
       {/* Navigation */}
@@ -93,7 +93,7 @@ export default function Home() {
               ))}
             </div>
             <div className="mt-4 border-t border-[var(--border)] pt-3 text-[11px] text-[var(--secondary)]">
-              Samples collected under strict noise-floor validation on Ethereum Sepolia.
+              Samples collected under strict noise-floor validation across Telegraph miners.
             </div>
           </div>
         </section>
@@ -140,7 +140,7 @@ export default function Home() {
               <span className="font-mono text-xs text-[var(--secondary)]">04 / PROVE</span>
               <h3 className="mt-2 font-semibold">On-Chain Receipts</h3>
               <p className="mt-2 text-sm text-[var(--secondary)]">
-                Every purchase is confirmed against Ethereum Sepolia transactions and attached with receipt and age.
+                Every purchase is confirmed against on-chain transactions and attached with receipt and age.
               </p>
             </div>
           </div>
@@ -152,7 +152,7 @@ export default function Home() {
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
           <div>Half-Life &bull; Telegraph Hackathon Season II (Track 03: Apps &amp; Agents)</div>
           <div className="flex gap-4">
-            <span>Ethereum Sepolia Testnet</span>
+            <span>On-Chain Verified</span>
             <span>&bull;</span>
             <span>Open Source (Apache-2.0)</span>
           </div>

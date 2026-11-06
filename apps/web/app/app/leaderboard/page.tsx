@@ -120,7 +120,7 @@ export default async function LeaderboardPage() {
         <div className="border border-[var(--border)] bg-[var(--surface)] p-6">
           <span className="font-mono text-xs uppercase text-[var(--secondary)]">Network Spend (USDC)</span>
           <div className="mt-2 text-3xl font-semibold">${totalNetworkSpend.toFixed(2)}</div>
-          <span className="mt-1 text-xs text-[var(--secondary)]">Ethereum Sepolia</span>
+          <span className="mt-1 text-xs text-[var(--secondary)]">Telegraph Protocol</span>
         </div>
         <div className="border border-[var(--border)] bg-[var(--surface)] p-6">
           <span className="font-mono text-xs uppercase text-[var(--secondary)]">Verified Receipts</span>
@@ -148,7 +148,7 @@ export default async function LeaderboardPage() {
                 <th className="px-6 py-3">Active Intents</th>
                 <th className="px-6 py-3 text-right">Requests</th>
                 <th className="px-6 py-3 text-right">Spend</th>
-                <th className="px-6 py-3">Latest Sepolia Settlement</th>
+                <th className="px-6 py-3">Latest Settlement</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border)] font-mono text-xs">
@@ -197,7 +197,7 @@ export default async function LeaderboardPage() {
         <h3 className="font-semibold text-sm">Deploy an OpenClaw Instance to this Leaderboard</h3>
         <p className="mt-1 text-xs text-[var(--secondary)] leading-relaxed">
           Install the Half-Life ClawHub skill into your OpenClaw agent heartbeat loop. Your instance will automatically
-          claim an autonomous wallet on Sepolia, query Telegraph via 402 quotes, and report verified spend to this panel.
+          claim an autonomous wallet, query Telegraph via 402 quotes, and report verified spend to this panel.
         </p>
         <div className="mt-4 rounded border border-[var(--border)] bg-[var(--background)] p-3 font-mono text-xs">
           clawhub install half-life-governor

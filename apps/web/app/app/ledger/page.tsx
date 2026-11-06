@@ -21,7 +21,7 @@ export default async function LedgerPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Purchase Ledger</h1>
           <p className="mt-1 text-sm text-[var(--secondary)]">
-            Every transaction executed by your agents, settled on Ethereum Sepolia.
+            Every transaction executed by your agents, settled on-chain.
           </p>
         </div>
       </div>
@@ -42,7 +42,7 @@ export default async function LedgerPage() {
                 <th className="px-4 py-3">Intent</th>
                 <th className="px-4 py-3">Miner (Rank)</th>
                 <th className="px-4 py-3 text-right">Price</th>
-                <th className="px-4 py-3">Settlement TX (Sepolia)</th>
+                <th className="px-4 py-3">Settlement TX</th>
                 <th className="px-4 py-3">Verification</th>
               </tr>
             </thead>

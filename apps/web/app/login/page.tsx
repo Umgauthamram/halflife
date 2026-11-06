@@ -88,7 +88,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
 
         <div className="mt-6 border-t border-[var(--border)] pt-4 text-center">
           <p className="text-[11px] font-mono text-[var(--secondary)]">
-            Testnet only. No real funds.
+            Telegraph Protocol &bull; Personal Agent Governor
           </p>
           <div className="mt-2 flex justify-center gap-4 text-xs text-[var(--secondary)]">
             <Link href="/terms" className="hover:underline">
