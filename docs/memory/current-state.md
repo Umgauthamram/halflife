@@ -8,15 +8,15 @@
 - **Languages**: TypeScript
 
 ## 2. Active Feature / Milestone
-- **Current Focus**: Mission 09 Personal Agent Integration, ClawHub Skill & Live Spend Leaderboard
+- **Current Focus**: Cloned Wise Design System & Layout for Landing Page (`landingpage.md`)
 - **Status**: Complete & Production-Verified
 
 ## 3. Recent Progress (Rolling Snapshot - Max 5)
-- Implemented ClawHub skill (`openclaw-half-life-governor`) in `@half-life/sdk` and `skills/openclaw/SKILL.md` wiring Telegraph into OpenClaw 24/7 heartbeat loops
-- Built Live Agent Spend Leaderboard (`/app/leaderboard`) tracking on-chain settlements, requests, and verified transaction proofs
-- Integrated verified Sepolia transaction (`0x5b7bfd33ec11444a07117ac480f73eb8b7b5d73e7d50ec3642ddb31107845742`) and operator wallet `0xB980b2dBA0004e12f8efF99E5978aB1fa8179517`
-- Configured live Telegraph node `http://13.237.89.59:7148` (`wss://13.237.89.59:7148/ws`) and expanded schemas for `WEB_SEARCH`, `QUESTION_ANSWERING`, `WEATHER_CHECK`, `CRYPTO_PRICE`
-- 53/53 tests passing across all 8 workspace packages, all 19 Next.js routes compiled cleanly
+- Cloned Wise design system from `landingpage.md` into `apps/web/app/page.tsx` with Forest Ink (`#163300`), Lime Voltage (`#9fe870`), and Paper (`#ffffff`) surfaces
+- Built Wise display headlines, top navigation with segmented switcher, interactive transfer calculator on Fog (`#e8ebe6`), 3-column feature row, dark inverted card, 5-column country directory, and floating QR badge
+- Expanded layout to full screen width and removed explicit testnet labels across UI
+- Fixed Auth.js v5 database isolation (`databaseName: "halflife"`) and added self-healing user status in DAL
+- 53/53 tests passing across all packages, production build succeeded across all 19 routes, pushed to `origin main`
 
 ## 4. Next Immediate Steps
 - [ ] Record final demo video following `docs/video-script.md`
