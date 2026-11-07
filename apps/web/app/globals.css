@@ -2,15 +2,7 @@
 
 :root {
   color-scheme: light;
-  --background: #F6F0E2;
-  --surface: #FBF7EE;
-  --foreground: #111111;
-  --secondary: #3D3A33;
-  --border: #CFC5AE;
-  --border-strong: #111111;
-  --error: #9B1C1C;
-  --success: #1F5E3B;
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* Wise Style Reference Design Tokens */
@@ -26,6 +18,16 @@
   --color-slate: #6a6c6a;
   --color-fog: #e8ebe6;
   --color-paper: #ffffff;
+
+  /* App theme fallback compatibility */
+  --background: #ffffff;
+  --surface: #e8ebe6;
+  --foreground: #0e0f0c;
+  --secondary: #454745;
+  --border: #e8ebe6;
+  --border-strong: #163300;
+  --error: #cb272f;
+  --success: #163300;
 }
 
 @theme inline {
@@ -55,8 +57,8 @@
 }
 
 body {
-  background-color: var(--background);
-  color: var(--foreground);
+  background-color: #ffffff;
+  color: #0e0f0c;
   font-family: var(--font-sans);
   min-height: 100vh;
   margin: 0;
@@ -64,8 +66,8 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Accessible 2px black focus ring with 2px offset per TRD Section 14 */
+/* Accessible focus ring */
 :focus-visible {
-  outline: 2px solid var(--border-strong);
+  outline: 2px solid var(--color-forest-ink);
   outline-offset: 2px;
 }
