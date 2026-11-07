@@ -8,15 +8,15 @@
 - **Languages**: TypeScript
 
 ## 2. Active Feature / Milestone
-- **Current Focus**: Full Wise.com Clone (Interactive Currency Calculator & Wise Design System)
+- **Current Focus**: Caldera Website Clone (`https://caldera.xyz/`) based on `landingpage.md`
 - **Status**: Complete & Production-Verified
 
 ## 3. Recent Progress (Rolling Snapshot - Max 5)
-- Completed authentic Wise.com clone on `apps/web/app/page.tsx` using exact tokens from `landingpage.md`
-- Built interactive multi-currency transfer calculator with dynamic currency switching (USD, GBP, EUR, AUD, CAD, INR, JPY), fee breakdown tree, real exchange rate calculations, and savings callout
-- Implemented Wise layout rhythm: Sticky 64px header, 2-column split hero, Trustpilot rating badge, global stats marquee ($120B+ transferred), 3-column feature row, dark inverted multi-currency account card, Wise debit card section, 5-column country directory grid (15 flags), Wise Business tier, FAQ accordion, and floating bottom-right QR badge
-- Maintained all existing app pathways (`/login`, `/app`) with smooth Google Auth and session recovery
-- Verified 53/53 tests pass and production build compiles all 19 routes cleanly; deployed to `main`
+- Recreated Caldera website (`https://caldera.xyz/`) exactly according to `landingpage.md` design reference
+- Applied volcanic palette: Pumice canvas (`#e2e2df`), Limestone surfaces (`#f7f6f2`), molten Ember accents (`#fc5000`), Sulfur tags (`#f5f28e`), and Plasma Violet (`#524ae9`)
+- Built architectural 189px display headline ("THE INTERNET OF ROLLUPS"), 40px radius cards, 800px full pill controls, hero halftone dot grid, and 4 Ember stat feature cards (50+ Rollups, 100M+ Txns, $500M+ TVS, 1.8M+ Wallets)
+- Implemented Rollup Engine pillar, Metalayer showcase, 6 Ecosystem content cards, interactive stack configurator, research insights, and dark newsletter input pill
+- Verified all 53/53 tests pass and production build compiles all 19 routes cleanly; pushed to `origin main`
 
 ## 4. Next Immediate Steps
 - [ ] Record final demo video following `docs/video-script.md`
