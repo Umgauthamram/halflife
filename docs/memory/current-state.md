@@ -8,15 +8,15 @@
 - **Languages**: TypeScript
 
 ## 2. Active Feature / Milestone
-- **Current Focus**: Caldera Website Clone (`https://caldera.xyz/`) based on `landingpage.md`
+- **Current Focus**: Half-Life Landing Page with Caldera Stepped Halftone Hero Layout
 - **Status**: Complete & Production-Verified
 
 ## 3. Recent Progress (Rolling Snapshot - Max 5)
-- Recreated Caldera website (`https://caldera.xyz/`) exactly according to `landingpage.md` design reference
-- Applied volcanic palette: Pumice canvas (`#e2e2df`), Limestone surfaces (`#f7f6f2`), molten Ember accents (`#fc5000`), Sulfur tags (`#f5f28e`), and Plasma Violet (`#524ae9`)
-- Built architectural 189px display headline ("THE INTERNET OF ROLLUPS"), 40px radius cards, 800px full pill controls, hero halftone dot grid, and 4 Ember stat feature cards (50+ Rollups, 100M+ Txns, $500M+ TVS, 1.8M+ Wallets)
-- Implemented Rollup Engine pillar, Metalayer showcase, 6 Ecosystem content cards, interactive stack configurator, research insights, and dark newsletter input pill
-- Verified all 53/53 tests pass and production build compiles all 19 routes cleanly; pushed to `origin main`
+- Rebuilt landing page with exact Caldera hero stepped halftone layout from user reference screenshot
+- Incorporated Half-Life core content: "The Internet Of Freshness", empirical answer decay on Telegraph, Governor algorithm ($Risk = Stake \times Drift > Price$), and ClawHub skill for autonomous personal agents
+- Integrated floating pill navigation with Half-Life logo, dotted vertical dividers, Atlas/Governor/Leaderboard/Benchmarks links, and orange action button
+- Added four Ember stat feature cards (300s FX Half-Life, 64% Redundant Spends Prevented, 100% On-Chain Merkle Verified, 3 Target Agent Buyers)
+- All 53/53 tests pass, clean Next.js production build across all 19 routes, pushed to `origin/main`
 
 ## 4. Next Immediate Steps
 - [ ] Record final demo video following `docs/video-script.md`
