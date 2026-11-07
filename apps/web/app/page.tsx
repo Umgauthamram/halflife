@@ -3,781 +3,846 @@
 import Link from "next/link";
 import { useState } from "react";
 
-type Currency = "USD" | "GBP" | "EUR" | "AUD" | "CAD" | "INR" | "JPY";
+type Framework = "nitro" | "op" | "cdk" | "zksync";
+type DALayer = "celestia" | "eigenda" | "blobs";
 
-interface CurrencyInfo {
-  code: Currency;
-  name: string;
-  flag: string;
-  symbol: string;
-  rateToUSD: number; // 1 unit in USD
-}
+export default function CalderaLandingPage() {
+  const [selectedFramework, setSelectedFramework] = useState<Framework>("nitro");
+  const [selectedDA, setSelectedDA] = useState<DALayer>("celestia");
+  const [emailInput, setEmailInput] = useState("");
+  const [subscribed, setSubscribed] = useState(false);
 
-const CURRENCIES: Record<Currency, CurrencyInfo> = {
-  USD: { code: "USD", name: "US Dollar", flag: "🇺🇸", symbol: "$", rateToUSD: 1.0 },
-  GBP: { code: "GBP", name: "British Pound", flag: "🇬🇧", symbol: "£", rateToUSD: 1.28 },
-  EUR: { code: "EUR", name: "Euro", flag: "🇪🇺", symbol: "€", rateToUSD: 1.08 },
-  AUD: { code: "AUD", name: "Australian Dollar", flag: "🇦🇺", symbol: "A$", rateToUSD: 0.65 },
-  CAD: { code: "CAD", name: "Canadian Dollar", flag: "🇨🇦", symbol: "C$", rateToUSD: 0.73 },
-  INR: { code: "INR", name: "Indian Rupee", flag: "🇮🇳", symbol: "₹", rateToUSD: 0.012 },
-  JPY: { code: "JPY", name: "Japanese Yen", flag: "🇯🇵", symbol: "¥", rateToUSD: 0.0065 },
-};
-
-export default function WiseLandingPage() {
-  const [navSegment, setNavSegment] = useState<"personal" | "business" | "platform">("personal");
-  const [calcTab, setCalcTab] = useState<"send" | "receive">("send");
-  const [sendAmount, setSendAmount] = useState<string>("1000");
-  const [fromCurr, setFromCurr] = useState<Currency>("USD");
-  const [toCurr, setToCurr] = useState<Currency>("EUR");
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
-
-  // Dynamic conversion calculation
-  const numericSend = parseFloat(sendAmount.replace(/,/g, "")) || 0;
-  const exchangeRate = CURRENCIES[fromCurr].rateToUSD / CURRENCIES[toCurr].rateToUSD;
-  const feeRate = 0.00414; // ~0.41%
-  const fee = numericSend > 0 ? (numericSend * feeRate + 2.5).toFixed(2) : "0.00";
-  const amountToConvert = Math.max(0, numericSend - parseFloat(fee));
-  const recipientGets = (amountToConvert * exchangeRate).toFixed(2);
-  const estimatedSavings = (numericSend * 0.0385).toFixed(2);
-
-  const countries = [
-    { name: "United Kingdom", currency: "GBP", flag: "🇬🇧" },
-    { name: "Eurozone", currency: "EUR", flag: "🇪🇺" },
-    { name: "United States", currency: "USD", flag: "🇺🇸" },
-    { name: "India", currency: "INR", flag: "🇮🇳" },
-    { name: "Australia", currency: "AUD", flag: "🇦🇺" },
-    { name: "Japan", currency: "JPY", flag: "🇯🇵" },
-    { name: "Canada", currency: "CAD", flag: "🇨🇦" },
-    { name: "Singapore", currency: "SGD", flag: "🇸🇬" },
-    { name: "Switzerland", currency: "CHF", flag: "🇨🇭" },
-    { name: "Brazil", currency: "BRL", flag: "🇧🇷" },
-    { name: "Mexico", currency: "MXN", flag: "🇲🇽" },
-    { name: "Philippines", currency: "PHP", flag: "🇵🇭" },
-    { name: "South Africa", currency: "ZAR", flag: "🇿🇦" },
-    { name: "United Arab Emirates", currency: "AED", flag: "🇦🇪" },
-    { name: "New Zealand", currency: "NZD", flag: "🇳🇿" },
+  const stats = [
+    { value: "50+", label: "LIVE PRODUCTION ROLLUPS" },
+    { value: "100M+", label: "TOTAL TRANSACTIONS" },
+    { value: "$500M+", label: "TOTAL VALUE SECURED" },
+    { value: "1.8M+", label: "UNIQUE WALLET ADDRESSES" },
   ];
 
-  const faqs = [
+  const partners = [
+    "ARBITRUM",
+    "OPTIMISM",
+    "POLYGON",
+    "CELESTIA",
+    "EIGENLAYER",
+    "HYPERLANE",
+    "ZKSYNC",
+    "INJECTIVE",
+  ];
+
+  const rollups = [
     {
-      q: "How is Wise cheaper than traditional banks?",
-      a: "Banks often hide charges in inflated exchange rates, claiming zero percent commission while taking an extra 3% to 6%. Wise uses the real mid-market exchange rate — the one you see on Google or Reuters — and only charges a small, transparent fee upfront.",
+      name: "ApeChain",
+      tag: "GAMING & CULTURE",
+      headline: "Powered by Arbitrum Nitro & ApeCoin for next-gen interactive entertainment",
+      framework: "Arbitrum Nitro",
+      date: "Q3 2024",
     },
     {
-      q: "How fast will my international transfer arrive?",
-      a: "Over 55% of transfers on Wise arrive instantly (in under 20 seconds). Depending on the currency and payment method you choose, most other transfers arrive within the same day.",
+      name: "Manta Pacific",
+      tag: "ZERO KNOWLEDGE",
+      headline: "Scalable ZK applications with modular Celestia Data Availability",
+      framework: "OP Stack + Celestia",
+      date: "Q1 2024",
     },
     {
-      q: "Is my money safe with Wise?",
-      a: "Yes. Wise is heavily regulated by leading global financial authorities including the Financial Conduct Authority (FCA) in the UK, FinCEN and state banking regulators in the US, and FINTRAC in Canada. We safeguard all customer funds in segregated tier-one bank accounts.",
+      name: "Kinto",
+      tag: "FINTECH & RWA",
+      headline: "First KYC-compliant Layer 2 designed for traditional financial institutions",
+      framework: "Arbitrum Orbit",
+      date: "Q2 2024",
     },
     {
-      q: "What is the Wise multi-currency account?",
-      a: "It's an account that lets you hold over 40 currencies at once and gives you local bank details (account number, routing number, sort code, IBAN) in 9 currencies so anyone can pay you like a local.",
+      name: "Plume Network",
+      tag: "REAL WORLD ASSETS",
+      headline: "Modular L2 purpose-built for compliant RWA composability and institutional adoption",
+      framework: "Arbitrum Nitro",
+      date: "Q3 2024",
+    },
+    {
+      name: "RARI Chain",
+      tag: "CREATOR ECONOMY",
+      headline: "NFT-first ecosystem with creator royalties enforced directly at the node level",
+      framework: "Arbitrum Orbit",
+      date: "Q1 2024",
+    },
+    {
+      name: "inEVM",
+      tag: "CROSS-VM ROLLUP",
+      headline: "Injective's multi-VM rollup bridging Ethereum, Cosmos, and Solana liquidity",
+      framework: "Custom Rollup",
+      date: "Q2 2024",
     },
   ];
+
+  const articles = [
+    {
+      tag: "ANNOUNCEMENT",
+      title: "Introducing Caldera's Series A: Scaling the Modular Era",
+      date: "July 24, 2024",
+      readTime: "4 min read",
+    },
+    {
+      tag: "RESEARCH",
+      title: "BoLD on Caldera: Permissionless Validation for Arbitrum Nitro Chains",
+      date: "August 12, 2024",
+      readTime: "7 min read",
+    },
+    {
+      tag: "ENGINEERING",
+      title: "Sub-Second Bridging: How the Metalayer Routes Cross-Chain Intents",
+      date: "September 05, 2024",
+      readTime: "6 min read",
+    },
+  ];
+
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (emailInput.trim()) {
+      setSubscribed(true);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-white text-[#0e0f0c] selection:bg-[#9fe870] selection:text-[#163300] font-sans antialiased">
-      {/* Top Navigation Bar */}
-      <header className="sticky top-0 z-40 h-16 border-b border-[#e8ebe6] bg-white">
-        <div className="mx-auto flex h-full max-w-[1200px] items-center justify-between px-6 lg:px-8">
-          {/* Brand Logo & Segmented Switcher */}
-          <div className="flex items-center gap-8">
-            <Link href="/" className="flex items-center gap-1.5 group">
-              <span className="text-2xl font-black tracking-[-0.05em] text-[#163300] lowercase">
-                wise
-              </span>
-              <span className="inline-block h-2 w-2 rounded-full bg-[#9fe870]" />
+    <div className="min-h-screen bg-[#e2e2df] text-[#070607] font-sans antialiased selection:bg-[#fc5000] selection:text-white">
+      {/* Floating Navigation Bar inside Limestone Pill Container */}
+      <header className="sticky top-6 z-50 px-4 sm:px-6 max-w-[1280px] mx-auto w-full">
+        <nav className="flex items-center justify-between rounded-[800px] bg-[#f7f6f2] px-6 py-3.5 border border-[#070607]/10">
+          {/* Logo Lockup */}
+          <Link href="/" className="flex items-center gap-2.5 group">
+            {/* Mountain / Caldera Emblem */}
+            <div className="h-6 w-6 rounded-md bg-[#fc5000] flex items-center justify-center text-white">
+              <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
+                <polygon points="12 2 2 22 22 22" />
+              </svg>
+            </div>
+            <span className="text-xl font-black tracking-tight text-[#070607] uppercase">
+              CALDERA
+            </span>
+          </Link>
+
+          {/* Center Navigation Links (DM Sans 500 at 16px) */}
+          <div className="hidden md:flex items-center gap-7 text-[16px] font-medium text-[#070607]">
+            <Link href="#engine" className="hover:text-[#fc5000] transition">
+              Rollup Engine
             </Link>
-
-            {/* Segmented Tab Control (Pill container) */}
-            <div className="hidden md:flex items-center rounded-full bg-[#e8ebe6] p-1">
-              <button
-                type="button"
-                onClick={() => setNavSegment("personal")}
-                className={`rounded-full px-4 py-1.5 text-sm font-semibold transition ${
-                  navSegment === "personal"
-                    ? "bg-[#9fe870] text-[#163300]"
-                    : "text-[#454745] hover:text-[#163300]"
-                }`}
-              >
-                Personal
-              </button>
-              <button
-                type="button"
-                onClick={() => setNavSegment("business")}
-                className={`rounded-full px-4 py-1.5 text-sm font-semibold transition ${
-                  navSegment === "business"
-                    ? "bg-[#9fe870] text-[#163300]"
-                    : "text-[#454745] hover:text-[#163300]"
-                }`}
-              >
-                Business
-              </button>
-              <button
-                type="button"
-                onClick={() => setNavSegment("platform")}
-                className={`rounded-full px-4 py-1.5 text-sm font-semibold transition ${
-                  navSegment === "platform"
-                    ? "bg-[#9fe870] text-[#163300]"
-                    : "text-[#454745] hover:text-[#163300]"
-                }`}
-              >
-                Platform
-              </button>
-            </div>
-          </div>
-
-          {/* Right Nav Cluster */}
-          <div className="flex items-center gap-4 sm:gap-6">
-            <div className="hidden lg:flex items-center gap-6 text-sm font-medium text-[#454745]">
-              <Link href="#features" className="hover:text-[#163300] transition">
-                Features
-              </Link>
-              <Link href="#pricing" className="hover:text-[#163300] transition">
-                Pricing
-              </Link>
-              <Link href="/app" className="hover:text-[#163300] transition">
-                Help
-              </Link>
-            </div>
-
-            <div className="hidden sm:flex items-center gap-1.5 text-sm font-medium text-[#454745] cursor-pointer hover:text-[#163300]">
-              <span className="text-base">🌐</span>
-              <span>EN</span>
-            </div>
-
-            <Link
-              href="/login"
-              className="text-sm font-semibold text-[#163300] hover:underline underline-offset-4"
-            >
-              Log in
+            <Link href="#metalayer" className="hover:text-[#fc5000] transition">
+              Metalayer
             </Link>
-
-            {/* Outlined Pill Button */}
-            <Link
-              href="/login"
-              className="rounded-full border border-[#163300] bg-white px-5 py-2 text-sm font-semibold text-[#163300] transition hover:bg-[#e8ebe6]"
-            >
-              Sign up
+            <Link href="#ecosystem" className="hover:text-[#fc5000] transition">
+              Ecosystem
+            </Link>
+            <Link href="#configurator" className="hover:text-[#fc5000] transition">
+              Modular Stack
+            </Link>
+            <Link href="#blog" className="hover:text-[#fc5000] transition">
+              Blog
             </Link>
           </div>
-        </div>
+
+          {/* Right Action Cluster */}
+          <div className="flex items-center gap-3 sm:gap-4">
+            {/* Social Icons with Dotted Divider */}
+            <div className="hidden lg:flex items-center gap-3 pr-3 border-r-[1.5px] border-dotted border-[#070607]">
+              {/* X / Twitter */}
+              <a
+                href="https://x.com/Calderaxyz"
+                target="_blank"
+                rel="noreferrer"
+                className="text-[#070607] hover:text-[#fc5000] transition"
+                aria-label="X (Twitter)"
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
+              </a>
+
+              {/* Discord */}
+              <a
+                href="https://discord.gg/caldera"
+                target="_blank"
+                rel="noreferrer"
+                className="text-[#070607] hover:text-[#fc5000] transition"
+                aria-label="Discord"
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
+                  <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028z" />
+                </svg>
+              </a>
+            </div>
+
+            {/* Primary CTA Pill Button (Ember #fc5000 with Obsidian text) */}
+            <Link
+              href="/login"
+              className="rounded-[800px] bg-[#fc5000] px-6 py-2.5 text-[15px] sm:text-[16px] font-medium text-[#070607] transition hover:opacity-90 active:scale-98"
+            >
+              Launch a Rollup
+            </Link>
+          </div>
+        </nav>
       </header>
 
-      {/* Hero Section */}
-      <main className="flex flex-col">
-        <section className="pt-12 pb-20 px-6 lg:px-8 max-w-[1200px] mx-auto w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-14 items-center">
-            {/* Left Column: Headlines & Actions */}
-            <div className="lg:col-span-6 flex flex-col items-start">
-              <span className="inline-flex items-center gap-2 rounded-full bg-[#e2f6d5] px-3.5 py-1 text-xs font-bold text-[#163300] mb-6">
-                <span>⚡</span> The cheap, fast way to send money abroad
-              </span>
+      {/* Main Content */}
+      <main className="flex flex-col gap-20 pt-10 pb-20 px-4 sm:px-6 max-w-[1280px] mx-auto w-full">
+        {/* Hero Section */}
+        <section className="flex flex-col gap-10 pt-6">
+          <div className="flex flex-col gap-6 max-w-5xl">
 
-              {/* Display Headline */}
-              <h1 className="text-5xl sm:text-6xl lg:text-[76px] font-black tracking-[-0.035em] leading-[0.92] text-[#0e0f0c] uppercase">
-                Save when you send money abroad
-              </h1>
 
-              {/* Subheading */}
-              <p className="mt-6 text-lg sm:text-xl text-[#454745] leading-relaxed">
-                Save up to 6x compared to traditional banks. Get the real exchange rate with transparent, low fees every single time.
-              </p>
+            {/* Signature Architectural Display Headline (189px scale, tight line-height 0.94) */}
+            <h1 className="text-6xl sm:text-7xl md:text-8xl lg:text-[140px] xl:text-[170px] font-black uppercase tracking-[0.02em] leading-[0.9] text-[#070607]">
+              THE INTERNET OF ROLLUPS
+            </h1>
 
-              {/* CTA Group */}
-              <div className="mt-8 flex flex-wrap items-center gap-5">
-                {/* Primary CTA Pill Button */}
-                <Link
-                  href="/login"
-                  className="rounded-full bg-[#9fe870] px-8 py-3.5 text-base font-semibold text-[#163300] transition hover:opacity-90 shadow-sm"
-                >
-                  Open an account
-                </Link>
-
-                {/* Text Link Button */}
-                <Link
-                  href="#calculator"
-                  className="text-base font-semibold text-[#163300] underline underline-offset-4 hover:opacity-80"
-                >
-                  Compare our fees &rarr;
-                </Link>
-              </div>
-
-              {/* Trustpilot Review Badge */}
-              <div className="mt-10 flex items-center gap-3 pt-6 border-t border-[#e8ebe6] w-full">
-                <div className="flex gap-1 text-[#054d28]">
-                  {[...Array(5)].map((_, i) => (
-                    <span key={i} className="text-lg">★</span>
-                  ))}
-                </div>
-                <div className="text-xs text-[#454745]">
-                  <span className="font-bold text-[#0e0f0c]">4.3 / 5</span> on Trustpilot &bull; Over 250,000+ reviews
-                </div>
-              </div>
-            </div>
-
-            {/* Right Column: Authentic Wise Transfer Calculator */}
-            <div id="calculator" className="lg:col-span-6 w-full">
-              <div className="rounded-[28px] bg-[#e8ebe6] p-6 sm:p-8 border border-[#868685]/20 shadow-md">
-                {/* Calculator Tabs */}
-                <div className="flex rounded-full bg-white/70 p-1 mb-6 max-w-xs">
-                  <button
-                    type="button"
-                    onClick={() => setCalcTab("send")}
-                    className={`flex-1 rounded-full py-2 text-xs font-bold transition ${
-                      calcTab === "send"
-                        ? "bg-[#9fe870] text-[#163300] shadow-sm"
-                        : "text-[#454745] hover:text-[#163300]"
-                    }`}
-                  >
-                    Send money
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCalcTab("receive")}
-                    className={`flex-1 rounded-full py-2 text-xs font-bold transition ${
-                      calcTab === "receive"
-                        ? "bg-[#9fe870] text-[#163300] shadow-sm"
-                        : "text-[#454745] hover:text-[#163300]"
-                    }`}
-                  >
-                    Receive money
-                  </button>
-                </div>
-
-                {/* You Send Exactly Field */}
-                <div>
-                  <div className="flex justify-between items-center mb-1.5">
-                    <label className="text-xs font-bold text-[#454745] uppercase tracking-wider">
-                      You send exactly
-                    </label>
-                  </div>
-                  <div className="flex items-center justify-between rounded-[10px] border border-[#868685]/30 bg-white p-3.5 focus-within:border-[#163300] transition">
-                    <input
-                      type="text"
-                      value={sendAmount}
-                      onChange={(e) => setSendAmount(e.target.value)}
-                      className="w-full bg-transparent text-2xl sm:text-3xl font-black text-[#0e0f0c] outline-none"
-                    />
-                    <select
-                      value={fromCurr}
-                      onChange={(e) => setFromCurr(e.target.value as Currency)}
-                      aria-label="Send currency"
-                      className="rounded-full bg-[#e8ebe6] px-3.5 py-1.5 font-bold text-[#163300] text-sm shrink-0 border-none outline-none cursor-pointer hover:bg-[#d8dcda] transition"
-                    >
-                      <option value="USD">🇺🇸 USD</option>
-                      <option value="GBP">🇬🇧 GBP</option>
-                      <option value="EUR">🇪🇺 EUR</option>
-                      <option value="AUD">🇦🇺 AUD</option>
-                      <option value="CAD">🇨🇦 CAD</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Breakdown Calculation Tree */}
-                <div className="my-4 pl-4 border-l-2 border-[#163300]/25 space-y-2 text-xs sm:text-sm text-[#454745]">
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1.5">
-                      <span className="text-[#cb272f] font-bold">&minus;</span> Low cost fee ({CURRENCIES[fromCurr].code})
-                    </span>
-                    <span className="font-semibold text-[#0e0f0c]">
-                      {CURRENCIES[fromCurr].symbol}{fee}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1.5">
-                      <span className="text-[#163300] font-bold">&equals;</span> Amount we&apos;ll convert
-                    </span>
-                    <span className="font-semibold text-[#0e0f0c]">
-                      {CURRENCIES[fromCurr].symbol}{amountToConvert.toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1.5">
-                      <span className="text-[#054d28] font-bold">&times;</span> Guaranteed rate (24h)
-                    </span>
-                    <span className="font-bold text-[#163300]">
-                      1 {fromCurr} = {exchangeRate.toFixed(4)} {toCurr}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Recipient Gets Field */}
-                <div>
-                  <div className="flex justify-between items-center mb-1.5">
-                    <label className="text-xs font-bold text-[#454745] uppercase tracking-wider">
-                      Recipient gets
-                    </label>
-                  </div>
-                  <div className="flex items-center justify-between rounded-[10px] border border-[#868685]/30 bg-white p-3.5">
-                    <span className="text-2xl sm:text-3xl font-black text-[#0e0f0c]">
-                      {recipientGets}
-                    </span>
-                    <select
-                      value={toCurr}
-                      onChange={(e) => setToCurr(e.target.value as Currency)}
-                      aria-label="Recipient currency"
-                      className="rounded-full bg-[#e8ebe6] px-3.5 py-1.5 font-bold text-[#163300] text-sm shrink-0 border-none outline-none cursor-pointer hover:bg-[#d8dcda] transition"
-                    >
-                      <option value="EUR">🇪🇺 EUR</option>
-                      <option value="GBP">🇬🇧 GBP</option>
-                      <option value="USD">🇺🇸 USD</option>
-                      <option value="INR">🇮🇳 INR</option>
-                      <option value="JPY">🇯🇵 JPY</option>
-                      <option value="AUD">🇦🇺 AUD</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Savings Callout Pill */}
-                <div className="mt-4 flex items-center justify-between gap-2">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[#e2f6d5] px-3 py-1 text-xs font-bold text-[#163300]">
-                    ⚡ You could save ~${estimatedSavings} vs banks
-                  </span>
-                  <span className="text-xs font-medium text-[#868685]">
-                    Arrives in seconds
-                  </span>
-                </div>
-
-                {/* Calculator CTA Button */}
-                <Link
-                  href="/login"
-                  className="mt-6 block w-full rounded-full bg-[#9fe870] py-4 text-center font-bold text-base text-[#163300] hover:opacity-90 transition shadow-sm"
-                >
-                  Get started
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Global Scale Marquee Metrics */}
-        <section className="bg-[#e8ebe6] py-10 border-y border-[#868685]/15">
-          <div className="max-w-[1200px] mx-auto px-6 lg:px-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-              <div>
-                <div className="text-3xl sm:text-4xl font-black text-[#163300]">16 Million+</div>
-                <div className="text-xs sm:text-sm text-[#454745] mt-1 font-medium">People &amp; businesses worldwide</div>
-              </div>
-              <div>
-                <div className="text-3xl sm:text-4xl font-black text-[#163300]">$120 Billion+</div>
-                <div className="text-xs sm:text-sm text-[#454745] mt-1 font-medium">Transferred every single year</div>
-              </div>
-              <div>
-                <div className="text-3xl sm:text-4xl font-black text-[#163300]">$1.5 Billion</div>
-                <div className="text-xs sm:text-sm text-[#454745] mt-1 font-medium">Saved in hidden bank fees</div>
-              </div>
-              <div>
-                <div className="text-3xl sm:text-4xl font-black text-[#163300]">70+ Countries</div>
-                <div className="text-xs sm:text-sm text-[#454745] mt-1 font-medium">Over 40 supported currencies</div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Feature Row (3-column Trust Signal Block) */}
-        <section id="features" className="py-20 px-6 lg:px-8 max-w-[1200px] mx-auto w-full">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl sm:text-4xl font-black text-[#0e0f0c] uppercase tracking-tight">
-              Why millions choose Wise
-            </h2>
-            <p className="mt-3 text-base text-[#454745]">
-              Built to make money move without borders, fairly and transparently.
+            {/* Subheading (DM Sans 500) */}
+            <p className="text-lg sm:text-2xl font-medium text-[#070607]/80 max-w-3xl leading-relaxed">
+              Caldera makes it effortless to launch and scale dedicated, high-performance Layer 2 and Layer 3 rollups with the modular stack of your choice.
             </p>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12">
-            {/* Feature 1 */}
-            <div className="flex flex-col">
-              <div className="h-10 w-10 text-[#163300] flex items-center justify-center rounded-full bg-[#e2f6d5]">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                </svg>
-              </div>
-              <h3 className="mt-6 text-[18px] font-bold text-[#0e0f0c]">
-                Transparent, low fees
-              </h3>
-              <p className="mt-2 text-[16px] text-[#868685] leading-relaxed">
-                No hidden exchange rate markups. What you see is what you pay, down to the exact cent, every single time.
-              </p>
-            </div>
+            {/* Hero Button Cluster */}
+            <div className="flex flex-wrap items-center gap-4 pt-2">
+              {/* Primary CTA Button */}
+              <Link
+                href="/login"
+                className="rounded-[800px] bg-[#fc5000] px-8 py-4 text-base font-medium text-[#070607] transition hover:opacity-90 shadow-none"
+              >
+                Launch in Minutes
+              </Link>
 
-            {/* Feature 2 */}
-            <div className="flex flex-col">
-              <div className="h-10 w-10 text-[#163300] flex items-center justify-center rounded-full bg-[#e2f6d5]">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                </svg>
-              </div>
-              <h3 className="mt-6 text-[18px] font-bold text-[#0e0f0c]">
-                Fast and secure transfers
-              </h3>
-              <p className="mt-2 text-[16px] text-[#868685] leading-relaxed">
-                Over 55% of transfers arrive in seconds. Heavily safeguarded and regulated by financial authorities worldwide.
-              </p>
-            </div>
-
-            {/* Feature 3 */}
-            <div className="flex flex-col">
-              <div className="h-10 w-10 text-[#163300] flex items-center justify-center rounded-full bg-[#e2f6d5]">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="2" y1="12" x2="22" y2="12" />
-                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-                </svg>
-              </div>
-              <h3 className="mt-6 text-[18px] font-bold text-[#0e0f0c]">
-                Hold and spend 40+ currencies
-              </h3>
-              <p className="mt-2 text-[16px] text-[#868685] leading-relaxed">
-                Keep balances across global currencies and convert between them whenever the exchange rate is in your favor.
-              </p>
+              {/* Secondary Pill Button */}
+              <Link
+                href="#metalayer"
+                className="rounded-[40px] border-[1.5px] border-[#070607] bg-transparent px-8 py-4 text-base font-medium text-[#070607] transition hover:bg-[#f7f6f2]"
+              >
+                Explore the Metalayer &rarr;
+              </Link>
             </div>
           </div>
-        </section>
 
-        {/* Dark Section Card ("Forest Ink" #163300) */}
-        <section className="py-12 px-6 lg:px-8 max-w-[1200px] mx-auto w-full">
-          <div className="rounded-[28px] bg-[#163300] p-8 sm:p-12 md:p-16 text-white shadow-xl">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+          {/* Hero Visual: Standout Halftone Plasma Card & Interactive Config Console */}
+          <div className="rounded-[40px] overflow-hidden border border-[#070607]/10 bg-[#524ae9] relative p-8 sm:p-12 text-white">
+            {/* Halftone Dot Overlay */}
+            <div className="absolute inset-0 caldera-halftone opacity-40 pointer-events-none" />
+
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              {/* Left Console Overview */}
               <div className="lg:col-span-7 flex flex-col gap-4">
-                <span className="inline-flex items-center self-start rounded-full bg-[#054d28] border border-[#9fe870]/30 px-3.5 py-1 text-xs font-bold text-[#9fe870]">
-                  Global Multi-Currency Account
+                <span className="inline-flex self-start rounded-[800px] bg-[#f5f28e] px-3 py-1 text-xs font-medium text-[#070607]">
+                  PRODUCTION ENGINE
                 </span>
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-[#9fe870] uppercase leading-tight">
-                  Meet the account for international people
+                <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-white leading-tight">
+                  ENTERPRISE MODULAR STACK
                 </h2>
-                <p className="text-base sm:text-lg text-white/90 leading-relaxed max-w-xl">
-                  Get local bank account details in 9+ currencies including GBP, EUR, USD, AUD, CAD, and SGD. Receive your salary, client invoices, or pension like a local without paying conversion fees.
+                <p className="text-base sm:text-lg text-white/90 font-medium max-w-xl">
+                  Provision fully customizable execution environments, high-throughput DA, and dedicated RPC infrastructure in seconds.
                 </p>
 
-                <div className="pt-4">
+                {/* Framework Selector Pills */}
+                <div className="flex flex-wrap gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedFramework("nitro")}
+                    className={`rounded-[800px] px-4 py-2 text-xs font-medium transition ${
+                      selectedFramework === "nitro"
+                        ? "bg-[#fc5000] text-[#070607]"
+                        : "bg-white/20 text-white hover:bg-white/30"
+                    }`}
+                  >
+                    Arbitrum Nitro
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedFramework("op")}
+                    className={`rounded-[800px] px-4 py-2 text-xs font-medium transition ${
+                      selectedFramework === "op"
+                        ? "bg-[#fc5000] text-[#070607]"
+                        : "bg-white/20 text-white hover:bg-white/30"
+                    }`}
+                  >
+                    OP Stack
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedFramework("cdk")}
+                    className={`rounded-[800px] px-4 py-2 text-xs font-medium transition ${
+                      selectedFramework === "cdk"
+                        ? "bg-[#fc5000] text-[#070607]"
+                        : "bg-white/20 text-white hover:bg-white/30"
+                    }`}
+                  >
+                    Polygon CDK
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedFramework("zksync")}
+                    className={`rounded-[800px] px-4 py-2 text-xs font-medium transition ${
+                      selectedFramework === "zksync"
+                        ? "bg-[#fc5000] text-[#070607]"
+                        : "bg-white/20 text-white hover:bg-white/30"
+                    }`}
+                  >
+                    ZK Stack
+                  </button>
+                </div>
+              </div>
+
+              {/* Right Live Rollup Telemetry Card */}
+              <div className="lg:col-span-5">
+                <div className="rounded-[32px] bg-[#f7f6f2] p-6 text-[#070607]">
+                  <div className="flex items-center justify-between pb-3 border-b border-[#070607]/10">
+                    <span className="text-xs font-mono uppercase tracking-wider text-[#070607]/60">
+                      ROLLUP STATUS: ONLINE
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-[#fc5000]">
+                      <span className="h-2 w-2 rounded-full bg-[#fc5000] animate-pulse" />
+                      Active Block 12,482,019
+                    </span>
+                  </div>
+
+                  <div className="mt-4 space-y-3 font-mono text-xs">
+                    <div className="flex justify-between py-1 border-b border-[#070607]/5">
+                      <span className="text-[#070607]/60">Framework</span>
+                      <span className="font-bold text-[#070607] uppercase">
+                        {selectedFramework === "nitro"
+                          ? "Arbitrum Nitro"
+                          : selectedFramework === "op"
+                          ? "Optimism OP Stack"
+                          : selectedFramework === "cdk"
+                          ? "Polygon CDK"
+                          : "ZKsync ZK Stack"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between py-1 border-b border-[#070607]/5">
+                      <span className="text-[#070607]/60">Settlement Layer</span>
+                      <span className="font-bold text-[#070607]">Ethereum L1</span>
+                    </div>
+                    <div className="flex justify-between py-1 border-b border-[#070607]/5">
+                      <span className="text-[#070607]/60">Data Availability</span>
+                      <span className="font-bold text-[#070607]">Celestia Mocha</span>
+                    </div>
+                    <div className="flex justify-between py-1 border-b border-[#070607]/5">
+                      <span className="text-[#070607]/60">Block Latency</span>
+                      <span className="font-bold text-[#fc5000]">250 ms</span>
+                    </div>
+                    <div className="flex justify-between py-1">
+                      <span className="text-[#070607]/60">Throughput Target</span>
+                      <span className="font-bold text-[#070607]">2,500+ TPS</span>
+                    </div>
+                  </div>
+
                   <Link
                     href="/login"
-                    className="inline-flex items-center rounded-full bg-[#9fe870] px-8 py-3.5 text-base font-bold text-[#163300] hover:opacity-90 transition"
+                    className="mt-6 block w-full rounded-[800px] bg-[#070607] py-3 text-center text-xs font-medium text-white hover:bg-[#fc5000] hover:text-[#070607] transition"
                   >
-                    Open an account
+                    Deploy This Configuration &rarr;
                   </Link>
                 </div>
               </div>
-
-              {/* Inset White Card for Currency Selector Pill */}
-              <div className="lg:col-span-5">
-                <div className="rounded-[10px] bg-white p-6 text-[#0e0f0c] shadow-2xl">
-                  <div className="flex items-center justify-between pb-3 border-b border-[#e8ebe6]">
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#454745]">
-                      Local Account Details
-                    </span>
-                    <span className="text-[11px] font-bold text-[#163300] bg-[#e2f6d5] px-2 py-0.5 rounded-full">
-                      Free to receive
-                    </span>
-                  </div>
-
-                  {/* Currency Selector Pill */}
-                  <div className="mt-4 flex items-center justify-between rounded-full border border-[#868685]/30 p-2.5 pl-3">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">🇬🇧</span>
-                      <div>
-                        <div className="text-sm font-bold text-[#0e0f0c]">British Pound</div>
-                        <div className="text-xs text-[#868685]">Sort code 04-00-75</div>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      className="rounded-full border border-[#163300] px-3.5 py-1 text-xs font-bold text-[#163300] hover:bg-[#e8ebe6] transition"
-                    >
-                      Change
-                    </button>
-                  </div>
-
-                  {/* Sample Account Information */}
-                  <div className="mt-4 space-y-3 pt-2 text-xs text-[#454745]">
-                    <div className="flex justify-between items-center py-1 border-b border-[#e8ebe6]/60">
-                      <span>Account Number</span>
-                      <span className="font-mono font-bold text-[#0e0f0c]">93821049</span>
-                    </div>
-                    <div className="flex justify-between items-center py-1 border-b border-[#e8ebe6]/60">
-                      <span>Routing / Sort Code</span>
-                      <span className="font-mono font-bold text-[#0e0f0c]">04-00-75</span>
-                    </div>
-                    <div className="flex justify-between items-center py-1">
-                      <span>IBAN</span>
-                      <span className="font-mono font-bold text-[#0e0f0c]">GB29 WISE 0400 7593 8210 49</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </section>
 
-        {/* Section: The Wise Card (Physical & Digital Debit Card) */}
-        <section className="py-20 px-6 lg:px-8 max-w-[1200px] mx-auto w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            <div className="lg:col-span-6 flex flex-col gap-4">
-              <span className="inline-flex items-center self-start rounded-full bg-[#e8ebe6] px-3.5 py-1 text-xs font-bold text-[#163300]">
-                Wise Debit Card
+        {/* Four Ember (#fc5000) Stat Feature Cards in a Row */}
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {stats.map((s, idx) => (
+            <div
+              key={idx}
+              className="rounded-[40px] bg-[#fc5000] p-10 text-white flex flex-col justify-between"
+            >
+              <span className="text-xs font-medium uppercase tracking-wider text-white/90">
+                {s.label}
               </span>
-              <h2 className="text-3xl sm:text-5xl font-black text-[#0e0f0c] uppercase tracking-tight leading-tight">
-                Spend in 150+ countries with the Wise card
-              </h2>
-              <p className="text-base sm:text-lg text-[#454745] leading-relaxed mt-2">
-                Pay like a local anywhere Visa and Mastercard are accepted. If you don&apos;t hold the currency, smart auto-conversion picks the balance with the lowest conversion fee.
-              </p>
-
-              <div className="mt-4 space-y-3">
-                <div className="flex items-center gap-3 text-sm text-[#0e0f0c] font-medium">
-                  <span className="text-[#163300] font-bold">✓</span> Free ATM withdrawals up to $100 every month
-                </div>
-                <div className="flex items-center gap-3 text-sm text-[#0e0f0c] font-medium">
-                  <span className="text-[#163300] font-bold">✓</span> Zero foreign transaction fees or hidden markups
-                </div>
-                <div className="flex items-center gap-3 text-sm text-[#0e0f0c] font-medium">
-                  <span className="text-[#163300] font-bold">✓</span> Instant digital cards for secure online checkouts
-                </div>
-                <div className="flex items-center gap-3 text-sm text-[#0e0f0c] font-medium">
-                  <span className="text-[#163300] font-bold">✓</span> Freeze and unfreeze your card anytime in 1 click
-                </div>
-              </div>
-
-              <div className="pt-4">
-                <Link
-                  href="/login"
-                  className="inline-flex rounded-full bg-[#9fe870] px-8 py-3.5 text-base font-bold text-[#163300] hover:opacity-90 transition shadow-sm"
-                >
-                  Order your card
-                </Link>
+              <div className="mt-8 text-6xl sm:text-7xl font-black uppercase tracking-tight text-white leading-none">
+                {s.value}
               </div>
             </div>
-
-            {/* Visual Card Mockup */}
-            <div className="lg:col-span-6 flex justify-center">
-              <div className="relative w-full max-w-md aspect-[1.586] rounded-[24px] bg-[#9fe870] p-8 text-[#163300] shadow-2xl flex flex-col justify-between overflow-hidden border border-[#163300]/10">
-                <div className="flex justify-between items-start">
-                  <span className="text-3xl font-black tracking-[-0.05em]">wise</span>
-                  {/* Contactless symbol */}
-                  <div className="text-2xl font-bold">)))</div>
-                </div>
-
-                {/* EMV Chip */}
-                <div className="w-12 h-9 rounded-md bg-[#054d28]/30 border border-[#163300]/20 flex items-center justify-center">
-                  <div className="w-8 h-5 border border-[#163300]/30 rounded-sm" />
-                </div>
-
-                <div className="flex justify-between items-end">
-                  <div>
-                    <div className="font-mono text-lg font-bold tracking-widest text-[#163300]">
-                      •••• 8492
-                    </div>
-                    <div className="text-xs uppercase tracking-wider font-semibold text-[#163300]/80 mt-1">
-                      INTERNATIONAL DEBIT
-                    </div>
-                  </div>
-                  <div className="text-xl font-black italic tracking-wider">
-                    VISA
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          ))}
         </section>
 
-        {/* Country Grid (5-column Grid) */}
-        <section id="pricing" className="py-20 px-6 lg:px-8 max-w-[1200px] mx-auto w-full border-t border-[#e8ebe6]">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-[#0e0f0c] uppercase">
-              Send money to over 70 countries
-            </h2>
-            <p className="mt-3 text-base text-[#868685]">
-              Real mid-market exchange rates, transparent fees, delivered directly to bank accounts worldwide.
-            </p>
+        {/* Partner Logo Strip (Limestone #f7f6f2 card with dotted dividers) */}
+        <section className="rounded-[40px] bg-[#f7f6f2] p-10 border border-[#070607]/10">
+          <div className="text-center mb-8">
+            <span className="text-xs font-bold uppercase tracking-widest text-[#070607]/60">
+              TRUSTED BY INDUSTRY-LEADING PROTOCOLS &amp; FRAMEWORKS
+            </span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-10">
-            {countries.map((c) => (
-              <Link
-                key={c.currency}
-                href="/login"
-                className="group flex flex-col items-center text-center"
-              >
-                {/* Circular Flag Thumbnail (56px diameter, 1000px radius) */}
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#e8ebe6] text-3xl shadow-sm transition group-hover:scale-105">
-                  {c.flag}
-                </div>
-                {/* Country Name (Inter 500 at 16px Forest Ink, underline on hover) */}
-                <span className="mt-3 text-base font-medium text-[#163300] group-hover:underline">
-                  {c.name}
+          <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10">
+            {partners.map((partner, idx) => (
+              <div key={idx} className="flex items-center gap-6 sm:gap-10">
+                <span className="text-lg sm:text-xl font-black tracking-wider text-[#070607]">
+                  {partner}
                 </span>
-                <span className="text-xs text-[#868685]">({c.currency})</span>
-              </Link>
-            ))}
-          </div>
-        </section>
-
-        {/* Wise Business Section */}
-        <section className="py-12 px-6 lg:px-8 max-w-[1200px] mx-auto w-full">
-          <div className="rounded-[28px] bg-[#e8ebe6] p-10 md:p-14 border border-[#868685]/20">
-            <div className="max-w-2xl">
-              <span className="inline-flex items-center rounded-full bg-[#e2f6d5] px-3.5 py-1 text-xs font-bold text-[#163300] mb-4">
-                Wise Business
-              </span>
-              <h2 className="text-3xl sm:text-4xl font-black text-[#0e0f0c] uppercase tracking-tight">
-                Built for companies with global ambitions
-              </h2>
-              <p className="mt-4 text-base sm:text-lg text-[#454745] leading-relaxed">
-                Pay overseas suppliers, collect foreign customer revenue, and automate your multi-currency payroll — all with the lowest transfer fees on the market.
-              </p>
-
-              <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm font-semibold text-[#0e0f0c]">
-                <div className="bg-white rounded-[10px] p-4 border border-[#868685]/20">
-                  <div className="text-lg mb-1">⚡</div>
-                  Batch pay 1,000 invoices at once
-                </div>
-                <div className="bg-white rounded-[10px] p-4 border border-[#868685]/20">
-                  <div className="text-lg mb-1">🔗</div>
-                  Sync with Xero, QuickBooks &amp; Stripe
-                </div>
-                <div className="bg-white rounded-[10px] p-4 border border-[#868685]/20">
-                  <div className="text-lg mb-1">🛡️</div>
-                  Multi-user roles and approvals
-                </div>
-              </div>
-
-              <div className="mt-8 flex gap-4">
-                <Link
-                  href="/login"
-                  className="rounded-full bg-[#163300] text-white px-8 py-3.5 text-base font-bold hover:bg-[#054d28] transition"
-                >
-                  Explore Wise Business
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* FAQ Section */}
-        <section className="py-20 px-6 lg:px-8 max-w-[1200px] mx-auto w-full">
-          <div className="text-center max-w-xl mx-auto mb-12">
-            <h2 className="text-3xl sm:text-4xl font-black text-[#0e0f0c] uppercase tracking-tight">
-              Frequently Asked Questions
-            </h2>
-          </div>
-
-          <div className="max-w-3xl mx-auto divide-y divide-[#e8ebe6]">
-            {faqs.map((faq, index) => (
-              <div key={index} className="py-5">
-                <button
-                  type="button"
-                  onClick={() => setOpenFaq(openFaq === index ? null : index)}
-                  className="flex w-full items-center justify-between text-left text-lg font-bold text-[#0e0f0c] hover:text-[#163300] transition"
-                >
-                  <span>{faq.q}</span>
-                  <span className="text-2xl font-normal text-[#163300] ml-4">
-                    {openFaq === index ? "−" : "+"}
-                  </span>
-                </button>
-                {openFaq === index && (
-                  <p className="mt-3 text-base text-[#454745] leading-relaxed">
-                    {faq.a}
-                  </p>
+                {idx < partners.length - 1 && (
+                  <span className="h-6 w-[1.5px] border-r-[1.5px] border-dotted border-[#070607]/40 hidden sm:inline-block" />
                 )}
               </div>
             ))}
           </div>
         </section>
-      </main>
 
-      {/* Floating QR Badge (Fixed Bottom-Right) */}
-      <aside className="fixed bottom-6 right-6 z-50 hidden sm:flex flex-col items-center gap-2 rounded-[16px] bg-[#163300] p-3.5 w-[124px] shadow-2xl border border-white/10">
-        <div className="h-16 w-16 bg-white rounded-lg p-1.5 flex items-center justify-center">
-          <svg viewBox="0 0 24 24" className="h-full w-full fill-[#163300]">
-            <rect x="2" y="2" width="8" height="8" rx="1" />
-            <rect x="14" y="2" width="8" height="8" rx="1" />
-            <rect x="2" y="14" width="8" height="8" rx="1" />
-            <rect x="14" y="14" width="4" height="4" />
-            <rect x="18" y="18" width="4" height="4" />
-          </svg>
-        </div>
-        <span className="text-[11px] font-semibold text-[#9fe870] text-center leading-tight">
-          Get the Wise app
-        </span>
-      </aside>
-
-      {/* Comprehensive Wise Footer */}
-      <footer className="border-t border-[#e8ebe6] bg-white py-16 px-6 lg:px-8">
-        <div className="max-w-[1200px] mx-auto">
-          {/* Main Footer Links Columns */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-12">
-            <div>
-              <h4 className="text-sm font-bold text-[#0e0f0c] uppercase tracking-wider mb-4">
-                Transfer Money
-              </h4>
-              <ul className="space-y-2.5 text-sm text-[#454745]">
-                <li><Link href="/login" className="hover:text-[#163300]">Send money abroad</Link></li>
-                <li><Link href="/login" className="hover:text-[#163300]">Receive money</Link></li>
-                <li><Link href="/login" className="hover:text-[#163300]">Wise debit card</Link></li>
-                <li><Link href="/login" className="hover:text-[#163300]">Large amount transfers</Link></li>
-                <li><Link href="/login" className="hover:text-[#163300]">Wise Business</Link></li>
-              </ul>
+        {/* Product Pillar 1: The Rollup Engine */}
+        <section id="engine" className="rounded-[40px] bg-[#f7f6f2] p-10 sm:p-14 border border-[#070607]/10">
+          <div className="max-w-2xl mb-12">
+            <div className="inline-flex rounded-[800px] bg-[#f5f28e] px-3.5 py-1 text-xs font-medium text-[#070607] mb-4">
+              CORE INFRASTRUCTURE
             </div>
-
-            <div>
-              <h4 className="text-sm font-bold text-[#0e0f0c] uppercase tracking-wider mb-4">
-                Tools &amp; Features
-              </h4>
-              <ul className="space-y-2.5 text-sm text-[#454745]">
-                <li><Link href="#calculator" className="hover:text-[#163300]">Currency converter</Link></li>
-                <li><Link href="#pricing" className="hover:text-[#163300]">Swift / BIC codes</Link></li>
-                <li><Link href="#pricing" className="hover:text-[#163300]">IBAN codes</Link></li>
-                <li><Link href="/app" className="hover:text-[#163300]">Exchange rate alerts</Link></li>
-                <li><Link href="/app" className="hover:text-[#163300]">Compare exchange rates</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-sm font-bold text-[#0e0f0c] uppercase tracking-wider mb-4">
-                Company
-              </h4>
-              <ul className="space-y-2.5 text-sm text-[#454745]">
-                <li><Link href="/login" className="hover:text-[#163300]">About Wise</Link></li>
-                <li><Link href="/login" className="hover:text-[#163300]">Security</Link></li>
-                <li><Link href="/login" className="hover:text-[#163300]">Careers</Link></li>
-                <li><Link href="/login" className="hover:text-[#163300]">Press</Link></li>
-                <li><Link href="/login" className="hover:text-[#163300]">Modern slavery statement</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-sm font-bold text-[#0e0f0c] uppercase tracking-wider mb-4">
-                Legal &amp; Privacy
-              </h4>
-              <ul className="space-y-2.5 text-sm text-[#454745]">
-                <li><Link href="/privacy" className="hover:text-[#163300]">Privacy policy</Link></li>
-                <li><Link href="/terms" className="hover:text-[#163300]">Terms &amp; conditions</Link></li>
-                <li><Link href="/terms" className="hover:text-[#163300]">Cookie policy</Link></li>
-                <li><Link href="/app" className="hover:text-[#163300]">Complaints policy</Link></li>
-                <li><Link href="/app" className="hover:text-[#163300]">Customer support</Link></li>
-              </ul>
-            </div>
+            <h2 className="text-4xl sm:text-6xl font-black uppercase tracking-tight text-[#070607]">
+              THE ROLLUP ENGINE
+            </h2>
+            <p className="mt-4 text-base sm:text-lg font-medium text-[#070607]/70 leading-relaxed">
+              A comprehensive operating system to deploy, customize, and manage dedicated app-chains with enterprise uptime and automated infra maintenance.
+            </p>
           </div>
 
-          {/* Legal Disclaimers & Regulation Notice (Pebble #868685) */}
-          <div className="pt-8 border-t border-[#e8ebe6] text-xs text-[#868685] leading-relaxed space-y-3">
-            <p>
-              Wise Payments Limited is authorised and regulated by the Financial Conduct Authority under the Electronic Money Regulations 2011, Firm Reference 900508, for the issuing of electronic money. In the United States, Wise US Inc. is registered with FinCEN and licensed as a money transmitter in respective states.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">
-              <div className="flex items-center gap-2 font-medium text-[#454745]">
-                <span className="font-bold text-[#163300]">wise</span>
-                <span>&bull;</span>
-                <span>&copy; {new Date().getFullYear()} Wise Payments Limited. All rights reserved.</span>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="rounded-[32px] bg-white p-8 border border-[#070607]/10 flex flex-col justify-between">
+              <div>
+                <div className="h-10 w-10 rounded-full bg-[#f5f28e] flex items-center justify-center text-lg font-bold">
+                  ⚡
+                </div>
+                <h3 className="mt-6 text-xl font-black uppercase text-[#070607]">
+                  Instant Provisioning
+                </h3>
+                <p className="mt-2 text-sm text-[#070607]/70 font-medium leading-relaxed">
+                  Generate RPC endpoints, block explorers, bridge user interfaces, indexers, and testnet faucets with a single click.
+                </p>
               </div>
-              <div className="flex items-center gap-4 text-[#454745]">
-                <span>Status: All systems operational</span>
+              <div className="mt-8 pt-4 border-t border-[#070607]/10 text-xs font-mono font-bold text-[#fc5000]">
+                ZERO DEVOPS REQUIRED
               </div>
             </div>
+
+            <div className="rounded-[32px] bg-white p-8 border border-[#070607]/10 flex flex-col justify-between">
+              <div>
+                <div className="h-10 w-10 rounded-full bg-[#f5f28e] flex items-center justify-center text-lg font-bold">
+                  🧩
+                </div>
+                <h3 className="mt-6 text-xl font-black uppercase text-[#070607]">
+                  Modular Freedom
+                </h3>
+                <p className="mt-2 text-sm text-[#070607]/70 font-medium leading-relaxed">
+                  Choose Arbitrum Nitro, OP Stack, or Polygon CDK with Celestia or EigenDA. You maintain total sovereign ownership of your chain contracts.
+                </p>
+              </div>
+              <div className="mt-8 pt-4 border-t border-[#070607]/10 text-xs font-mono font-bold text-[#fc5000]">
+                TOTAL CONTRACT SOVEREIGNTY
+              </div>
+            </div>
+
+            <div className="rounded-[32px] bg-white p-8 border border-[#070607]/10 flex flex-col justify-between">
+              <div>
+                <div className="h-10 w-10 rounded-full bg-[#f5f28e] flex items-center justify-center text-lg font-bold">
+                  🛡️
+                </div>
+                <h3 className="mt-6 text-xl font-black uppercase text-[#070607]">
+                  Production Battle-Tested
+                </h3>
+                <p className="mt-2 text-sm text-[#070607]/70 font-medium leading-relaxed">
+                  Equipped with 24/7 dedicated validator monitoring, automatic client updates, DDoS mitigation, and enterprise SLAs.
+                </p>
+              </div>
+              <div className="mt-8 pt-4 border-t border-[#070607]/10 text-xs font-mono font-bold text-[#fc5000]">
+                99.99% UPTIME RECORD
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Product Pillar 2: The Metalayer */}
+        <section id="metalayer" className="rounded-[40px] bg-[#070607] p-10 sm:p-14 text-white">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+            <div className="lg:col-span-7 flex flex-col gap-4">
+              <div className="inline-flex self-start rounded-[800px] bg-[#fc5000] px-3.5 py-1 text-xs font-medium text-[#070607]">
+                THE UNIFIED NETWORK
+              </div>
+              <h2 className="text-4xl sm:text-6xl font-black uppercase tracking-tight text-white leading-tight">
+                THE METALAYER IS HERE
+              </h2>
+              <p className="text-base sm:text-lg text-white/80 font-medium leading-relaxed max-w-xl">
+                Eliminate liquidity silos. The Metalayer stitches every Caldera chain into a single, unified web of rollups with sub-second bridging, shared liquidity, and seamless intent-based execution.
+              </p>
+
+              <div className="mt-6 flex flex-wrap gap-4">
+                <Link
+                  href="/login"
+                  className="rounded-[800px] bg-[#fc5000] px-7 py-3.5 text-base font-medium text-[#070607] hover:opacity-90 transition"
+                >
+                  Join the Metalayer
+                </Link>
+                <Link
+                  href="#ecosystem"
+                  className="rounded-[40px] border border-white/30 px-7 py-3.5 text-base font-medium text-white hover:bg-white/10 transition"
+                >
+                  Explore Supported Chains
+                </Link>
+              </div>
+            </div>
+
+            {/* Inset Standout Halftone Visual */}
+            <div className="lg:col-span-5">
+              <div className="rounded-[32px] bg-[#524ae9] p-8 text-white relative overflow-hidden border border-white/20">
+                <div className="absolute inset-0 caldera-halftone opacity-50" />
+                <div className="relative z-10 flex flex-col gap-4">
+                  <div className="text-xs font-mono uppercase tracking-wider text-[#f5f28e]">
+                    INTEROP SPEED
+                  </div>
+                  <div className="text-5xl font-black leading-none text-white">
+                    &lt; 1.0 SEC
+                  </div>
+                  <p className="text-xs text-white/90 font-medium leading-relaxed">
+                    Zero-slippage cross-chain swaps and messages powered by native intent relays across all Caldera chains.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Ecosystem Showcase Grid (Content Cards) */}
+        <section id="ecosystem" className="flex flex-col gap-8">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <div className="inline-flex rounded-[800px] bg-[#f5f28e] px-3.5 py-1 text-xs font-medium text-[#070607] mb-3">
+                ECOSYSTEM SHOWCASE
+              </div>
+              <h2 className="text-4xl sm:text-6xl font-black uppercase tracking-tight text-[#070607]">
+                BUILT ON CALDERA
+              </h2>
+            </div>
+            <p className="text-sm font-medium text-[#070607]/70 max-w-md">
+              Over 50 leading Web3 applications, gaming networks, and financial protocols power their sovereign chains with Caldera.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {rollups.map((r, idx) => (
+              <div
+                key={idx}
+                className="rounded-[40px] bg-[#f7f6f2] p-8 sm:p-10 border border-[#070607]/10 flex flex-col justify-between hover:border-[#fc5000]/50 transition group"
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-6">
+                    <span className="rounded-[800px] bg-[#f5f28e] px-3 py-1 text-xs font-medium text-[#070607]">
+                      {r.tag}
+                    </span>
+                    <span className="text-xs font-mono text-[#070607]/60">
+                      {r.date}
+                    </span>
+                  </div>
+
+                  <h3 className="text-2xl sm:text-3xl font-black uppercase text-[#070607] group-hover:text-[#fc5000] transition">
+                    {r.name}
+                  </h3>
+                  <p className="mt-3 text-sm font-medium text-[#070607]/70 leading-relaxed">
+                    {r.headline}
+                  </p>
+                </div>
+
+                <div className="mt-8 pt-4 border-t border-[#070607]/10 flex justify-between items-center text-xs font-mono">
+                  <span className="text-[#070607]/60">Stack:</span>
+                  <span className="font-bold text-[#070607]">{r.framework}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Interactive Modular Stack Configurator */}
+        <section id="configurator" className="rounded-[40px] bg-[#f7f6f2] p-10 sm:p-14 border border-[#070607]/10">
+          <div className="max-w-xl mb-10">
+            <span className="inline-flex rounded-[800px] bg-[#f5f28e] px-3.5 py-1 text-xs font-medium text-[#070607] mb-3">
+              DEVELOPER EXPERIENCE
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-[#070607]">
+              CONFIGURE YOUR ROLLUP
+            </h2>
+            <p className="mt-2 text-sm sm:text-base font-medium text-[#070607]/70">
+              Customize the modular layers of your chain and get instant API deployment commands.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* Options */}
+            <div className="lg:col-span-6 space-y-6">
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-[#070607]/60 block mb-3">
+                  1. Execution Framework
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedFramework("nitro")}
+                    className={`rounded-[20px] p-4 text-left border transition ${
+                      selectedFramework === "nitro"
+                        ? "bg-[#fc5000] text-[#070607] border-[#fc5000] font-bold"
+                        : "bg-white text-[#070607] border-[#070607]/10 font-medium"
+                    }`}
+                  >
+                    Arbitrum Nitro
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedFramework("op")}
+                    className={`rounded-[20px] p-4 text-left border transition ${
+                      selectedFramework === "op"
+                        ? "bg-[#fc5000] text-[#070607] border-[#fc5000] font-bold"
+                        : "bg-white text-[#070607] border-[#070607]/10 font-medium"
+                    }`}
+                  >
+                    OP Stack
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedFramework("cdk")}
+                    className={`rounded-[20px] p-4 text-left border transition ${
+                      selectedFramework === "cdk"
+                        ? "bg-[#fc5000] text-[#070607] border-[#fc5000] font-bold"
+                        : "bg-white text-[#070607] border-[#070607]/10 font-medium"
+                    }`}
+                  >
+                    Polygon CDK
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedFramework("zksync")}
+                    className={`rounded-[20px] p-4 text-left border transition ${
+                      selectedFramework === "zksync"
+                        ? "bg-[#fc5000] text-[#070607] border-[#fc5000] font-bold"
+                        : "bg-white text-[#070607] border-[#070607]/10 font-medium"
+                    }`}
+                  >
+                    ZK Stack
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-[#070607]/60 block mb-3">
+                  2. Data Availability Layer
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedDA("celestia")}
+                    className={`rounded-[20px] p-3 text-center text-xs border transition ${
+                      selectedDA === "celestia"
+                        ? "bg-[#fc5000] text-[#070607] border-[#fc5000] font-bold"
+                        : "bg-white text-[#070607] border-[#070607]/10 font-medium"
+                    }`}
+                  >
+                    Celestia
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedDA("eigenda")}
+                    className={`rounded-[20px] p-3 text-center text-xs border transition ${
+                      selectedDA === "eigenda"
+                        ? "bg-[#fc5000] text-[#070607] border-[#fc5000] font-bold"
+                        : "bg-white text-[#070607] border-[#070607]/10 font-medium"
+                    }`}
+                  >
+                    EigenDA
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedDA("blobs")}
+                    className={`rounded-[20px] p-3 text-center text-xs border transition ${
+                      selectedDA === "blobs"
+                        ? "bg-[#fc5000] text-[#070607] border-[#fc5000] font-bold"
+                        : "bg-white text-[#070607] border-[#070607]/10 font-medium"
+                    }`}
+                  >
+                    EIP-4844 Blobs
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Code / API Command Preview */}
+            <div className="lg:col-span-6 rounded-[32px] bg-[#070607] p-6 sm:p-8 text-white font-mono text-xs w-full overflow-x-auto">
+              <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
+                <span className="text-[#f5f28e]">CALDERA CLI / API DEPLOYMENT</span>
+                <span className="text-white/40">POST /v1/rollups</span>
+              </div>
+              <pre className="text-white/80 leading-relaxed overflow-x-auto">
+{`curl -X POST https://api.caldera.xyz/v1/rollups \\
+  -H "Authorization: Bearer cld_live_token" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "chain_name": "my-app-chain",
+    "framework": "${selectedFramework}",
+    "da_layer": "${selectedDA}",
+    "settlement": "ethereum_mainnet",
+    "block_time_ms": 250,
+    "native_fee_token": "CUSTOM_ERC20",
+    "metalayer_enabled": true
+  }'`}
+              </pre>
+
+              <div className="mt-6 pt-4 border-t border-white/10 flex justify-between items-center">
+                <span className="text-white/50 text-[11px]">Ready to run locally or in cloud</span>
+                <Link
+                  href="/login"
+                  className="rounded-[800px] bg-[#fc5000] px-4 py-2 text-xs font-bold text-[#070607] hover:opacity-90 transition font-sans"
+                >
+                  Deploy via Dashboard &rarr;
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Latest News & Blog Section (Content Cards) */}
+        <section id="blog" className="flex flex-col gap-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="inline-flex rounded-[800px] bg-[#f5f28e] px-3.5 py-1 text-xs font-medium text-[#070607] mb-2">
+                INSIGHTS &amp; RESEARCH
+              </span>
+              <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-[#070607]">
+                FROM THE LAB
+              </h2>
+            </div>
+            <Link
+              href="/app"
+              className="hidden sm:inline-block text-sm font-bold text-[#070607] hover:text-[#fc5000] underline underline-offset-4"
+            >
+              View all posts &rarr;
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {articles.map((art, idx) => (
+              <div
+                key={idx}
+                className="rounded-[40px] bg-[#f7f6f2] p-8 border border-[#070607]/10 flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between text-xs font-mono mb-6">
+                    <span className="rounded-[800px] bg-[#f5f28e] px-3 py-1 font-medium text-[#070607]">
+                      {art.tag}
+                    </span>
+                    <span className="text-[#070607]/60">{art.readTime}</span>
+                  </div>
+
+                  <h3 className="text-xl sm:text-2xl font-black uppercase text-[#070607] leading-tight">
+                    {art.title}
+                  </h3>
+                </div>
+
+                <div className="mt-8 pt-4 border-t border-[#070607]/10 text-xs font-mono text-[#070607]/60">
+                  {art.date}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Dark Input Section: Stay Ahead with Pill Input Field */}
+        <section className="rounded-[40px] bg-[#070607] p-10 sm:p-14 text-white">
+          <div className="max-w-2xl mx-auto text-center flex flex-col items-center">
+            <span className="inline-flex rounded-[800px] bg-[#fc5000] px-3.5 py-1 text-xs font-medium text-[#070607] mb-4">
+              NEWSLETTER
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-white">
+              STAY AHEAD OF THE MODULAR REVOLUTION
+            </h2>
+            <p className="mt-4 text-sm sm:text-base font-medium text-white/70 max-w-lg">
+              Get technical teardowns, framework releases, and ecosystem updates sent directly to your inbox.
+            </p>
+
+            {subscribed ? (
+              <div className="mt-8 rounded-[100px] bg-[#f5f28e] text-[#070607] px-8 py-4 font-bold text-sm">
+                ✓ Thank you for subscribing to Caldera updates!
+              </div>
+            ) : (
+              <form onSubmit={handleSubscribe} className="mt-8 w-full max-w-md flex flex-col sm:flex-row gap-3">
+                <input
+                  type="email"
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                  placeholder="Enter your email address"
+                  required
+                  className="flex-1 rounded-[100px] border-[1.5px] border-white/60 bg-transparent px-6 py-3.5 text-sm font-medium text-white placeholder-white/50 outline-none focus:border-[#fc5000] transition"
+                />
+                <button
+                  type="submit"
+                  className="rounded-[800px] bg-[#fc5000] px-8 py-3.5 text-sm font-medium text-[#070607] hover:opacity-90 transition shrink-0"
+                >
+                  Subscribe
+                </button>
+              </form>
+            )}
+          </div>
+        </section>
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t border-[#070607]/10 bg-[#e2e2df] py-16 px-4 sm:px-6 max-w-[1280px] mx-auto w-full">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+          {/* Logo & Bio */}
+          <div className="col-span-2">
+            <Link href="/" className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-md bg-[#fc5000] flex items-center justify-center text-white">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
+                  <polygon points="12 2 2 22 22 22" />
+                </svg>
+              </div>
+              <span className="text-xl font-black tracking-tight text-[#070607] uppercase">
+                CALDERA
+              </span>
+            </Link>
+            <p className="mt-4 text-xs font-medium text-[#070607]/70 max-w-sm leading-relaxed">
+              Caldera is the modular rollup engine powering the next generation of high-throughput consumer and institutional decentralized applications.
+            </p>
+          </div>
+
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-[#070607] mb-3">
+              Products
+            </h4>
+            <ul className="space-y-2 text-xs font-medium text-[#070607]/70">
+              <li><Link href="#engine" className="hover:text-[#fc5000]">Rollup Engine</Link></li>
+              <li><Link href="#metalayer" className="hover:text-[#fc5000]">The Metalayer</Link></li>
+              <li><Link href="#configurator" className="hover:text-[#fc5000]">Stack Configurator</Link></li>
+              <li><Link href="/login" className="hover:text-[#fc5000]">Bridge UI</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-[#070607] mb-3">
+              Developers
+            </h4>
+            <ul className="space-y-2 text-xs font-medium text-[#070607]/70">
+              <li><a href="https://docs.caldera.xyz" target="_blank" rel="noreferrer" className="hover:text-[#fc5000]">Documentation</a></li>
+              <li><Link href="/app" className="hover:text-[#fc5000]">API Reference</Link></li>
+              <li><a href="https://github.com/calderaxyz" target="_blank" rel="noreferrer" className="hover:text-[#fc5000]">GitHub</a></li>
+              <li><Link href="/login" className="hover:text-[#fc5000]">Status</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-[#070607] mb-3">
+              Company
+            </h4>
+            <ul className="space-y-2 text-xs font-medium text-[#070607]/70">
+              <li><Link href="#blog" className="hover:text-[#fc5000]">Blog</Link></li>
+              <li><Link href="/app" className="hover:text-[#fc5000]">Careers</Link></li>
+              <li><Link href="/terms" className="hover:text-[#fc5000]">Terms of Service</Link></li>
+              <li><Link href="/privacy" className="hover:text-[#fc5000]">Privacy Policy</Link></li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="pt-8 border-t border-[#070607]/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-medium text-[#070607]/60">
+          <div>
+            &copy; {new Date().getFullYear()} Caldera Technologies, Inc. All rights reserved.
+          </div>
+          <div className="flex gap-6">
+            <a href="https://x.com/Calderaxyz" target="_blank" rel="noreferrer" className="hover:text-[#070607]">X / Twitter</a>
+            <a href="https://discord.gg/caldera" target="_blank" rel="noreferrer" className="hover:text-[#070607]">Discord</a>
+            <a href="https://t.me/calderaxyz" target="_blank" rel="noreferrer" className="hover:text-[#070607]">Telegram</a>
           </div>
         </div>
       </footer>

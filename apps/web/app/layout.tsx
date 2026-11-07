@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Wise: The International Account | Money Without Borders",
-  description: "Save when you send, spend and receive money globally with the Wise multi-currency account and international debit card.",
+  title: "Caldera — The Internet of Rollups",
+  description: "Caldera makes it effortless to launch and scale dedicated, high-performance rollups with Arbitrum Nitro, OP Stack, Polygon CDK, and ZK Stack.",
 };
 
 export default function RootLayout({
@@ -13,7 +13,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="h-full">
-      <body className="min-h-full flex flex-col bg-white text-[#0e0f0c] font-sans antialiased">
+      <body className="min-h-full flex flex-col bg-[#e2e2df] text-[#070607] font-sans antialiased selection:bg-[#fc5000] selection:text-white">
         {children}
       </body>
     </html>
