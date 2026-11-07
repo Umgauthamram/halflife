@@ -12,11 +12,11 @@
 - **Status**: Complete & Production-Verified
 
 ## 3. Recent Progress (Rolling Snapshot - Max 5)
-- Rebuilt landing page with exact Caldera hero stepped halftone layout from user reference screenshot
-- Incorporated Half-Life core content: "The Internet Of Freshness", empirical answer decay on Telegraph, Governor algorithm, and ClawHub skill for autonomous personal agents
-- Updated branding and navigation: switched logo emblem to Star icon (`★`), removed social media links/icons, and removed Leaderboard from landing page
+- Created dedicated authenticated `/app/atlas` inside the dashboard shell with full AppLayout navigation and direct "Deploy Agent" action
+- Updated `apps/web/app/app/layout.tsx` to link to `/app/atlas` so logged-in users remain inside the app shell
+- Added automatic redirects on `/` and `/atlas`: authenticated users are seamlessly routed to `/app` and `/app/atlas`, preventing exposure to landing page or sign-in buttons
 - Resolved NextAuth v5 `MissingSecret` error by providing fallback secret in `apps/web/auth.ts`
-- All 53/53 tests pass, clean Next.js production build across all 19 routes, verified on `origin/main`
+- All 53/53 tests pass, clean Next.js production build across all 20 routes
 
 ## 4. Next Immediate Steps
 - [ ] Record final demo video following `docs/video-script.md`

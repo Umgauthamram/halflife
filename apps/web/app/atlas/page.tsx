@@ -1,9 +1,16 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { auth } from "../../auth";
 import { getDb } from "../../lib/mongodb";
 
 export const dynamic = "force-dynamic";
 
 export default async function AtlasPage() {
+  const session = await auth();
+  if (session?.user) {
+    redirect("/app/atlas");
+  }
+
   const db = await getDb();
 
   const intents = ["FX_NOW", "WEATHER_FORECAST_VERIFY", "SANCTIONS_SCREENING_MATCH"];
