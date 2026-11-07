@@ -17,10 +17,6 @@ export default async function AppLayout({
 
   return (
     <div className="flex min-h-screen flex-col bg-[var(--background)] text-[var(--foreground)] selection:bg-[var(--foreground)] selection:text-[var(--background)]">
-      {/* Status Ribbon */}
-      <div className="border-b border-[var(--border)] bg-[var(--surface)] px-4 py-1.5 text-center text-xs font-mono uppercase tracking-wider text-[var(--secondary)]">
-        Telegraph Network
-      </div>
 
       {/* Main App Header */}
       <header className="border-b border-[var(--border)] bg-[var(--surface)]">

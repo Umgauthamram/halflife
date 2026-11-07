@@ -23,6 +23,7 @@ declare module "next-auth" {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "halflife-default-super-secret-key-at-least-32-chars-long",
   adapter: MongoDBAdapter(clientPromise, {
     databaseName: process.env.DB_NAME || "halflife",
   }),

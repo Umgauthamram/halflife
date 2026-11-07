@@ -13,10 +13,10 @@
 
 ## 3. Recent Progress (Rolling Snapshot - Max 5)
 - Rebuilt landing page with exact Caldera hero stepped halftone layout from user reference screenshot
-- Incorporated Half-Life core content: "The Internet Of Freshness", empirical answer decay on Telegraph, Governor algorithm ($Risk = Stake \times Drift > Price$), and ClawHub skill for autonomous personal agents
-- Integrated floating pill navigation with Half-Life logo, dotted vertical dividers, Atlas/Governor/Leaderboard/Benchmarks links, and orange action button
-- Added four Ember stat feature cards (300s FX Half-Life, 64% Redundant Spends Prevented, 100% On-Chain Merkle Verified, 3 Target Agent Buyers)
-- All 53/53 tests pass, clean Next.js production build across all 19 routes, pushed to `origin/main`
+- Incorporated Half-Life core content: "The Internet Of Freshness", empirical answer decay on Telegraph, Governor algorithm, and ClawHub skill for autonomous personal agents
+- Updated branding and navigation: switched logo emblem to Star icon (`★`), removed social media links/icons, and removed Leaderboard from landing page
+- Resolved NextAuth v5 `MissingSecret` error by providing fallback secret in `apps/web/auth.ts`
+- All 53/53 tests pass, clean Next.js production build across all 19 routes, verified on `origin/main`
 
 ## 4. Next Immediate Steps
 - [ ] Record final demo video following `docs/video-script.md`
