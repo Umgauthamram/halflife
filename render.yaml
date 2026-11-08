@@ -1,0 +1,35 @@
+services:
+  # Option A: Render Background Worker
+  - type: worker
+    name: half-life-worker
+    runtime: node
+    region: oregon
+    buildCommand: pnpm install && pnpm --filter @half-life/worker... build
+    startCommand: pnpm --filter @half-life/worker start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_NAME
+        value: halflife
+      - key: CHAIN_ID
+        value: "11155111"
+      - key: TELEGRAPH_CONTRACT
+        value: "0x3624EB012B5E998BB57B6bE6C9Cfc9c4bc5eb99b"
+      - key: TELEGRAPH_NODE_URL
+        value: "http://13.237.89.59:7148"
+      - key: TELEGRAPH_WS_URL
+        value: "wss://13.237.89.59:7148/ws"
+      - key: OPERATOR_WALLET_ADDRESS
+        value: "0xB980b2dBA0004e12f8efF99E5978aB1fa8179517"
+      - key: USDC_ADDRESS
+        value: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"
+      - key: SAMPLER_DAILY_CAP_USDC
+        value: "10.0"
+      - key: MONGODB_URI_WORKER
+        sync: false
+      - key: SEPOLIA_RPC_URL
+        sync: false
+      - key: metamask_private_key
+        sync: false
+      - key: KEY_ENCRYPTION_KEY
+        sync: false
