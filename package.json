@@ -6,6 +6,7 @@
   "scripts": {
     "dev:web": "pnpm --filter @half-life/web dev",
     "build": "pnpm --filter \"@half-life/*\" build",
+    "build:worker": "pnpm --filter @half-life/worker... build",
     "test": "pnpm --filter \"@half-life/*\" test",
     "lint": "pnpm --filter \"@half-life/*\" lint"
   },

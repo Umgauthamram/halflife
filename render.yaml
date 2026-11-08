@@ -4,7 +4,7 @@ services:
     name: half-life-worker
     runtime: node
     region: oregon
-    buildCommand: pnpm install && pnpm --filter @half-life/worker... build
+    buildCommand: pnpm install && pnpm build:worker
     startCommand: pnpm --filter @half-life/worker start
     envVars:
       - key: NODE_ENV
