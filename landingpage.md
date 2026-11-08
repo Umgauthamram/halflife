@@ -1,81 +1,66 @@
-# Wise — Style Reference
-> deep moss with lime voltage. Lime sparks on a near-black forest floor, with massive blocky display type announcing every move.
+design:
+
+# Caldera — Style Reference
+> forge fire on warm limestone. The canvas is raw warm plaster, and every orange element reads as glowing embers pressed into the surface.
 
 **Theme:** light
 
 Source measurements are normalized; roles and recommendations are interpreted. Font summary lists are independent, not paired by position. HTML examples are reconstructions, not source components.
 
-Wise speaks in a confident, slightly loud voice: a deep forest green (#163300) carries most of the surface area — text, nav, dark sections, icons — while a single electric lime (#9fe870) acts as functional punctuation on CTAs, active tabs, and key highlights. The display type is almost aggressive: Wise Sans at weight 900, tightly tracked, shouted across the hero in 100px+ block letters. The rest of the system stays restrained on a near-white canvas with soft gray surfaces (#e8ebe6). Components are pill-shaped by default — buttons, nav segments, flag thumbnails, image masks — with gentle 10px radii reserved for cards and inputs. Color rarely gradients; instead, the lime–forest pairing inverts cleanly when sections go dark, creating rhythm without decoration.
+Caldera runs on a warm limestone canvas flooded with molten orange. The interface is flat and unshadowed, letting ultrabold compressed type at near-architectural scale (up to 189px) carry all structural weight. A single vivid orange (#fc5000) acts as the only aggressive chromatic accent against monochrome warm grays, with a violet plasma reserved for the hero halftone and a sulfur yellow for tags. The visual language is volcanic: condensed heavy letterforms, halftone dot patterns, 40px radii on cards and buttons, and 800px pill controls — heat contained within a soft, paper-like surface.
 
 ## Tokens — Colors
 
 | Name | Value | Token | Role |
 |------|-------|-------|------|
-| Forest Ink | `#163300` | `--color-forest-ink` | Dominant brand dark — nav text, dark section backgrounds, primary copy on light surfaces, icon strokes, filled navigation pills. This is the brand's gravity: wherever you need weight or authority, you reach for Forest Ink |
-| Lime Voltage | `#9fe870` | `--color-lime-voltage` | Green supporting accent for decorative details and low-frequency emphasis. Do not promote it to the primary CTA color |
-| Spruce | `#054d28` | `--color-spruce` | Secondary dark green for card surfaces, supporting iconography, and tonal depth on dark sections where Forest Ink is too heavy |
-| Linen Mist | `#e2f6d5` | `--color-linen-mist` | Pale green wash for soft highlight surfaces, tinted card backgrounds, nav hover states. A whisper of the brand green for low-emphasis containers |
-| Signal Blue | `#0b4c72` | `--color-signal-blue` | Blue supporting accent for decorative details and low-frequency emphasis |
-| Alarm Red | `#cb272f` | `--color-alarm-red` | Red supporting accent for decorative details and low-frequency emphasis. Use as a supporting accent, not as a status color |
-| Charcoal | `#454745` | `--color-charcoal` | Primary text, body copy, dense UI — slightly warm black that feels softer than pure #000 against white |
-| Obsidian | `#0e0f0c` | `--color-obsidian` | Display headlines, high-contrast headings, pure-black moments in nav and hero. Slightly green-tinted black, not neutral gray |
-| Pebble | `#868685` | `--color-pebble` | Muted secondary text, placeholder copy, icon strokes, input borders. The mid-gray that recedes |
-| Slate | `#6a6c6a` | `--color-slate` | Supporting body text, helper labels, subdued iconography. One step darker than Pebble for slightly more emphasis |
-| Fog | `#e8ebe6` | `--color-fog` | Card surfaces, section dividers, subtle panel backgrounds on the white canvas. Green-tinted off-white, not pure neutral |
-| Paper | `#ffffff` | `--color-paper` | Page canvas, inverted card surfaces, button text on lime fill |
+| Ember | `#fc5000` | `--color-ember` | Primary action buttons, featured stat cards, key visual highlights — the only aggressive chromatic accent; its vivid saturation against warm grays creates urgency without needing supporting decorative weight |
+| Plasma Violet | `#524ae9` | `--color-plasma-violet` | Hero halftone gradient base, single secondary card surface — appears almost exclusively in the hero dot pattern and one standout card; never used for controls |
+| Sulfur | `#f5f28e` | `--color-sulfur` | Tag and category badge backgrounds, small highlight washes — the soft yellow that labels blog post categories and program announcements |
+| Limestone | `#f7f6f2` | `--color-limestone` | Card surfaces, content block backgrounds, secondary button fills — the lighter warm off-white that lifts elements off the page canvas |
+| Pumice | `#e2e2df` | `--color-pumice` | Page canvas, dominant background — the warm medium-gray that grounds every section; slightly darker than card surfaces to create subtle figure/ground separation without shadows |
+| Obsidian | `#070607` | `--color-obsidian` | Primary text, headings, link text, button borders — near-black with a barely-warm cast matching the canvas warmth |
+| Chalk | `#ffffff` | `--color-chalk` | Dark-section text, input text on dark backgrounds, high-contrast overlays — pure white used only where maximum contrast against dark surfaces is required |
 
 ## Tokens — Typography
 
-### Inter — Body, UI, labels, and sub-headings across the entire product. The 700 weight handles mid-tier headings (36–45px), 500–600 for subheadings and labels, 400 for body and captions. Inter does the quiet work while Wise Sans shouts. · `--font-inter`
-- **Substitute:** Inter (native Google Fonts)
-- **Weights:** 400,500,600,700
-- **Sizes:** 12px, 14px, 16px, 18px, 20px, 22px, 25px, 36px, 45px, 61px, 300px
-- **Line height:** 0.72, 1.00, 1.10, 1.25, 1.30, 1.40, 1.43, 1.44, 1.50, 1.55, 1.63, 1.71, 1.86, 2.17
-- **Letter spacing:** -0.030em at 105px, -0.015em at 61px, -0.011em at 36px, -0.009em at 25px, -0.007em at 18px, -0.006em at 16px, -0.005em at 14px, -0.003em at 12px
-- **OpenType features:** `"calt"`
-- **Role:** Body, UI, labels, and sub-headings across the entire product. The 700 weight handles mid-tier headings (36–45px), 500–600 for subheadings and labels, 400 for body and captions. Inter does the quiet work while Wise Sans shouts.
+### PP Neue Corp Compact — All headings and display text. A custom condensed ultrabold face that gives headlines an industrial, sign-painted weight. The 189px display size in the hero is the signature — compressed, almost structural rather than typographic. Feature settings "ss06" and "ss10" activate alternate letterforms and spacing for a more aggressive condensed rhythm. Positive tracking (+0.02em) is unusual for display sizes and keeps the heavy strokes from feeling claustrophobic at 80–189px. · `--font-pp-neue-corp-compact`
+- **Substitute:** Bebas Neue, Anton, Druk Wide Bold
+- **Weights:** 400 (Ultrabold cut)
+- **Sizes:** 26px, 32px, 40px, 48px, 56px, 64px, 80px, 96px, 189px
+- **Line height:** 0.94–1.20
+- **Letter spacing:** 0.64px at 32px (0.02em), scaling proportionally to ~3.78px at display 189px
+- **OpenType features:** `"ss06", "ss10"`
+- **Role:** All headings and display text. A custom condensed ultrabold face that gives headlines an industrial, sign-painted weight. The 189px display size in the hero is the signature — compressed, almost structural rather than typographic. Feature settings "ss06" and "ss10" activate alternate letterforms and spacing for a more aggressive condensed rhythm. Positive tracking (+0.02em) is unusual for display sizes and keeps the heavy strokes from feeling claustrophobic at 80–189px.
 
-### Wise Sans — Display headlines — the brand's signature shout. Ultra-heavy weight 900 at 89–105px with tight -0.03em tracking makes every headline a block-letter announcement. Used sparingly: hero, section openers, campaign moments. · `--font-wise-sans`
-- **Substitute:** Inter Black (900) with -0.04em tracking
-- **Weights:** 900
-- **Sizes:** 40px, 52px, 59px, 89px, 105px, 300px
-- **Line height:** 0.85, 1.50
-- **Letter spacing:** -0.0020em
-- **OpenType features:** `"calt"`
-- **Role:** Display headlines — the brand's signature shout. Ultra-heavy weight 900 at 89–105px with tight -0.03em tracking makes every headline a block-letter announcement. Used sparingly: hero, section openers, campaign moments.
+### DM Sans — Body copy, nav links, button labels, supporting headings up to 30px. Medium weight throughout is deliberate — Regular would feel too thin against the ultrabold display type, and Bold would compete with it. DM Sans provides a humanist, slightly geometric counterpoint to the industrial display face. · `--font-dm-sans`
+- **Substitute:** Inter, Manrope
+- **Weights:** 500 (Medium only — never Regular or Bold)
+- **Sizes:** 14px, 16px, 18px, 30px
+- **Line height:** 1.20–1.55
+- **Role:** Body copy, nav links, button labels, supporting headings up to 30px. Medium weight throughout is deliberate — Regular would feel too thin against the ultrabold display type, and Bold would compete with it. DM Sans provides a humanist, slightly geometric counterpoint to the industrial display face.
 
-### monospace — monospace — detected in extracted data but not described by AI · `--font-monospace`
+### System sans-serif — Captions, meta text, dates, micro-labels. Only used at 12px where weight and brand presence matter less than size economy. · `--font-system-sans-serif`
 - **Weights:** 400
-- **Sizes:** 300px
-- **Line height:** 
-- **OpenType features:** `"calt"`
-- **Role:** monospace — detected in extracted data but not described by AI
-
-### sans-serif — sans-serif — detected in extracted data but not described by AI · `--font-sans-serif`
-- **Weights:** 400
-- **Sizes:** 300px
-- **Line height:** 
-- **OpenType features:** `"calt"`
-- **Role:** sans-serif — detected in extracted data but not described by AI
+- **Sizes:** 12px
+- **Line height:** 1.20
+- **Role:** Captions, meta text, dates, micro-labels. Only used at 12px where weight and brand presence matter less than size economy.
 
 ### Type Scale
 
 | Role | Family | Weight | Size | Line Height | Letter Spacing | Token |
 |------|--------|--------|------|-------------|----------------|-------|
-| micro | — | — | 12px | 1.63 | -0.036px | `--text-micro` |
-| caption | — | — | 14px | 1.55 | -0.07px | `--text-caption` |
-| body-sm | — | — | 16px | 1.5 | -0.096px | `--text-body-sm` |
-| body | — | — | 18px | 1.5 | -0.126px | `--text-body` |
-| body-lg | — | — | 25px | 1.3 | -0.225px | `--text-body-lg` |
-| subheading | — | — | 36px | 1.25 | -0.396px | `--text-subheading` |
-| heading-sm | — | — | 45px | 1.1 | -0.495px | `--text-heading-sm` |
-| heading | — | — | 61px | 1.1 | -0.915px | `--text-heading` |
-| heading-lg | — | — | 89px | 0.85 | -2.67px | `--text-heading-lg` |
-| display | — | — | 105px | 0.85 | -3.15px | `--text-display` |
+| caption | — | — | 12px | 1.2 | — | `--text-caption` |
+| body-sm | — | — | 14px | 1.2 | — | `--text-body-sm` |
+| body | — | — | 16px | 1.55 | — | `--text-body` |
+| subheading | — | — | 26px | 1.2 | — | `--text-subheading` |
+| heading-sm | — | — | 30px | 1.5 | — | `--text-heading-sm` |
+| heading | — | — | 32px | 1 | 0.64px | `--text-heading` |
+| heading-lg | — | — | 48px | 1 | — | `--text-heading-lg` |
+| heading-2xl | — | — | 80px | 1.1 | — | `--text-heading-2xl` |
+| heading-3xl | — | — | 96px | 0.95 | — | `--text-heading-3xl` |
+| display | — | — | 189px | 0.94 | — | `--text-display` |
 
 ## Tokens — Spacing & Shapes
-
-**Base unit:** 4px
 
 **Density:** comfortable
 
@@ -85,188 +70,170 @@ Wise speaks in a confident, slightly loud voice: a deep forest green (#163300) c
 |------|-------|-------|
 | 4 | 4px | `--spacing-4` |
 | 8 | 8px | `--spacing-8` |
+| 9 | 9px | `--spacing-9` |
+| 10 | 10px | `--spacing-10` |
 | 12 | 12px | `--spacing-12` |
 | 16 | 16px | `--spacing-16` |
+| 18 | 18px | `--spacing-18` |
 | 20 | 20px | `--spacing-20` |
 | 24 | 24px | `--spacing-24` |
-| 28 | 28px | `--spacing-28` |
 | 32 | 32px | `--spacing-32` |
 | 40 | 40px | `--spacing-40` |
-| 44 | 44px | `--spacing-44` |
 | 48 | 48px | `--spacing-48` |
 | 56 | 56px | `--spacing-56` |
 | 64 | 64px | `--spacing-64` |
-| 100 | 100px | `--spacing-100` |
-| 124 | 124px | `--spacing-124` |
+| 80 | 80px | `--spacing-80` |
+| 92 | 92px | `--spacing-92` |
 
 ### Border Radius
 
 | Element | Value |
 |---------|-------|
-| tags | 9999px |
-| cards | 10px |
-| inputs | 10px |
-| buttons | 9999px |
-| imageMasks | 1000px |
-| largeCards | 28px |
-| navSegments | 9999px |
-
-### Shadows
-
-| Name | Value | Token |
-|------|-------|-------|
-| subtle | `rgba(14, 15, 12, 0.12) 0px 0px 0px 1px` | `--shadow-subtle` |
-| subtle-2 | `rgb(134, 134, 133) 0px 0px 0px 1px inset` | `--shadow-subtle-2` |
-| xl | `rgba(0, 0, 0, 0.15) 0px 10px 32px 0px, rgba(0, 0, 0, 0.04...` | `--shadow-xl` |
-| lg | `rgba(0, 0, 0, 0.08) 0px 6px 20px 0px` | `--shadow-lg` |
+| cards | 40px |
+| pills | 800px |
+| small | 16px |
+| inputs | 100px |
+| medium | 20px |
+| buttons | 40px |
 
 ### Layout
 
-- **Page max-width:** 1200px
-- **Section gap:** 64-80px
-- **Card padding:** 24px
-- **Element gap:** 8-12px
+- **Page max-width:** 1280px
+- **Section gap:** 80px
+- **Card padding:** 40px
+- **Element gap:** 16px
 
 ## Components
 
-### Primary CTA Pill Button
-**Role:** The signature action element — filled lime pill that signals "do this next."
+### Primary CTA Button
+**Role:** Main conversion action
 
-Fully rounded (9999px radius) button with Lime Voltage (#9fe870) fill and Charcoal (#454745) or Forest Ink (#163300) text. Padding 11px vertical, 24px horizontal. Inter weight 500 at 16px. No border, no shadow — the fill does all the work.
+Filled Ember (#fc5000) with Obsidian (#070607) text. 800px border-radius (full pill). Padding 12px vertical, 24px horizontal. DM Sans 500 weight at 16px. No shadow. The pill shape is the most distinctive control shape in the system — never rectangular.
 
-### Outlined Pill Button
-**Role:** Secondary action in the nav and inline CTAs.
+### Secondary Pill Button
+**Role:** Alternative action or paired CTA
 
-White fill, 1px Forest Ink border, 9999px radius. Same padding as primary. Used for "Sign up" in the header and non-primary calls to action where the lime would compete with a primary action nearby.
+Transparent background, 1.5px Obsidian (#070607) border, Obsidian text. 40px border-radius. Padding 16px all sides. DM Sans 500 at 16px. Border style is solid here, not dotted. Sits beside the primary CTA as the quieter counterpart.
 
-### Text Link Button
-**Role:** Inline secondary action with low visual weight.
+### Outlined Ghost Link
+**Role:** Low-emphasis text link or nav item
 
-Underlined Forest Ink text at 16px Inter weight 500, no background, no border. Pairs with the primary CTA when two adjacent actions are needed (e.g. "Open an account" + "Send money now").
+Transparent background, no visible border, Obsidian text. 800px pill radius. Padding 0 vertical, 12px horizontal. DM Sans 500 at 16px. Used for nav items and inline links — relies on color and position rather than container weight.
 
-### Top Navigation Bar
-**Role:** Persistent header with brand, section switcher, and account access.
+### Stat Feature Card
+**Role:** Highlight key metrics (TVL, transactions, etc.)
 
-White background, 64px height. Logo left, three-segment pill nav (Personal / Business / Platform) with 9999px radius and Forest Ink text, right cluster has language flag, Help, Log in, and outlined Sign up pill.
+Ember (#fc5000) solid background, Chalk (#ffffff) text. 40px border-radius. Padding 40px on all sides. No shadow. The large metric number uses PP Neue Corp Compact at 80px+; the label above uses DM Sans 500 at 14–16px. These cards are the system’s most visually dominant elements after the hero.
 
-### Segmented Tab Control
-**Role:** In-page section switcher — single active state in lime.
+### Content Card
+**Role:** Blog posts, announcements, program entries
 
-Pill container (9999px radius) holding multiple text labels. Active tab: Lime Voltage fill with Charcoal text. Inactive tabs: transparent with Charcoal text. ~40px height, 12px horizontal padding per segment.
+Limestone (#f7f6f2) background, no border, no shadow. 40px border-radius. Padding 40px all sides. Contains a category tag, headline (PP Neue Corp Compact 26–32px in Obsidian), and date metadata. The image area at the top can be a halftone or solid Ember block.
 
-### Display Headline
-**Role:** The brand's voice — used in hero and major section openers.
+### Plasma Hero Card
+**Role:** Single standout content surface
 
-Wise Sans weight 900 at 89–105px, line-height 0.85, letter-spacing -3.15px. Charcoal (#454745) or Obsidian (#0e0f0c) on light, Lime Voltage on dark sections. Set as block text, often in ALL CAPS for hero moments.
+Plasma Violet (#524ae9) background with white halftone dot pattern overlay. 40px border-radius. Used sparingly — appears once as a signature visual anchor. No shadow.
 
-### Feature Row
-**Role:** Three-column trust signal block — icon + heading + supporting line.
+### Category Tag Badge
+**Role:** Label blog posts and announcements
 
-Single-column-on-mobile, three-column-on-desktop. Icon (24px, Charcoal stroke) at top, heading in Inter 700 at 18px, body in Inter 400 at 16px Pebble. Generous 24px vertical gap between icon and heading.
+Sulfur (#f5f28e) background, Obsidian (#070607) text. Pill shape (800px radius). DM Sans 500 at 12–14px. Padding approximately 3–4px vertical, 8–10px horizontal. Small, bright, and functionally pure — the only yellow element in the system.
 
-### Country Grid Item
-**Role:** Flag thumbnail + country name link in a 5-column grid.
+### Navigation Bar
+**Role:** Top-level site navigation
 
-Circular flag thumbnail (1000px radius, ~56px diameter), 12px gap to country name in Inter 500 at 16px Forest Ink. Name is a text link with no underline at rest, underline on hover. Items sit in a generous grid with ~32px row gap.
+Pumice (#e2e2df) page background continues through. Nav items are Obsidian text in DM Sans 500 at 16px, separated by 9px gaps. The entire nav row can sit inside a Limestone (#f7f6f2) pill container with 800px radius — a signature element. Logo lockup (mountain icon + wordmark) sits left, social icons and CTA right.
 
-### Dark Section Card
-**Role:** Inverted surface for emphasis — used for the send-money CTA block.
+### Hero Halftone Block
+**Role:** Hero section visual centerpiece
 
-Forest Ink (#163300) background, 28px radius, 40px padding. Lime Voltage text for headline, Paper for body. Contains an inset white card (10px radius, 16px padding) for the currency selector.
-
-### Currency Selector Pill
-**Role:** Interactive country/currency picker with a "Change" action.
-
-White pill inside a dark section card. Left: circular flag (24px) + country name in Charcoal Inter 500. Right: outlined "Change" button in Forest Ink. 9999px radius, 8px vertical padding.
+Large rounded rectangle filled with a Plasma Violet (#524ae9) to Ember (#fc5000) gradient overlaid with an orange halftone dot pattern. 40px border-radius. Dimensions are hero-scale (roughly 50% of viewport width). The halftone effect is the system’s most distinctive visual signature — pixel-art-like, high-density dot grid that fades to solid orange at the top right.
 
 ### Input Field
-**Role:** Form input — used for amounts, emails, references.
+**Role:** Form input on dark sections
 
-10px radius, 1px Pebble (#868685) border, 12px vertical and 16px horizontal padding. Inter 400 at 16px. Focus state: Forest Ink border, no glow ring.
+Transparent background, 1.5px Chalk (#ffffff) border. 100px border-radius (pill). Padding 24px vertical, 32px left, 64px right. Chalk text. DM Sans 500. Used in dark/contrast sections only.
 
-### Floating QR Badge
-**Role:** Persistent "Get the Wise app" download prompt.
+### Partner Logo Strip
+**Role:** Display ecosystem partners or integrations
 
-Forest Ink (#163300) rounded square (16px radius), fixed bottom-right, 120px wide. QR code in Paper at top, "Get the Wise app" label in Lime Voltage Inter 500 at 12px below.
+Limestone (#f7f6f2) background card, 40px radius, 40px padding. Logos arranged in a single row with consistent height, separated by vertical 1.5px Obsidian dotted dividers. No individual logo containers — flat inline treatment.
 
-### Badge / Tag
-**Role:** Small status labels and category tags.
+### Dotted Divider
+**Role:** Section separator and decorative detail
 
-9999px radius, 8px vertical and 12px horizontal padding. Linen Mist (#e2f6d5) background with Forest Ink text, or Forest Ink background with Lime Voltage text. Inter 500 at 12px.
+1.5px dotted line in Obsidian (#070607). Used as vertical dividers in nav and partner strips, and occasionally as horizontal section breaks. The dotted (not dashed, not solid) style is a small but consistent signature detail.
 
 ## Do's and Don'ts
 
 ### Do
-- Set display headlines in Wise Sans weight 900 with letter-spacing -3.15px at 105px; the extreme heaviness is the brand's signature — don't soften it to 700.
-- Use Lime Voltage (#9fe870) exclusively for primary action fills and active states; one lime element per visible viewport section is usually enough.
-- Default to 9999px radius for all buttons, tags, and nav segments — pill shapes are foundational, not decorative.
-- Use Forest Ink (#163300) for text and dark surfaces, not pure black; the green-tinted near-black is warmer and more on-brand.
-- Apply tight negative letter-spacing at large sizes (-0.030em at 100px+ down to -0.003em at 12px); headings should feel compact, not airy.
-- Pair a filled primary CTA with an underlined text link as the secondary action — never two filled buttons side by side.
-- Invert section backgrounds from white to Forest Ink to create rhythm; the lime text on dark green is the system's built-in emphasis.
+- Use PP Neue Corp Compact at 48px or larger for any heading that needs to feel structural — below 40px the ultrabold weight overwhelms and loses its industrial character
+- Apply 40px border-radius to all cards, content blocks, and non-pill buttons as the default surface radius
+- Use 800px border-radius (full pill) for all buttons, tags, nav containers, and small interactive elements
+- Set primary CTAs to Ember (#fc5000) with Obsidian (#070607) text, sized at 12px/24px padding — never rectangular, always pill-shaped
+- Keep body text at DM Sans 500 (Medium) — never drop to Regular weight, which reads as anemic against the ultrabold display type
+- Use the halftone dot pattern (orange dots on violet) as the hero/signature visual treatment — it is the system’s most recognizable motif
+- Layer surfaces using color contrast (Pumice canvas → Limestone cards → Ember features) rather than shadows or borders
 
 ### Don't
-- Don't use Charcoal (#454745) for display headlines — reserve Obsidian (#0e0f0c) or Forest Ink for maximum contrast at large sizes.
-- Don't introduce gradients, drop shadows beyond hairline borders, or decorative blurs — the system is flat by design.
-- Don't use Lime Voltage as text color on light backgrounds; its contrast is too low. It only works as fill or on dark green.
-- Don't use sharp corners (0–4px radius) on buttons, tags, or nav elements; pills are the default shape language.
-- Don't set display headlines in Inter — Wise Sans 900 is the only acceptable voice for 60px+ type.
-- Don't stack multiple lime elements close together; space them so the accent reads as a single punctuation mark.
-- Don't use #000000 for body text; Charcoal (#454745) at 18px on white is the baseline that keeps the page from feeling harsh.
+- Do not add drop shadows to any element — the system is intentionally flat; shadows would undermine the paper-like warmth
+- Do not use rectangular (low-radius) buttons — the pill/40px-radius treatment is non-negotiable
+- Do not introduce additional accent colors beyond Ember, Plasma Violet, and Sulfur — the palette is deliberately constrained to three chromatic tones
+- Do not use Regular or Bold weights of DM Sans for body — Medium (500) is the only correct weight
+- Do not set headings below 26px or above 189px — the display type only works at architectural scale
+- Do not use Plasma Violet for buttons or controls — it is reserved for the hero halftone and a single accent card
+- Do not apply negative letter-spacing to PP Neue Corp Compact — the +0.02em positive tracking is intentional at display sizes to prevent stroke collision
 
 ## Surfaces
 
 | Level | Name | Value | Purpose |
 |-------|------|-------|---------|
-| 0 | Paper | `#ffffff` | Page canvas — the default background for all content sections |
-| 1 | Fog | `#e8ebe6` | Card surfaces, soft panels, and section backgrounds on the white canvas |
-| 2 | Linen Mist | `#e2f6d5` | Tinted highlight surfaces — pale green wash for accent containers and hover states |
-| 3 | Lime Voltage | `#9fe870` | Active surface — selected tabs, primary CTA fill, emphasis zones |
-| 4 | Forest Ink | `#163300` | Inverted surface — dark section backgrounds, nav, high-contrast blocks |
+| 0 | Pumice Canvas | `#e2e2df` | Page background — warm medium-gray that grounds all content |
+| 1 | Limestone Surface | `#f7f6f2` | Cards, content blocks, secondary buttons — lighter warm off-white |
+| 2 | Ember Feature | `#fc5000` | Featured stat cards and emphasis surfaces — the only chromatic surface elevation |
+| 3 | Plasma Hero | `#524ae9` | Hero halftone block — reserved for the homepage hero gradient overlay |
 
 ## Elevation
 
-- **Cards:** `rgba(0, 0, 0, 0.15) 0px 10px 32px 0px, rgba(0, 0, 0, 0.04) 0px 40px 40px 0px`
-- **Elevated panels:** `rgba(0, 0, 0, 0.08) 0px 6px 20px 0px`
-- **Input/button focus:** `rgb(134, 134, 133) 0px 0px 0px 1px inset`
-- **Icon containers:** `rgba(14, 15, 12, 0.12) 0px 0px 0px 1px`
+Deliberately shadowless. The design relies on color contrast (warm gray vs lighter off-white vs vivid orange) and generous 40px corner radii to create surface hierarchy. No element casts a shadow anywhere in the system — the flatness keeps the heavy type and bold orange from feeling overwrought.
 
 ## Imagery
 
-Painted 3D-style illustrations of a globe with gold coins establish the brand's visual world — tactile, slightly surreal, rendered with soft gradients and warm light. Photography is minimal; when used, it's high-key and lifestyle-casual. Country flags appear as circular thumbnails in a 5-column grid — the only "icon" system is national identity. No abstract graphics, no stock patterns. The globe and coins are the recurring mascot motif, signaling global reach through a single warm, optimistic object rather than a montage.
-
-## Layout
-
-Max-width 1200px centered container, with hero and dark sections going full-bleed. Hero pattern: centered massive display headline over white space, with a large illustration (globe) breaking the lower edge of the viewport. Section rhythm alternates white → light green band → dark Forest Ink section, creating a natural color cadence. Content arrangement is predominantly centered stacks in the hero, then 2-column text+visual or 3-column feature rows in supporting sections. A 5-column flag grid handles the country directory. Navigation is a single sticky top bar with a segmented pill switcher. The QR badge floats fixed in the bottom-right corner across all scroll positions.
+Imagery is minimal and deliberate. The hero uses an abstract halftone dot pattern (orange dots on a violet-to-orange gradient) rather than photography — it functions as brand artwork, not decoration. Product and announcement cards use either solid Ember blocks or the Plasma Violet halftone as image-area fills, keeping a consistent graphic system. Partner/integration logos are rendered as monochrome marks on light backgrounds. No photography, no 3D renders, no lifestyle imagery anywhere. Icons are small, monochrome, and minimal — Discord, X, and Telegram sit in the nav as simple glyphs. The visual language is graphic and editorial, not photographic: think poster design, not stock imagery.
 
 ## Agent Prompt Guide
 
-Quick Color Reference
-- text: #454745 (Charcoal) for body, #0e0f0c (Obsidian) for display
-- background: #ffffff (Paper) canvas, #e8ebe6 (Fog) cards
-- border: #868685 (Pebble) for hairlines, #163300 (Forest Ink) for emphasis
-- accent: #9fe870 (Lime Voltage) for active states and highlights
-- primary action: no distinct CTA color
-- dark surface: #163300 (Forest Ink) for inverted sections
+## Quick Color Reference
+- Page background: #e2e2df (Pumice)
+- Card/content surface: #f7f6f2 (Limestone)
+- Primary text/headings: #070607 (Obsidian)
+- primary action: #fc5000 (filled action)
+- Accent: #524ae9 (Plasma Violet) — hero halftone only
+- Tag/badge: #f5f28e (Sulfur)
+- Input border (dark sections): #ffffff (Chalk)
 
-Example Component Prompts
+## 3-5 Example Component Prompts
+1. Create a Primary Action Button: #fc5000 background, #000000 text, 9999px radius, compact pill padding. Use this filled treatment for the main CTA.
 
-No distinct primary action color was observed; use the extracted neutral button treatments instead of inventing a filled CTA color.
+2. **Stat Row**: Four Ember (#fc5000) cards in a row, each 40px radius, 40px padding. Label in DM Sans 500 at 14px, Chalk (#ffffff) text. Metric value in PP Neue Corp Compact at 80px weight 400, Chalk text, line-height 1.1.
 
-2. Feature row (3-column): icon at 24px stroke #454745, 24px gap to heading at 18px Inter 700 in #0e0f0c, 8px gap to body at 16px Inter 400 in #868685. Column gap 32px, centered max-width 1200px.
+3. **Content Card**: Limestone (#f7f6f2) background, 40px radius, 40px padding. Sulfur (#f5f28e) pill tag at top with DM Sans 500 12px Obsidian text, 800px radius. Headline at 32px PP Neue Corp Compact, Obsidian, letter-spacing 0.64px. Date at 12px system sans-serif, Obsidian.
 
-3. Country grid item: circular flag thumbnail at 56px diameter (1000px radius), 12px vertical gap to country name in Inter 500 at 16px #163300. Arranged in a 5-column grid with 32px row gap and 24px column gap. Hover state: underline appears on the country name.
 
-4. Dark section card: Forest Ink (#163300) background, 28px radius, 40px padding. Headline in Lime Voltage (#9fe870) at 36px Inter 700. Body text in #ffffff at 16px Inter 400. Contains an inset white card (10px radius) for a currency selector: circular flag + country name in Charcoal + outlined "Change" button.
+5. **Dark Input Section**: Obsidian (#070607) background. Chalk (#ffffff) pill input with 100px radius, 24px/32px padding, 1.5px Chalk border. DM Sans 500 16px Chalk text. Submit button: Ember fill, 800px radius, 12px/24px padding.
 
-5. Outlined nav button: white fill, 1px solid #163300 border, 9999px radius, 8px 16px padding, Inter 500 at 16px in #163300. Used in the top-right nav cluster for secondary account actions.
+## Signature Motifs
+
+Three visual signatures define Caldera’s identity and should be reused across new pages: (1) The halftone dot pattern — orange dots on a violet-to-orange gradient, always at hero scale with 40px radius, is the most recognizable motif. (2) The 189px display headline — ultrabold compressed type at near-architectural scale, with tight 0.94 line-height, signals the page is a Caldera page. (3) The triple-radius system — 100px for inputs, 40px for cards and rectangular buttons, 800px for pills — creates a consistent roundness without monotony.
 
 ## Similar Brands
 
-- **Revolut** — Same dual-brand color strategy — deep brand color as dominant surface and text, one bright accent for CTAs and highlights, with pill-shaped buttons and large confident headlines.
-- **Monzo** — Bright single-accent color system on a neutral canvas, pill-shaped interactive elements, friendly rounded geometry, and display type that speaks directly to the user.
-- **Cash App** — High-contrast near-black text on white with a single vivid brand accent, oversized bold headlines as the primary brand expression, minimal decoration.
-- **N26** — Flat surfaces, hairline borders instead of shadows, generous white space, and a single saturated accent color driving all interactive emphasis.
+- **Berachain** — Similar crypto/web3 site language with warm off-white canvas, massive condensed display type, and a single bold accent color dominating featured surfaces
+- **Monad** — Matching approach of ultrabold compressed headlines at near-architectural scale, flat no-shadow surfaces, and pill-shaped controls with aggressive border-radius
+- **Dymension** — Shared visual DNA of warm neutral canvas, single vivid accent color for CTAs and stat cards, and condensed industrial display typography
+- **Blast** — Same flat-design philosophy on warm background, pill buttons in one dominant accent color, and oversized compressed headlines as structural anchors
+- **Arbitrum** — Comparable crypto ecosystem site pattern with generous 40px surface radii, warm light canvas, and medium-weight body sans against heavy display type
 
 ## Quick Start
 
@@ -275,120 +242,92 @@ No distinct primary action color was observed; use the extracted neutral button 
 ```css
 :root {
   /* Colors */
-  --color-forest-ink: #163300;
-  --color-lime-voltage: #9fe870;
-  --color-spruce: #054d28;
-  --color-linen-mist: #e2f6d5;
-  --color-signal-blue: #0b4c72;
-  --color-alarm-red: #cb272f;
-  --color-charcoal: #454745;
-  --color-obsidian: #0e0f0c;
-  --color-pebble: #868685;
-  --color-slate: #6a6c6a;
-  --color-fog: #e8ebe6;
-  --color-paper: #ffffff;
+  --color-ember: #fc5000;
+  --color-plasma-violet: #524ae9;
+  --color-sulfur: #f5f28e;
+  --color-limestone: #f7f6f2;
+  --color-pumice: #e2e2df;
+  --color-obsidian: #070607;
+  --color-chalk: #ffffff;
 
   /* Typography — Font Families */
-  --font-inter: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-wise-sans: 'Wise Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-monospace: 'monospace', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  --font-sans-serif: 'sans-serif', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-pp-neue-corp-compact: 'PP Neue Corp Compact', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-dm-sans: 'DM Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-system-sans-serif: 'System sans-serif', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   /* Typography — Scale */
-  --text-micro: 12px;
-  --leading-micro: 1.63;
-  --tracking-micro: -0.036px;
-  --text-caption: 14px;
-  --leading-caption: 1.55;
-  --tracking-caption: -0.07px;
-  --text-body-sm: 16px;
-  --leading-body-sm: 1.5;
-  --tracking-body-sm: -0.096px;
-  --text-body: 18px;
-  --leading-body: 1.5;
-  --tracking-body: -0.126px;
-  --text-body-lg: 25px;
-  --leading-body-lg: 1.3;
-  --tracking-body-lg: -0.225px;
-  --text-subheading: 36px;
-  --leading-subheading: 1.25;
-  --tracking-subheading: -0.396px;
-  --text-heading-sm: 45px;
-  --leading-heading-sm: 1.1;
-  --tracking-heading-sm: -0.495px;
-  --text-heading: 61px;
-  --leading-heading: 1.1;
-  --tracking-heading: -0.915px;
-  --text-heading-lg: 89px;
-  --leading-heading-lg: 0.85;
-  --tracking-heading-lg: -2.67px;
-  --text-display: 105px;
-  --leading-display: 0.85;
-  --tracking-display: -3.15px;
+  --text-caption: 12px;
+  --leading-caption: 1.2;
+  --text-body-sm: 14px;
+  --leading-body-sm: 1.2;
+  --text-body: 16px;
+  --leading-body: 1.55;
+  --text-subheading: 26px;
+  --leading-subheading: 1.2;
+  --text-heading-sm: 30px;
+  --leading-heading-sm: 1.5;
+  --text-heading: 32px;
+  --leading-heading: 1;
+  --tracking-heading: 0.64px;
+  --text-heading-lg: 48px;
+  --leading-heading-lg: 1;
+  --text-heading-2xl: 80px;
+  --leading-heading-2xl: 1.1;
+  --text-heading-3xl: 96px;
+  --leading-heading-3xl: 0.95;
+  --text-display: 189px;
+  --leading-display: 0.94;
 
   /* Typography — Weights */
   --font-weight-regular: 400;
   --font-weight-medium: 500;
-  --font-weight-semibold: 600;
-  --font-weight-bold: 700;
-  --font-weight-black: 900;
 
   /* Spacing */
-  --spacing-unit: 4px;
   --spacing-4: 4px;
   --spacing-8: 8px;
+  --spacing-9: 9px;
+  --spacing-10: 10px;
   --spacing-12: 12px;
   --spacing-16: 16px;
+  --spacing-18: 18px;
   --spacing-20: 20px;
   --spacing-24: 24px;
-  --spacing-28: 28px;
   --spacing-32: 32px;
   --spacing-40: 40px;
-  --spacing-44: 44px;
   --spacing-48: 48px;
   --spacing-56: 56px;
   --spacing-64: 64px;
-  --spacing-100: 100px;
-  --spacing-124: 124px;
+  --spacing-80: 80px;
+  --spacing-92: 92px;
 
   /* Layout */
-  --page-max-width: 1200px;
-  --section-gap: 64-80px;
-  --card-padding: 24px;
-  --element-gap: 8-12px;
+  --page-max-width: 1280px;
+  --section-gap: 80px;
+  --card-padding: 40px;
+  --element-gap: 16px;
 
   /* Border Radius */
-  --radius-sm: 2px;
-  --radius-lg: 10px;
   --radius-2xl: 16px;
-  --radius-2xl-2: 18.7693px;
-  --radius-3xl: 28.1539px;
+  --radius-2xl-2: 20px;
+  --radius-3xl: 24px;
   --radius-3xl-2: 32px;
-  --radius-3xl-3: 37.5385px;
-  --radius-full: 1000px;
-  --radius-full-2: 9999px;
+  --radius-3xl-3: 40px;
+  --radius-full: 100px;
+  --radius-full-2: 800px;
 
   /* Named Radii */
-  --radius-tags: 9999px;
-  --radius-cards: 10px;
-  --radius-inputs: 10px;
-  --radius-buttons: 9999px;
-  --radius-imagemasks: 1000px;
-  --radius-largecards: 28px;
-  --radius-navsegments: 9999px;
-
-  /* Shadows */
-  --shadow-subtle: rgba(14, 15, 12, 0.12) 0px 0px 0px 1px;
-  --shadow-subtle-2: rgb(134, 134, 133) 0px 0px 0px 1px inset;
-  --shadow-xl: rgba(0, 0, 0, 0.15) 0px 10px 32px 0px, rgba(0, 0, 0, 0.04) 0px 40px 40px 0px;
-  --shadow-lg: rgba(0, 0, 0, 0.08) 0px 6px 20px 0px;
+  --radius-cards: 40px;
+  --radius-pills: 800px;
+  --radius-small: 16px;
+  --radius-inputs: 100px;
+  --radius-medium: 20px;
+  --radius-buttons: 40px;
 
   /* Surfaces */
-  --surface-paper: #ffffff;
-  --surface-fog: #e8ebe6;
-  --surface-linen-mist: #e2f6d5;
-  --surface-lime-voltage: #9fe870;
-  --surface-forest-ink: #163300;
+  --surface-pumice-canvas: #e2e2df;
+  --surface-limestone-surface: #f7f6f2;
+  --surface-ember-feature: #fc5000;
+  --surface-plasma-hero: #524ae9;
 }
 ```
 
@@ -397,892 +336,502 @@ No distinct primary action color was observed; use the extracted neutral button 
 ```css
 @theme {
   /* Colors */
-  --color-forest-ink: #163300;
-  --color-lime-voltage: #9fe870;
-  --color-spruce: #054d28;
-  --color-linen-mist: #e2f6d5;
-  --color-signal-blue: #0b4c72;
-  --color-alarm-red: #cb272f;
-  --color-charcoal: #454745;
-  --color-obsidian: #0e0f0c;
-  --color-pebble: #868685;
-  --color-slate: #6a6c6a;
-  --color-fog: #e8ebe6;
-  --color-paper: #ffffff;
+  --color-ember: #fc5000;
+  --color-plasma-violet: #524ae9;
+  --color-sulfur: #f5f28e;
+  --color-limestone: #f7f6f2;
+  --color-pumice: #e2e2df;
+  --color-obsidian: #070607;
+  --color-chalk: #ffffff;
 
   /* Typography */
-  --font-inter: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-wise-sans: 'Wise Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-monospace: 'monospace', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  --font-sans-serif: 'sans-serif', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-pp-neue-corp-compact: 'PP Neue Corp Compact', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-dm-sans: 'DM Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-system-sans-serif: 'System sans-serif', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   /* Typography — Scale */
-  --text-micro: 12px;
-  --leading-micro: 1.63;
-  --tracking-micro: -0.036px;
-  --text-caption: 14px;
-  --leading-caption: 1.55;
-  --tracking-caption: -0.07px;
-  --text-body-sm: 16px;
-  --leading-body-sm: 1.5;
-  --tracking-body-sm: -0.096px;
-  --text-body: 18px;
-  --leading-body: 1.5;
-  --tracking-body: -0.126px;
-  --text-body-lg: 25px;
-  --leading-body-lg: 1.3;
-  --tracking-body-lg: -0.225px;
-  --text-subheading: 36px;
-  --leading-subheading: 1.25;
-  --tracking-subheading: -0.396px;
-  --text-heading-sm: 45px;
-  --leading-heading-sm: 1.1;
-  --tracking-heading-sm: -0.495px;
-  --text-heading: 61px;
-  --leading-heading: 1.1;
-  --tracking-heading: -0.915px;
-  --text-heading-lg: 89px;
-  --leading-heading-lg: 0.85;
-  --tracking-heading-lg: -2.67px;
-  --text-display: 105px;
-  --leading-display: 0.85;
-  --tracking-display: -3.15px;
+  --text-caption: 12px;
+  --leading-caption: 1.2;
+  --text-body-sm: 14px;
+  --leading-body-sm: 1.2;
+  --text-body: 16px;
+  --leading-body: 1.55;
+  --text-subheading: 26px;
+  --leading-subheading: 1.2;
+  --text-heading-sm: 30px;
+  --leading-heading-sm: 1.5;
+  --text-heading: 32px;
+  --leading-heading: 1;
+  --tracking-heading: 0.64px;
+  --text-heading-lg: 48px;
+  --leading-heading-lg: 1;
+  --text-heading-2xl: 80px;
+  --leading-heading-2xl: 1.1;
+  --text-heading-3xl: 96px;
+  --leading-heading-3xl: 0.95;
+  --text-display: 189px;
+  --leading-display: 0.94;
 
   /* Spacing */
   --spacing-4: 4px;
   --spacing-8: 8px;
+  --spacing-9: 9px;
+  --spacing-10: 10px;
   --spacing-12: 12px;
   --spacing-16: 16px;
+  --spacing-18: 18px;
   --spacing-20: 20px;
   --spacing-24: 24px;
-  --spacing-28: 28px;
   --spacing-32: 32px;
   --spacing-40: 40px;
-  --spacing-44: 44px;
   --spacing-48: 48px;
   --spacing-56: 56px;
   --spacing-64: 64px;
-  --spacing-100: 100px;
-  --spacing-124: 124px;
+  --spacing-80: 80px;
+  --spacing-92: 92px;
 
   /* Border Radius */
-  --radius-sm: 2px;
-  --radius-lg: 10px;
   --radius-2xl: 16px;
-  --radius-2xl-2: 18.7693px;
-  --radius-3xl: 28.1539px;
+  --radius-2xl-2: 20px;
+  --radius-3xl: 24px;
   --radius-3xl-2: 32px;
-  --radius-3xl-3: 37.5385px;
-  --radius-full: 1000px;
-  --radius-full-2: 9999px;
-
-  /* Shadows */
-  --shadow-subtle: rgba(14, 15, 12, 0.12) 0px 0px 0px 1px;
-  --shadow-subtle-2: rgb(134, 134, 133) 0px 0px 0px 1px inset;
-  --shadow-xl: rgba(0, 0, 0, 0.15) 0px 10px 32px 0px, rgba(0, 0, 0, 0.04) 0px 40px 40px 0px;
-  --shadow-lg: rgba(0, 0, 0, 0.08) 0px 6px 20px 0px;
+  --radius-3xl-3: 40px;
+  --radius-full: 100px;
+  --radius-full-2: 800px;
 }
 ```
 
+
+tailwind:
+
 @theme {
   /* Colors */
-  --color-forest-ink: #163300;
-  --color-lime-voltage: #9fe870;
-  --color-spruce: #054d28;
-  --color-linen-mist: #e2f6d5;
-  --color-signal-blue: #0b4c72;
-  --color-alarm-red: #cb272f;
-  --color-charcoal: #454745;
-  --color-obsidian: #0e0f0c;
-  --color-pebble: #868685;
-  --color-slate: #6a6c6a;
-  --color-fog: #e8ebe6;
-  --color-paper: #ffffff;
+  --color-ember: #fc5000;
+  --color-plasma-violet: #524ae9;
+  --color-sulfur: #f5f28e;
+  --color-limestone: #f7f6f2;
+  --color-pumice: #e2e2df;
+  --color-obsidian: #070607;
+  --color-chalk: #ffffff;
 
   /* Typography */
-  --font-inter: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-wise-sans: 'Wise Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-monospace: 'monospace', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  --font-sans-serif: 'sans-serif', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-pp-neue-corp-compact: 'PP Neue Corp Compact', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-dm-sans: 'DM Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-system-sans-serif: 'System sans-serif', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   /* Typography — Scale */
-  --text-micro: 12px;
-  --leading-micro: 1.63;
-  --tracking-micro: -0.036px;
-  --text-caption: 14px;
-  --leading-caption: 1.55;
-  --tracking-caption: -0.07px;
-  --text-body-sm: 16px;
-  --leading-body-sm: 1.5;
-  --tracking-body-sm: -0.096px;
-  --text-body: 18px;
-  --leading-body: 1.5;
-  --tracking-body: -0.126px;
-  --text-body-lg: 25px;
-  --leading-body-lg: 1.3;
-  --tracking-body-lg: -0.225px;
-  --text-subheading: 36px;
-  --leading-subheading: 1.25;
-  --tracking-subheading: -0.396px;
-  --text-heading-sm: 45px;
-  --leading-heading-sm: 1.1;
-  --tracking-heading-sm: -0.495px;
-  --text-heading: 61px;
-  --leading-heading: 1.1;
-  --tracking-heading: -0.915px;
-  --text-heading-lg: 89px;
-  --leading-heading-lg: 0.85;
-  --tracking-heading-lg: -2.67px;
-  --text-display: 105px;
-  --leading-display: 0.85;
-  --tracking-display: -3.15px;
+  --text-caption: 12px;
+  --leading-caption: 1.2;
+  --text-body-sm: 14px;
+  --leading-body-sm: 1.2;
+  --text-body: 16px;
+  --leading-body: 1.55;
+  --text-subheading: 26px;
+  --leading-subheading: 1.2;
+  --text-heading-sm: 30px;
+  --leading-heading-sm: 1.5;
+  --text-heading: 32px;
+  --leading-heading: 1;
+  --tracking-heading: 0.64px;
+  --text-heading-lg: 48px;
+  --leading-heading-lg: 1;
+  --text-heading-2xl: 80px;
+  --leading-heading-2xl: 1.1;
+  --text-heading-3xl: 96px;
+  --leading-heading-3xl: 0.95;
+  --text-display: 189px;
+  --leading-display: 0.94;
 
   /* Spacing */
   --spacing-4: 4px;
   --spacing-8: 8px;
+  --spacing-9: 9px;
+  --spacing-10: 10px;
   --spacing-12: 12px;
   --spacing-16: 16px;
+  --spacing-18: 18px;
   --spacing-20: 20px;
   --spacing-24: 24px;
-  --spacing-28: 28px;
   --spacing-32: 32px;
   --spacing-40: 40px;
-  --spacing-44: 44px;
   --spacing-48: 48px;
   --spacing-56: 56px;
   --spacing-64: 64px;
-  --spacing-100: 100px;
-  --spacing-124: 124px;
+  --spacing-80: 80px;
+  --spacing-92: 92px;
 
   /* Border Radius */
-  --radius-sm: 2px;
-  --radius-lg: 10px;
   --radius-2xl: 16px;
-  --radius-2xl-2: 18.7693px;
-  --radius-3xl: 28.1539px;
+  --radius-2xl-2: 20px;
+  --radius-3xl: 24px;
   --radius-3xl-2: 32px;
-  --radius-3xl-3: 37.5385px;
-  --radius-full: 1000px;
-  --radius-full-2: 9999px;
-
-  /* Shadows */
-  --shadow-subtle: rgba(14, 15, 12, 0.12) 0px 0px 0px 1px;
-  --shadow-subtle-2: rgb(134, 134, 133) 0px 0px 0px 1px inset;
-  --shadow-xl: rgba(0, 0, 0, 0.15) 0px 10px 32px 0px, rgba(0, 0, 0, 0.04) 0px 40px 40px 0px;
-  --shadow-lg: rgba(0, 0, 0, 0.08) 0px 6px 20px 0px;
+  --radius-3xl-3: 40px;
+  --radius-full: 100px;
+  --radius-full-2: 800px;
 }
+
+
+css variable
 
 
 :root {
   /* Colors */
-  --color-forest-ink: #163300;
-  --color-lime-voltage: #9fe870;
-  --color-spruce: #054d28;
-  --color-linen-mist: #e2f6d5;
-  --color-signal-blue: #0b4c72;
-  --color-alarm-red: #cb272f;
-  --color-charcoal: #454745;
-  --color-obsidian: #0e0f0c;
-  --color-pebble: #868685;
-  --color-slate: #6a6c6a;
-  --color-fog: #e8ebe6;
-  --color-paper: #ffffff;
+  --color-ember: #fc5000;
+  --color-plasma-violet: #524ae9;
+  --color-sulfur: #f5f28e;
+  --color-limestone: #f7f6f2;
+  --color-pumice: #e2e2df;
+  --color-obsidian: #070607;
+  --color-chalk: #ffffff;
 
   /* Typography — Font Families */
-  --font-inter: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-wise-sans: 'Wise Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-monospace: 'monospace', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  --font-sans-serif: 'sans-serif', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-pp-neue-corp-compact: 'PP Neue Corp Compact', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-dm-sans: 'DM Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-system-sans-serif: 'System sans-serif', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   /* Typography — Scale */
-  --text-micro: 12px;
-  --leading-micro: 1.63;
-  --tracking-micro: -0.036px;
-  --text-caption: 14px;
-  --leading-caption: 1.55;
-  --tracking-caption: -0.07px;
-  --text-body-sm: 16px;
-  --leading-body-sm: 1.5;
-  --tracking-body-sm: -0.096px;
-  --text-body: 18px;
-  --leading-body: 1.5;
-  --tracking-body: -0.126px;
-  --text-body-lg: 25px;
-  --leading-body-lg: 1.3;
-  --tracking-body-lg: -0.225px;
-  --text-subheading: 36px;
-  --leading-subheading: 1.25;
-  --tracking-subheading: -0.396px;
-  --text-heading-sm: 45px;
-  --leading-heading-sm: 1.1;
-  --tracking-heading-sm: -0.495px;
-  --text-heading: 61px;
-  --leading-heading: 1.1;
-  --tracking-heading: -0.915px;
-  --text-heading-lg: 89px;
-  --leading-heading-lg: 0.85;
-  --tracking-heading-lg: -2.67px;
-  --text-display: 105px;
-  --leading-display: 0.85;
-  --tracking-display: -3.15px;
+  --text-caption: 12px;
+  --leading-caption: 1.2;
+  --text-body-sm: 14px;
+  --leading-body-sm: 1.2;
+  --text-body: 16px;
+  --leading-body: 1.55;
+  --text-subheading: 26px;
+  --leading-subheading: 1.2;
+  --text-heading-sm: 30px;
+  --leading-heading-sm: 1.5;
+  --text-heading: 32px;
+  --leading-heading: 1;
+  --tracking-heading: 0.64px;
+  --text-heading-lg: 48px;
+  --leading-heading-lg: 1;
+  --text-heading-2xl: 80px;
+  --leading-heading-2xl: 1.1;
+  --text-heading-3xl: 96px;
+  --leading-heading-3xl: 0.95;
+  --text-display: 189px;
+  --leading-display: 0.94;
 
   /* Typography — Weights */
   --font-weight-regular: 400;
   --font-weight-medium: 500;
-  --font-weight-semibold: 600;
-  --font-weight-bold: 700;
-  --font-weight-black: 900;
 
   /* Spacing */
-  --spacing-unit: 4px;
   --spacing-4: 4px;
   --spacing-8: 8px;
+  --spacing-9: 9px;
+  --spacing-10: 10px;
   --spacing-12: 12px;
   --spacing-16: 16px;
+  --spacing-18: 18px;
   --spacing-20: 20px;
   --spacing-24: 24px;
-  --spacing-28: 28px;
   --spacing-32: 32px;
   --spacing-40: 40px;
-  --spacing-44: 44px;
   --spacing-48: 48px;
   --spacing-56: 56px;
   --spacing-64: 64px;
-  --spacing-100: 100px;
-  --spacing-124: 124px;
+  --spacing-80: 80px;
+  --spacing-92: 92px;
 
   /* Layout */
-  --page-max-width: 1200px;
-  --section-gap: 64-80px;
-  --card-padding: 24px;
-  --element-gap: 8-12px;
+  --page-max-width: 1280px;
+  --section-gap: 80px;
+  --card-padding: 40px;
+  --element-gap: 16px;
 
   /* Border Radius */
-  --radius-sm: 2px;
-  --radius-lg: 10px;
   --radius-2xl: 16px;
-  --radius-2xl-2: 18.7693px;
-  --radius-3xl: 28.1539px;
+  --radius-2xl-2: 20px;
+  --radius-3xl: 24px;
   --radius-3xl-2: 32px;
-  --radius-3xl-3: 37.5385px;
-  --radius-full: 1000px;
-  --radius-full-2: 9999px;
+  --radius-3xl-3: 40px;
+  --radius-full: 100px;
+  --radius-full-2: 800px;
 
   /* Named Radii */
-  --radius-tags: 9999px;
-  --radius-cards: 10px;
-  --radius-inputs: 10px;
-  --radius-buttons: 9999px;
-  --radius-imagemasks: 1000px;
-  --radius-largecards: 28px;
-  --radius-navsegments: 9999px;
-
-  /* Shadows */
-  --shadow-subtle: rgba(14, 15, 12, 0.12) 0px 0px 0px 1px;
-  --shadow-subtle-2: rgb(134, 134, 133) 0px 0px 0px 1px inset;
-  --shadow-xl: rgba(0, 0, 0, 0.15) 0px 10px 32px 0px, rgba(0, 0, 0, 0.04) 0px 40px 40px 0px;
-  --shadow-lg: rgba(0, 0, 0, 0.08) 0px 6px 20px 0px;
+  --radius-cards: 40px;
+  --radius-pills: 800px;
+  --radius-small: 16px;
+  --radius-inputs: 100px;
+  --radius-medium: 20px;
+  --radius-buttons: 40px;
 
   /* Surfaces */
-  --surface-paper: #ffffff;
-  --surface-fog: #e8ebe6;
-  --surface-linen-mist: #e2f6d5;
-  --surface-lime-voltage: #9fe870;
-  --surface-forest-ink: #163300;
+  --surface-pumice-canvas: #e2e2df;
+  --surface-limestone-surface: #f7f6f2;
+  --surface-ember-feature: #fc5000;
+  --surface-plasma-hero: #524ae9;
 }
+
+
+design token 
 
 
 {
   "color": {
-    "forest-ink": {
-      "$value": "#163300",
+    "ember": {
+      "$value": "#fc5000",
       "$type": "color",
-      "$description": "Forest Ink — Dominant brand dark — nav text, dark section backgrounds, primary copy on light surfaces, icon strokes, filled navigation pills. This is the brand's gravity: wherever you need weight or authority, you reach for Forest Ink"
+      "$description": "Ember — Primary action buttons, featured stat cards, key visual highlights — the only aggressive chromatic accent; its vivid saturation against warm grays creates urgency without needing supporting decorative weight"
     },
-    "lime-voltage": {
-      "$value": "#9fe870",
+    "plasma-violet": {
+      "$value": "#524ae9",
       "$type": "color",
-      "$description": "Lime Voltage — Green supporting accent for decorative details and low-frequency emphasis. Do not promote it to the primary CTA color"
+      "$description": "Plasma Violet — Hero halftone gradient base, single secondary card surface — appears almost exclusively in the hero dot pattern and one standout card; never used for controls"
     },
-    "spruce": {
-      "$value": "#054d28",
+    "sulfur": {
+      "$value": "#f5f28e",
       "$type": "color",
-      "$description": "Spruce — Secondary dark green for card surfaces, supporting iconography, and tonal depth on dark sections where Forest Ink is too heavy"
+      "$description": "Sulfur — Tag and category badge backgrounds, small highlight washes — the soft yellow that labels blog post categories and program announcements"
     },
-    "linen-mist": {
-      "$value": "#e2f6d5",
+    "limestone": {
+      "$value": "#f7f6f2",
       "$type": "color",
-      "$description": "Linen Mist — Pale green wash for soft highlight surfaces, tinted card backgrounds, nav hover states. A whisper of the brand green for low-emphasis containers"
+      "$description": "Limestone — Card surfaces, content block backgrounds, secondary button fills — the lighter warm off-white that lifts elements off the page canvas"
     },
-    "signal-blue": {
-      "$value": "#0b4c72",
+    "pumice": {
+      "$value": "#e2e2df",
       "$type": "color",
-      "$description": "Signal Blue — Blue supporting accent for decorative details and low-frequency emphasis"
-    },
-    "alarm-red": {
-      "$value": "#cb272f",
-      "$type": "color",
-      "$description": "Alarm Red — Red supporting accent for decorative details and low-frequency emphasis. Use as a supporting accent, not as a status color"
-    },
-    "charcoal": {
-      "$value": "#454745",
-      "$type": "color",
-      "$description": "Charcoal — Primary text, body copy, dense UI — slightly warm black that feels softer than pure #000 against white"
+      "$description": "Pumice — Page canvas, dominant background — the warm medium-gray that grounds every section; slightly darker than card surfaces to create subtle figure/ground separation without shadows"
     },
     "obsidian": {
-      "$value": "#0e0f0c",
+      "$value": "#070607",
       "$type": "color",
-      "$description": "Obsidian — Display headlines, high-contrast headings, pure-black moments in nav and hero. Slightly green-tinted black, not neutral gray"
+      "$description": "Obsidian — Primary text, headings, link text, button borders — near-black with a barely-warm cast matching the canvas warmth"
     },
-    "pebble": {
-      "$value": "#868685",
-      "$type": "color",
-      "$description": "Pebble — Muted secondary text, placeholder copy, icon strokes, input borders. The mid-gray that recedes"
-    },
-    "slate": {
-      "$value": "#6a6c6a",
-      "$type": "color",
-      "$description": "Slate — Supporting body text, helper labels, subdued iconography. One step darker than Pebble for slightly more emphasis"
-    },
-    "fog": {
-      "$value": "#e8ebe6",
-      "$type": "color",
-      "$description": "Fog — Card surfaces, section dividers, subtle panel backgrounds on the white canvas. Green-tinted off-white, not pure neutral"
-    },
-    "paper": {
+    "chalk": {
       "$value": "#ffffff",
       "$type": "color",
-      "$description": "Paper — Page canvas, inverted card surfaces, button text on lime fill"
+      "$description": "Chalk — Dark-section text, input text on dark backgrounds, high-contrast overlays — pure white used only where maximum contrast against dark surfaces is required"
     }
   },
   "font": {
-    "inter": {
-      "$value": "Inter",
+    "pp-neue-corp-compact": {
+      "$value": "PP Neue Corp Compact",
       "$type": "fontFamily",
-      "$description": "Body, UI, labels, and sub-headings across the entire product. The 700 weight handles mid-tier headings (36–45px), 500–600 for subheadings and labels, 400 for body and captions. Inter does the quiet work while Wise Sans shouts."
+      "$description": "All headings and display text. A custom condensed ultrabold face that gives headlines an industrial, sign-painted weight. The 189px display size in the hero is the signature — compressed, almost structural rather than typographic. Feature settings \"ss06\" and \"ss10\" activate alternate letterforms and spacing for a more aggressive condensed rhythm. Positive tracking (+0.02em) is unusual for display sizes and keeps the heavy strokes from feeling claustrophobic at 80–189px."
     },
-    "wise-sans": {
-      "$value": "Wise Sans",
+    "dm-sans": {
+      "$value": "DM Sans",
       "$type": "fontFamily",
-      "$description": "Display headlines — the brand's signature shout. Ultra-heavy weight 900 at 89–105px with tight -0.03em tracking makes every headline a block-letter announcement. Used sparingly: hero, section openers, campaign moments."
+      "$description": "Body copy, nav links, button labels, supporting headings up to 30px. Medium weight throughout is deliberate — Regular would feel too thin against the ultrabold display type, and Bold would compete with it. DM Sans provides a humanist, slightly geometric counterpoint to the industrial display face."
     },
-    "monospace": {
-      "$value": "monospace",
+    "system-sans-serif": {
+      "$value": "System sans-serif",
       "$type": "fontFamily",
-      "$description": "monospace — detected in extracted data but not described by AI"
-    },
-    "sans-serif": {
-      "$value": "sans-serif",
-      "$type": "fontFamily",
-      "$description": "sans-serif — detected in extracted data but not described by AI"
+      "$description": "Captions, meta text, dates, micro-labels. Only used at 12px where weight and brand presence matter less than size economy."
     }
   },
   "typography": {
     "xs": {
       "$value": {
-        "fontFamily": "Inter",
+        "fontFamily": "sans-serif",
         "fontSize": "12px",
-        "fontWeight": 600,
-        "lineHeight": 1,
-        "letterSpacing": "-0.015em"
+        "fontWeight": 400,
+        "lineHeight": 1.2,
+        "letterSpacing": "0em"
       },
       "$type": "typography",
       "$description": "Typography step xs at 12px"
     },
-    "xs-2": {
-      "$value": {
-        "fontFamily": "Inter",
-        "fontSize": "12px",
-        "fontWeight": 400,
-        "lineHeight": 2.17,
-        "letterSpacing": "-0.009em"
-      },
-      "$type": "typography",
-      "$description": "Typography step xs-2 at 12px"
-    },
-    "xs-3": {
-      "$value": {
-        "fontFamily": "Inter",
-        "fontSize": "12px",
-        "fontWeight": 600,
-        "lineHeight": 1,
-        "letterSpacing": "0em"
-      },
-      "$type": "typography",
-      "$description": "Typography step xs-3 at 12px"
-    },
     "sm": {
       "$value": {
-        "fontFamily": "Inter",
+        "fontFamily": "DM Sans",
         "fontSize": "14px",
-        "fontWeight": 400,
-        "lineHeight": 1.5,
-        "letterSpacing": "-0.008em"
+        "fontWeight": 500,
+        "lineHeight": 1.2,
+        "letterSpacing": "0em"
       },
       "$type": "typography",
       "$description": "Typography step sm at 14px"
     },
     "sm-2": {
       "$value": {
-        "fontFamily": "Inter",
+        "fontFamily": "DM Sans",
         "fontSize": "14px",
-        "fontWeight": 600,
-        "lineHeight": 1.55,
-        "letterSpacing": "-0.006em"
+        "fontWeight": 500,
+        "lineHeight": 1.5,
+        "letterSpacing": "0em"
       },
       "$type": "typography",
       "$description": "Typography step sm-2 at 14px"
     },
-    "sm-3": {
-      "$value": {
-        "fontFamily": "Inter",
-        "fontSize": "14px",
-        "fontWeight": 400,
-        "lineHeight": 1.55,
-        "letterSpacing": "-0.006em"
-      },
-      "$type": "typography",
-      "$description": "Typography step sm-3 at 14px"
-    },
-    "sm-4": {
-      "$value": {
-        "fontFamily": "Inter",
-        "fontSize": "14px",
-        "fontWeight": 400,
-        "lineHeight": 1.55,
-        "letterSpacing": "0em"
-      },
-      "$type": "typography",
-      "$description": "Typography step sm-4 at 14px"
-    },
-    "sm-5": {
-      "$value": {
-        "fontFamily": "Inter",
-        "fontSize": "14px",
-        "fontWeight": 400,
-        "lineHeight": 1.5,
-        "letterSpacing": "0em"
-      },
-      "$type": "typography",
-      "$description": "Typography step sm-5 at 14px"
-    },
-    "sm-6": {
-      "$value": {
-        "fontFamily": "Inter",
-        "fontSize": "14px",
-        "fontWeight": 500,
-        "lineHeight": 1.5,
-        "letterSpacing": "-0.008em"
-      },
-      "$type": "typography",
-      "$description": "Typography step sm-6 at 14px"
-    },
-    "sm-7": {
-      "$value": {
-        "fontFamily": "Inter",
-        "fontSize": "14px",
-        "fontWeight": 400,
-        "lineHeight": 1.43,
-        "letterSpacing": "-0.008em"
-      },
-      "$type": "typography",
-      "$description": "Typography step sm-7 at 14px"
-    },
-    "sm-8": {
-      "$value": {
-        "fontFamily": "Inter",
-        "fontSize": "14px",
-        "fontWeight": 400,
-        "lineHeight": 1.86,
-        "letterSpacing": "-0.008em"
-      },
-      "$type": "typography",
-      "$description": "Typography step sm-8 at 14px"
-    },
-    "sm-9": {
-      "$value": {
-        "fontFamily": "Inter",
-        "fontSize": "14px",
-        "fontWeight": 600,
-        "lineHeight": 1.71,
-        "letterSpacing": "-0.011em"
-      },
-      "$type": "typography",
-      "$description": "Typography step sm-9 at 14px"
-    },
     "base": {
       "$value": {
-        "fontFamily": "Inter",
+        "fontFamily": "DM Sans",
         "fontSize": "16px",
-        "fontWeight": 600,
-        "lineHeight": 1.5,
-        "letterSpacing": "-0.011em"
+        "fontWeight": 500,
+        "lineHeight": 1.55,
+        "letterSpacing": "0em"
       },
       "$type": "typography",
       "$description": "Typography step base at 16px"
     },
     "base-2": {
       "$value": {
-        "fontFamily": "Inter",
+        "fontFamily": "DM Sans",
         "fontSize": "16px",
-        "fontWeight": 400,
-        "lineHeight": 1.5,
-        "letterSpacing": "0.005em"
+        "fontWeight": 500,
+        "lineHeight": 1.25,
+        "letterSpacing": "0em"
       },
       "$type": "typography",
       "$description": "Typography step base-2 at 16px"
     },
-    "base-3": {
-      "$value": {
-        "fontFamily": "Inter",
-        "fontSize": "16px",
-        "fontWeight": 600,
-        "lineHeight": 1.5,
-        "letterSpacing": "0.005em"
-      },
-      "$type": "typography",
-      "$description": "Typography step base-3 at 16px"
-    },
-    "base-4": {
-      "$value": {
-        "fontFamily": "Inter",
-        "fontSize": "16px",
-        "fontWeight": 600,
-        "lineHeight": 1.5,
-        "letterSpacing": "0.005em"
-      },
-      "$type": "typography",
-      "$description": "Typography step base-4 at 16px"
-    },
-    "base-5": {
-      "$value": {
-        "fontFamily": "Inter",
-        "fontSize": "16px",
-        "fontWeight": 400,
-        "lineHeight": 1.5,
-        "letterSpacing": "-0.011em"
-      },
-      "$type": "typography",
-      "$description": "Typography step base-5 at 16px"
-    },
-    "base-6": {
-      "$value": {
-        "fontFamily": "Inter",
-        "fontSize": "16px",
-        "fontWeight": 600,
-        "lineHeight": 1.63,
-        "letterSpacing": "-0.007em"
-      },
-      "$type": "typography",
-      "$description": "Typography step base-6 at 16px"
-    },
-    "base-7": {
-      "$value": {
-        "fontFamily": "Inter",
-        "fontSize": "16px",
-        "fontWeight": 400,
-        "lineHeight": 1.63,
-        "letterSpacing": "-0.007em"
-      },
-      "$type": "typography",
-      "$description": "Typography step base-7 at 16px"
-    },
     "lg": {
       "$value": {
-        "fontFamily": "Inter",
+        "fontFamily": "DM Sans",
         "fontSize": "18px",
-        "fontWeight": 400,
-        "lineHeight": 1.44,
-        "letterSpacing": "-0.006em"
+        "fontWeight": 500,
+        "lineHeight": 1.5,
+        "letterSpacing": "0em"
       },
       "$type": "typography",
       "$description": "Typography step lg at 18px"
     },
     "lg-2": {
       "$value": {
-        "fontFamily": "Inter",
+        "fontFamily": "DM Sans",
         "fontSize": "18px",
-        "fontWeight": 600,
-        "lineHeight": 1.44,
-        "letterSpacing": "-0.006em"
+        "fontWeight": 500,
+        "lineHeight": 1.11,
+        "letterSpacing": "0em"
       },
       "$type": "typography",
       "$description": "Typography step lg-2 at 18px"
     },
     "lg-3": {
       "$value": {
-        "fontFamily": "Inter",
+        "fontFamily": "DM Sans",
         "fontSize": "18px",
-        "fontWeight": 400,
-        "lineHeight": 1.44,
+        "fontWeight": 500,
+        "lineHeight": 1.2,
         "letterSpacing": "0em"
       },
       "$type": "typography",
       "$description": "Typography step lg-3 at 18px"
     },
-    "lg-4": {
+    "2xl": {
       "$value": {
-        "fontFamily": "Inter",
-        "fontSize": "18px",
+        "fontFamily": "PP Neue Corp Compact Ultrabold",
+        "fontSize": "26px",
         "fontWeight": 400,
-        "lineHeight": 1.44,
-        "letterSpacing": "0.01em"
-      },
-      "$type": "typography",
-      "$description": "Typography step lg-4 at 18px"
-    },
-    "lg-5": {
-      "$value": {
-        "fontFamily": "Inter",
-        "fontSize": "18px",
-        "fontWeight": 600,
-        "lineHeight": 1.44,
-        "letterSpacing": "0.01em"
-      },
-      "$type": "typography",
-      "$description": "Typography step lg-5 at 18px"
-    },
-    "lg-6": {
-      "$value": {
-        "fontFamily": "Inter",
-        "fontSize": "18px",
-        "fontWeight": 600,
-        "lineHeight": 1,
-        "letterSpacing": "-0.006em"
-      },
-      "$type": "typography",
-      "$description": "Typography step lg-6 at 18px"
-    },
-    "lg-7": {
-      "$value": {
-        "fontFamily": "Inter",
-        "fontSize": "18px",
-        "fontWeight": 700,
-        "lineHeight": 1.44,
-        "letterSpacing": "-0.006em"
-      },
-      "$type": "typography",
-      "$description": "Typography step lg-7 at 18px"
-    },
-    "xl": {
-      "$value": {
-        "fontFamily": "Inter",
-        "fontSize": "20px",
-        "fontWeight": 400,
-        "lineHeight": 1.4,
-        "letterSpacing": "0.005em"
-      },
-      "$type": "typography",
-      "$description": "Typography step xl at 20px"
-    },
-    "xl-2": {
-      "$value": {
-        "fontFamily": "Inter",
-        "fontSize": "20px",
-        "fontWeight": 600,
-        "lineHeight": 1.4,
-        "letterSpacing": "0.005em"
-      },
-      "$type": "typography",
-      "$description": "Typography step xl-2 at 20px"
-    },
-    "xl-3": {
-      "$value": {
-        "fontFamily": "Inter",
-        "fontSize": "20px",
-        "fontWeight": 600,
-        "lineHeight": 1.55,
-        "letterSpacing": "-0.006em"
-      },
-      "$type": "typography",
-      "$description": "Typography step xl-3 at 20px"
-    },
-    "xl-4": {
-      "$value": {
-        "fontFamily": "Inter",
-        "fontSize": "22px",
-        "fontWeight": 600,
-        "lineHeight": 1,
-        "letterSpacing": "-0.005em"
-      },
-      "$type": "typography",
-      "$description": "Typography step xl-4 at 22px"
-    },
-    "xl-5": {
-      "$value": {
-        "fontFamily": "Inter",
-        "fontSize": "22px",
-        "fontWeight": 600,
-        "lineHeight": 1,
+        "lineHeight": 1.2,
         "letterSpacing": "0em"
       },
       "$type": "typography",
-      "$description": "Typography step xl-5 at 22px"
+      "$description": "Typography step 2xl at 26px"
     },
-    "2xl": {
+    "3xl": {
       "$value": {
-        "fontFamily": "Inter",
-        "fontSize": "25px",
-        "fontWeight": 600,
-        "lineHeight": 1.3,
-        "letterSpacing": "-0.015em"
+        "fontFamily": "DM Sans",
+        "fontSize": "30px",
+        "fontWeight": 500,
+        "lineHeight": 1.5,
+        "letterSpacing": "0em"
       },
       "$type": "typography",
-      "$description": "Typography step 2xl at 25px"
+      "$description": "Typography step 3xl at 30px"
+    },
+    "3xl-2": {
+      "$value": {
+        "fontFamily": "PP Neue Corp Compact Ultrabold",
+        "fontSize": "32px",
+        "fontWeight": 400,
+        "lineHeight": 1,
+        "letterSpacing": "0.02em"
+      },
+      "$type": "typography",
+      "$description": "Typography step 3xl-2 at 32px"
     },
     "4xl": {
       "$value": {
-        "fontFamily": "Inter",
-        "fontSize": "36px",
-        "fontWeight": 400,
-        "lineHeight": 0.72,
-        "letterSpacing": "-0.003em"
-      },
-      "$type": "typography",
-      "$description": "Typography step 4xl at 36px"
-    },
-    "4xl-2": {
-      "$value": {
-        "fontFamily": "Wise Sans",
+        "fontFamily": "PP Neue Corp Compact Ultrabold",
         "fontSize": "40px",
-        "fontWeight": 900,
-        "lineHeight": 0.85,
+        "fontWeight": 400,
+        "lineHeight": 1,
         "letterSpacing": "0em"
       },
       "$type": "typography",
-      "$description": "Typography step 4xl-2 at 40px"
-    },
-    "4xl-3": {
-      "$value": {
-        "fontFamily": "Wise Sans",
-        "fontSize": "40px",
-        "fontWeight": 400,
-        "lineHeight": 0.85,
-        "letterSpacing": "0em"
-      },
-      "$type": "typography",
-      "$description": "Typography step 4xl-3 at 40px"
-    },
-    "4xl-4": {
-      "$value": {
-        "fontFamily": "Inter",
-        "fontSize": "45px",
-        "fontWeight": 600,
-        "lineHeight": 1.25,
-        "letterSpacing": "-0.03em"
-      },
-      "$type": "typography",
-      "$description": "Typography step 4xl-4 at 45px"
+      "$description": "Typography step 4xl at 40px"
     },
     "5xl": {
       "$value": {
-        "fontFamily": "Wise Sans",
-        "fontSize": "52px",
+        "fontFamily": "PP Neue Corp Compact Ultrabold",
+        "fontSize": "48px",
         "fontWeight": 400,
-        "lineHeight": 1.5,
-        "letterSpacing": "-0.002em"
+        "lineHeight": 1,
+        "letterSpacing": "0em"
       },
       "$type": "typography",
-      "$description": "Typography step 5xl at 52px"
+      "$description": "Typography step 5xl at 48px"
     },
     "5xl-2": {
       "$value": {
-        "fontFamily": "Wise Sans",
-        "fontSize": "52px",
+        "fontFamily": "PP Neue Corp Compact Ultrabold",
+        "fontSize": "56px",
         "fontWeight": 400,
-        "lineHeight": 1.5,
+        "lineHeight": 1,
         "letterSpacing": "0em"
       },
       "$type": "typography",
-      "$description": "Typography step 5xl-2 at 52px"
+      "$description": "Typography step 5xl-2 at 56px"
     },
     "5xl-3": {
       "$value": {
-        "fontFamily": "Wise Sans",
-        "fontSize": "59px",
-        "fontWeight": 900,
-        "lineHeight": 0.85,
+        "fontFamily": "PP Neue Corp Compact Ultrabold",
+        "fontSize": "64px",
+        "fontWeight": 400,
+        "lineHeight": 1,
         "letterSpacing": "0em"
       },
       "$type": "typography",
-      "$description": "Typography step 5xl-3 at 59px"
+      "$description": "Typography step 5xl-3 at 64px"
     },
     "5xl-4": {
       "$value": {
-        "fontFamily": "Inter",
-        "fontSize": "61px",
-        "fontWeight": 600,
+        "fontFamily": "PP Neue Corp Compact Ultrabold",
+        "fontSize": "80px",
+        "fontWeight": 400,
         "lineHeight": 1.1,
-        "letterSpacing": "-0.03em"
+        "letterSpacing": "0em"
       },
       "$type": "typography",
-      "$description": "Typography step 5xl-4 at 61px"
+      "$description": "Typography step 5xl-4 at 80px"
     },
     "5xl-5": {
       "$value": {
-        "fontFamily": "Wise Sans",
-        "fontSize": "89px",
-        "fontWeight": 900,
-        "lineHeight": 0.85,
+        "fontFamily": "PP Neue Corp Compact Ultrabold",
+        "fontSize": "80px",
+        "fontWeight": 400,
+        "lineHeight": 1.2,
         "letterSpacing": "0em"
       },
       "$type": "typography",
-      "$description": "Typography step 5xl-5 at 89px"
+      "$description": "Typography step 5xl-5 at 80px"
     },
     "5xl-6": {
       "$value": {
-        "fontFamily": "Wise Sans",
-        "fontSize": "105px",
-        "fontWeight": 900,
-        "lineHeight": 0.85,
+        "fontFamily": "PP Neue Corp Compact Ultrabold",
+        "fontSize": "96px",
+        "fontWeight": 400,
+        "lineHeight": 0.95,
         "letterSpacing": "0em"
       },
       "$type": "typography",
-      "$description": "Typography step 5xl-6 at 105px"
+      "$description": "Typography step 5xl-6 at 96px"
     },
     "5xl-7": {
       "$value": {
-        "fontFamily": "monospace",
-        "fontSize": "300px",
+        "fontFamily": "PP Neue Corp Compact Ultrabold",
+        "fontSize": "189px",
         "fontWeight": 400,
-        "lineHeight": 0.09,
+        "lineHeight": 0.94,
         "letterSpacing": "0em"
       },
       "$type": "typography",
-      "$description": "Typography step 5xl-7 at 300px"
-    },
-    "5xl-8": {
-      "$value": {
-        "fontFamily": "Inter",
-        "fontSize": "300px",
-        "fontWeight": 400,
-        "lineHeight": 0.09,
-        "letterSpacing": "0em"
-      },
-      "$type": "typography",
-      "$description": "Typography step 5xl-8 at 300px"
-    },
-    "5xl-9": {
-      "$value": {
-        "fontFamily": "sans-serif",
-        "fontSize": "300px",
-        "fontWeight": 400,
-        "lineHeight": 0.09,
-        "letterSpacing": "0em"
-      },
-      "$type": "typography",
-      "$description": "Typography step 5xl-9 at 300px"
-    },
-    "5xl-10": {
-      "$value": {
-        "fontFamily": "Wise Sans",
-        "fontSize": "300px",
-        "fontWeight": 400,
-        "lineHeight": 0.09,
-        "letterSpacing": "0em"
-      },
-      "$type": "typography",
-      "$description": "Typography step 5xl-10 at 300px"
+      "$description": "Typography step 5xl-7 at 189px"
     }
   },
   "spacing": {
@@ -1296,6 +845,16 @@ No distinct primary action color was observed; use the extracted neutral button 
       "$type": "dimension",
       "$description": "Spacing 8px"
     },
+    "9": {
+      "$value": "9px",
+      "$type": "dimension",
+      "$description": "Spacing 9px"
+    },
+    "10": {
+      "$value": "10px",
+      "$type": "dimension",
+      "$description": "Spacing 10px"
+    },
     "12": {
       "$value": "12px",
       "$type": "dimension",
@@ -1305,6 +864,11 @@ No distinct primary action color was observed; use the extracted neutral button 
       "$value": "16px",
       "$type": "dimension",
       "$description": "Spacing 16px"
+    },
+    "18": {
+      "$value": "18px",
+      "$type": "dimension",
+      "$description": "Spacing 18px"
     },
     "20": {
       "$value": "20px",
@@ -1316,11 +880,6 @@ No distinct primary action color was observed; use the extracted neutral button 
       "$type": "dimension",
       "$description": "Spacing 24px"
     },
-    "28": {
-      "$value": "28px",
-      "$type": "dimension",
-      "$description": "Spacing 28px"
-    },
     "32": {
       "$value": "32px",
       "$type": "dimension",
@@ -1330,11 +889,6 @@ No distinct primary action color was observed; use the extracted neutral button 
       "$value": "40px",
       "$type": "dimension",
       "$description": "Spacing 40px"
-    },
-    "44": {
-      "$value": "44px",
-      "$type": "dimension",
-      "$description": "Spacing 44px"
     },
     "48": {
       "$value": "48px",
@@ -1351,45 +905,30 @@ No distinct primary action color was observed; use the extracted neutral button 
       "$type": "dimension",
       "$description": "Spacing 64px"
     },
-    "100": {
-      "$value": "100px",
+    "80": {
+      "$value": "80px",
       "$type": "dimension",
-      "$description": "Spacing 100px"
+      "$description": "Spacing 80px"
     },
-    "124": {
-      "$value": "124px",
+    "92": {
+      "$value": "92px",
       "$type": "dimension",
-      "$description": "Spacing 124px"
-    },
-    "unit": {
-      "$value": "4px",
-      "$type": "dimension",
-      "$description": "Base spacing unit"
+      "$description": "Spacing 92px"
     }
   },
   "radius": {
-    "sm": {
-      "$value": "2px",
-      "$type": "dimension",
-      "$description": "Border radius sm"
-    },
-    "lg": {
-      "$value": "10px",
-      "$type": "dimension",
-      "$description": "Border radius lg"
-    },
     "2xl": {
       "$value": "16px",
       "$type": "dimension",
       "$description": "Border radius 2xl"
     },
     "2xl-2": {
-      "$value": "18.7693px",
+      "$value": "20px",
       "$type": "dimension",
       "$description": "Border radius 2xl-2"
     },
     "3xl": {
-      "$value": "28.1539px",
+      "$value": "24px",
       "$type": "dimension",
       "$description": "Border radius 3xl"
     },
@@ -1399,76 +938,50 @@ No distinct primary action color was observed; use the extracted neutral button 
       "$description": "Border radius 3xl-2"
     },
     "3xl-3": {
-      "$value": "37.5385px",
+      "$value": "40px",
       "$type": "dimension",
       "$description": "Border radius 3xl-3"
     },
     "full": {
-      "$value": "1000px",
+      "$value": "100px",
       "$type": "dimension",
       "$description": "Border radius full"
     },
     "full-2": {
-      "$value": "9999px",
+      "$value": "800px",
       "$type": "dimension",
       "$description": "Border radius full-2"
     }
   },
-  "shadow": {
-    "subtle": {
-      "$value": "rgba(14, 15, 12, 0.12) 0px 0px 0px 1px",
-      "$type": "shadow",
-      "$description": "Shadow elevation subtle"
-    },
-    "subtle-2": {
-      "$value": "rgb(134, 134, 133) 0px 0px 0px 1px inset",
-      "$type": "shadow",
-      "$description": "Shadow elevation subtle-2"
-    },
-    "xl": {
-      "$value": "rgba(0, 0, 0, 0.15) 0px 10px 32px 0px, rgba(0, 0, 0, 0.04) 0px 40px 40px 0px",
-      "$type": "shadow",
-      "$description": "Shadow elevation xl"
-    },
-    "lg": {
-      "$value": "rgba(0, 0, 0, 0.08) 0px 6px 20px 0px",
-      "$type": "shadow",
-      "$description": "Shadow elevation lg"
-    }
-  },
   "surface": {
-    "paper": {
-      "$value": "#ffffff",
+    "pumice-canvas": {
+      "$value": "#e2e2df",
       "$type": "color",
-      "$description": "Surface level 0: Page canvas — the default background for all content sections"
+      "$description": "Surface level 0: Page background — warm medium-gray that grounds all content"
     },
-    "fog": {
-      "$value": "#e8ebe6",
+    "limestone-surface": {
+      "$value": "#f7f6f2",
       "$type": "color",
-      "$description": "Surface level 1: Card surfaces, soft panels, and section backgrounds on the white canvas"
+      "$description": "Surface level 1: Cards, content blocks, secondary buttons — lighter warm off-white"
     },
-    "linen-mist": {
-      "$value": "#e2f6d5",
+    "ember-feature": {
+      "$value": "#fc5000",
       "$type": "color",
-      "$description": "Surface level 2: Tinted highlight surfaces — pale green wash for accent containers and hover states"
+      "$description": "Surface level 2: Featured stat cards and emphasis surfaces — the only chromatic surface elevation"
     },
-    "lime-voltage": {
-      "$value": "#9fe870",
+    "plasma-hero": {
+      "$value": "#524ae9",
       "$type": "color",
-      "$description": "Surface level 3: Active surface — selected tabs, primary CTA fill, emphasis zones"
-    },
-    "forest-ink": {
-      "$value": "#163300",
-      "$type": "color",
-      "$description": "Surface level 4: Inverted surface — dark section backgrounds, nav, high-contrast blocks"
+      "$description": "Surface level 3: Hero halftone block — reserved for the homepage hero gradient overlay"
     }
   },
   "$extensions": {
     "com.refero.extraction": {
-      "url": "https://wise.com",
-      "siteName": "Wise",
-      "extractedAt": "2026-06-03T15:11:59.678Z",
+      "url": "https://caldera.xyz",
+      "siteName": "Caldera",
+      "extractedAt": "2026-07-03T03:13:33.116Z",
       "variant": "extended"
     }
   }
 }
+
