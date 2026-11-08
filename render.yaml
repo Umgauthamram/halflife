@@ -33,3 +33,4 @@ services:
         sync: false
       - key: KEY_ENCRYPTION_KEY
         sync: false
+
