@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { requireUser, getOwnedAgent } from "../../../lib/dal";
 import { getDb } from "../../../lib/mongodb";
+import { createAgentApiKey } from "../../../lib/api-key";
 import { ObjectId } from "mongodb";
 
 export async function createAgentAction(formData: FormData) {
@@ -39,10 +40,27 @@ export async function createAgentAction(formData: FormData) {
     createdAt: new Date(),
   };
 
-  await db.collection("agents").insertOne(agentDoc);
+  const insertResult = await db.collection("agents").insertOne(agentDoc);
+  const agentId = insertResult.insertedId.toString();
+
+  // Automatically create a secure API key for the new agent
+  const { rawKey } = await createAgentApiKey(agentId, user.id);
 
   revalidatePath("/app/agents");
-  redirect("/app/agents");
+  redirect(`/app/agents?created=1&agentName=${encodeURIComponent(name)}&rawKey=${encodeURIComponent(rawKey)}`);
+}
+
+export async function generateApiKeyAction(agentId: string) {
+  const user = await requireUser();
+  const agent = await getOwnedAgent(user.id, agentId);
+  if (!agent) {
+    throw new Error("Agent not found or unauthorized");
+  }
+
+  const { rawKey } = await createAgentApiKey(agentId, user.id);
+
+  revalidatePath("/app/agents");
+  redirect(`/app/agents?keyGenerated=1&agentName=${encodeURIComponent(agent.name)}&rawKey=${encodeURIComponent(rawKey)}`);
 }
 
 export async function toggleAgentStatusAction(agentId: string, currentStatus: string) {
@@ -67,4 +85,3 @@ export async function toggleAgentStatusAction(agentId: string, currentStatus: st
 
   revalidatePath("/app/agents");
 }
-
