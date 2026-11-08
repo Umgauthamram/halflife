@@ -47,6 +47,9 @@ export default async function AppLayout({
               <Link href="/app/atlas" className="text-[var(--secondary)] hover:text-[var(--foreground)]">
                 Atlas
               </Link>
+              <Link href="/app/playground" className="text-[var(--secondary)] hover:text-[var(--foreground)] font-medium">
+                Playground
+              </Link>
               {user.role === "admin" && (
                 <div className="flex items-center gap-1.5 pl-2 border-l border-[var(--border)]">
                   <span className="text-[10px] font-mono uppercase tracking-wider text-purple-700 font-semibold mr-0.5">
