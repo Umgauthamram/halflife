@@ -48,12 +48,29 @@ export default async function AppLayout({
                 Atlas
               </Link>
               {user.role === "admin" && (
-                <Link
-                  href="/app/admin/users"
-                  className="rounded border border-purple-800 bg-purple-50 px-2 py-0.5 text-xs font-mono text-purple-900"
-                >
-                  Admin
-                </Link>
+                <div className="flex items-center gap-1.5 pl-2 border-l border-[var(--border)]">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-purple-700 font-semibold mr-0.5">
+                    Admin:
+                  </span>
+                  <Link
+                    href="/app/admin/users"
+                    className="rounded border border-purple-300 bg-purple-50 hover:bg-purple-100 px-2 py-0.5 text-xs font-mono text-purple-900 transition"
+                  >
+                    Users
+                  </Link>
+                  <Link
+                    href="/app/admin/sampler"
+                    className="rounded border border-purple-300 bg-purple-50 hover:bg-purple-100 px-2 py-0.5 text-xs font-mono text-purple-900 transition"
+                  >
+                    Sampler
+                  </Link>
+                  <Link
+                    href="/app/admin/audit"
+                    className="rounded border border-purple-300 bg-purple-50 hover:bg-purple-100 px-2 py-0.5 text-xs font-mono text-purple-900 transition"
+                  >
+                    Audit
+                  </Link>
+                </div>
               )}
             </nav>
           </div>

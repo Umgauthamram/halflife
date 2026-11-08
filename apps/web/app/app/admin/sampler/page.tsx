@@ -46,18 +46,32 @@ export default async function AdminSamplerPage() {
           </p>
         </div>
 
-        <form action={toggleSamplerAction.bind(null, samplerStatus)}>
-          <button
-            type="submit"
-            className={`rounded px-4 py-2 text-xs font-mono font-medium ${
-              isPaused
-                ? "border border-green-800 bg-green-50 text-green-800 hover:bg-green-100"
-                : "border border-red-800 bg-red-50 text-red-800 hover:bg-red-100"
-            }`}
+        <div className="flex items-center gap-3">
+          <Link
+            href="/app/admin/users"
+            className="rounded border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-mono text-[var(--secondary)] hover:text-[var(--foreground)]"
           >
-            {isPaused ? "Resume Platform Sampler" : "Emergency Pause Sampler"}
-          </button>
-        </form>
+            Users
+          </Link>
+          <Link
+            href="/app/admin/audit"
+            className="rounded border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-mono text-[var(--secondary)] hover:text-[var(--foreground)]"
+          >
+            Audit Log
+          </Link>
+          <form action={toggleSamplerAction.bind(null, samplerStatus)}>
+            <button
+              type="submit"
+              className={`rounded px-4 py-1.5 text-xs font-mono font-medium ${
+                isPaused
+                  ? "border border-green-800 bg-green-50 text-green-800 hover:bg-green-100"
+                  : "border border-red-800 bg-red-50 text-red-800 hover:bg-red-100"
+              }`}
+            >
+              {isPaused ? "Resume Platform Sampler" : "Emergency Pause Sampler"}
+            </button>
+          </form>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">

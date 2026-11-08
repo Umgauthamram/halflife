@@ -26,6 +26,20 @@ export default async function AdminAuditPage() {
             Immutable, append-only security log of all administrative actions and authorization events.
           </p>
         </div>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/app/admin/users"
+            className="rounded border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-mono text-[var(--secondary)] hover:text-[var(--foreground)]"
+          >
+            Users
+          </Link>
+          <Link
+            href="/app/admin/sampler"
+            className="rounded border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-mono text-[var(--secondary)] hover:text-[var(--foreground)]"
+          >
+            Sampler Controls
+          </Link>
+        </div>
       </div>
 
       {logs.length === 0 ? (
