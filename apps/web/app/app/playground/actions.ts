@@ -15,6 +15,8 @@ export interface AiCodeGenerationResult {
   intent: string;
   stake: number;
   params: Record<string, unknown>;
+  why: string;
+  how: string;
   explanation: string;
   pythonCode: string;
   typeScriptCode: string;
@@ -44,7 +46,9 @@ Return ONLY a valid JSON object with NO markdown formatting, NO backticks, and N
   "intent": "FX_NOW" | "WEATHER_FORECAST_VERIFY" | "SANCTIONS_SCREENING_MATCH",
   "stake": number (financial value at risk in USD, default 100),
   "params": object,
-  "explanation": string (1 sentence explaining the economic rationale),
+  "why": string (clear explanation of why this intent, parameter, and stake size were selected for this scenario),
+  "how": string (step-by-step explanation of how the Governor evaluates cache decay d(Δt), noise floor η, and miner purchase economics),
+  "explanation": string (1 concise summary sentence),
   "pythonCode": string (executable python code using requests),
   "typeScriptCode": string (executable typescript code using fetch),
   "curlCode": string (cURL command)
@@ -82,6 +86,8 @@ Return ONLY a valid JSON object with NO markdown formatting, NO backticks, and N
             intent: parsed.intent || "FX_NOW",
             stake: Number(parsed.stake) || 100,
             params: parsed.params || { pair: "EURUSD" },
+            why: parsed.why || `Selected intent ${parsed.intent || "FX_NOW"} with financial stake $${parsed.stake || 100} to match the risk profile of this transaction.`,
+            how: parsed.how || `Governor checks local cache for ${parsed.intent || "FX_NOW"}. If cached answer drift d(Δt) is below the miner noise floor, it reuses the answer at $0 cost; otherwise it dispatches a buy order to Telegraph miners.`,
             explanation: parsed.explanation || "Interpreted via Google Gemini 2.5 Flash",
             pythonCode: parsed.pythonCode || "",
             typeScriptCode: parsed.typeScriptCode || "",
@@ -159,13 +165,29 @@ print("Action:", data.get("action"))  # 'buy' or 'reuse'
 print("Answer:", data.get("answer"))
 print("Cost:", data.get("priceUsdc"))`;
 
+  let why = `Selected intent ${intent} with a $${stake} financial stake. This parameterization reflects the risk exposure where stale data could cause transaction loss.`;
+  let how = `The Governor checks your local cache for ${intent} (${JSON.stringify(params)}). If an answer exists and its expected drift d(Δt) is lower than the miner noise floor η, the cached answer is returned in <5ms for $0.00. If drift exceeds η or no cached data exists, a live $0.01 ask is dispatched to Telegraph miners.`;
+
+  if (intent === "FX_NOW") {
+    why = `Real-time FX rates experience high market volatility. A stake of $${stake} means small basis point deviations matter. The Governor monitors the calibrated Atlas half-life curve to decide whether to re-sample Telegraph miners or reuse fresh ticks.`;
+    how = `1. Compute elapsed age Δt since previous FX quote was recorded.\n2. Calculate expected drift: d(Δt) = c * (Δt)^α from the empirical Atlas.\n3. Compare against miner disagreement noise floor η. If drift <= η, buying yields 0 net information; Governor executes REUSE at $0.00 cost.`;
+  } else if (intent === "WEATHER_FORECAST_VERIFY") {
+    why = `Parametric insurance contracts require verified ground meteorological truth. A $${stake} policy requires high certainty, but physical weather observations have slower decay curves than financial ticks.`;
+    how = `1. Look up previous temperature observation for ${JSON.stringify(params)}.\n2. Because weather decay has a longer half-life, the Governor reuses valid measurements within their validity window, preventing redundant miner fees.`;
+  } else if (intent === "SANCTIONS_SCREENING_MATCH") {
+    why = `Compliance screening carries severe regulatory penalties (stake $${stake}). However, OFAC Specially Designated Nationals (SDN) lists update infrequently.`;
+    how = `1. Query cache for entity hash.\n2. Recent sanctions checks retain validity as list updates happen on daily cycles. If queried within the threshold, Governor returns REUSE to maximize throughput without risk.`;
+  }
+
   return {
     intent,
     stake,
     params,
+    why,
+    how,
     explanation: geminiKey
       ? "Interpreted by pattern matcher."
-      : "Deterministic template (Add GEMINI_API_KEY in .env to unlock real-time Gemini generation).",
+      : "Scenario template loaded. Ready to execute against Governor.",
     pythonCode,
     typeScriptCode,
     curlCode,
@@ -351,6 +373,7 @@ export async function executeTestAskAction(
     latencyMs,
     answer: finalAnswer,
     txHash: finalTxHash,
+    inputs: decisionResult.inputs,
     createdAt: new Date(),
   });
 
@@ -422,4 +445,40 @@ export async function getPlaygroundAnalyticsAction() {
     })),
   };
 }
+
+export async function getPlaygroundRunDetailsAction(runId: string) {
+  const user = await requireUser();
+  const db = await getDb();
+
+  const run = await db.collection("playground_runs").findOne({
+    runId,
+    userId: user.id,
+  });
+
+  if (!run) {
+    return null;
+  }
+
+  return {
+    runId: run.runId,
+    userId: run.userId,
+    agentId: run.agentId,
+    agentName: run.agentName || "Agent",
+    apiKeyPrefix: run.apiKeyPrefix || "hl_live_...",
+    intent: run.intent,
+    stake: run.stake,
+    params: run.params || {},
+    requestId: run.requestId,
+    action: run.action,
+    reason: run.reason,
+    priceUsdc: run.priceUsdc ?? 0,
+    savingsUsdc: run.savingsUsdc ?? 0,
+    latencyMs: run.latencyMs ?? 0,
+    answer: run.answer,
+    txHash: run.txHash,
+    inputs: run.inputs || null,
+    createdAt: run.createdAt ? new Date(run.createdAt).toISOString() : new Date().toISOString(),
+  };
+}
+
 

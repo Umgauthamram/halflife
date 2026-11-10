@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import {
   generateAiCodeAction,
   executeTestAskAction,
@@ -30,6 +31,8 @@ const TEMPLATES = [
     tag: "Treasury",
     prompt: "Check EUR/USD rate before settling a $500 cross-border supplier payment",
     badgeColor: "bg-blue-50 text-blue-800 border-blue-200",
+    why: "Real-time FX rates experience high market volatility. A $500 cross-border transaction exposes the agent to slippage if the rate drifts significantly. The Governor checks whether the price change since the last miner purchase exceeds the cost of a fresh query ($0.01).",
+    how: "1. Governor looks up cached EUR/USD rate for this agent.\n2. Computes elapsed time Δt and queries the calibrated Atlas drift model.\n3. If expected drift d(Δt) is within the miner noise floor η, the cached rate is returned in <5ms for $0.00.\n4. If drift exceeds η or no cached rate exists, a fresh $0.01 ask is dispatched to Telegraph miners.",
   },
   {
     id: "defi-arbitrage",
@@ -40,6 +43,8 @@ const TEMPLATES = [
     tag: "High Stake",
     prompt: "Monitor GBP/USD exchange rate for a high-value $2,500 liquidity swap",
     badgeColor: "bg-purple-50 text-purple-800 border-purple-200",
+    why: "High financial stake ($2,500) sharply compresses the acceptable error window. With $2,500 at risk, even a 0.05% price change costs $1.25, heavily favoring fresh miner re-evaluation unless the cached tick was fetched seconds ago.",
+    how: "1. The Governor computes expected loss L(d) = stake * drift.\n2. When stake is high ($2,500), L(d) scales up rapidly.\n3. If L(d) exceeds the $0.01 ask price, the Governor triggers a BUY order to protect transaction value.\n4. Only ultra-fresh ticks (<2s) meet the reuse threshold.",
   },
   {
     id: "weather-risk",
@@ -50,6 +55,8 @@ const TEMPLATES = [
     tag: "Insurance",
     prompt: "Verify current London temperature for automated agricultural parametric claims",
     badgeColor: "bg-emerald-50 text-emerald-800 border-emerald-200",
+    why: "Agricultural parametric contracts trigger payouts based on observed weather thresholds. Ground weather measurements change slowly compared to financial markets, resulting in a much longer empirical half-life.",
+    how: "1. Governor evaluates previous London weather observation.\n2. Because temperature drift is low over short horizons, the Atlas half-life curve shows zero information gain from re-buying within minutes.\n3. Governor reuses the certified observation at $0.00, eliminating duplicate oracle fees.",
   },
   {
     id: "sanctions-compliance",
@@ -60,6 +67,8 @@ const TEMPLATES = [
     tag: "Compliance",
     prompt: "Screen entity Acme International against OFAC sanctions database before clearing $10,000 transfer",
     badgeColor: "bg-amber-50 text-amber-800 border-amber-200",
+    why: "Compliance checks require strict regulatory certainty ($10,000 stake). However, OFAC sanctions lists are updated on discrete daily or weekly government publication cycles.",
+    how: "1. Governor hashes the target entity name.\n2. Recent sanctions screenings against this entity remain valid across the batch window.\n3. Governor reuses the certified compliance record with cryptographic provenance, maintaining auditability without recurring costs.",
   },
   {
     id: "rapid-heartbeat",
@@ -70,6 +79,8 @@ const TEMPLATES = [
     tag: "Test Reuse",
     prompt: "Run continuous heartbeat check. Observe first query BUY, subsequent immediate query REUSE at $0.00",
     badgeColor: "bg-indigo-50 text-indigo-800 border-indigo-200",
+    why: "High-frequency agents often poll rates in loops. Without Half-Life, an agent querying every second pays $0.01/sec ($864/day). With Half-Life, intermediate queries are satisfied from cache for $0.00.",
+    how: "1. First call finds no cached tick; Governor buys from Telegraph for $0.01.\n2. Second call within seconds finds Δt ≈ 0, where drift is far below the miner noise floor.\n3. Governor returns action: REUSE at $0.00 with <5ms latency.",
   },
 ];
 
@@ -85,7 +96,18 @@ export default function PlaygroundClient({
   const [prompt, setPrompt] = useState(TEMPLATES[0].prompt);
   const [selectedTemplateId, setSelectedTemplateId] = useState(TEMPLATES[0].id);
   const [activeLanguage, setActiveLanguage] = useState<"curl" | "ts" | "py">("curl");
-  const [codeResult, setCodeResult] = useState<AiCodeGenerationResult | null>(null);
+  const [codeResult, setCodeResult] = useState<AiCodeGenerationResult>({
+    intent: TEMPLATES[0].intent,
+    stake: TEMPLATES[0].stake,
+    params: TEMPLATES[0].params,
+    why: TEMPLATES[0].why,
+    how: TEMPLATES[0].how,
+    explanation: TEMPLATES[0].prompt,
+    isAiGenerated: false,
+    curlCode: `curl -X POST https://halflifes.vercel.app/api/v1/ask \\\n  -H "Authorization: Bearer ${defaultApiKey || "hl_live_YOUR_KEY"}" \\\n  -H "Content-Type: application/json" \\\n  -d '${JSON.stringify({ intent: TEMPLATES[0].intent, stake: TEMPLATES[0].stake, requestId: "req_" + Date.now(), params: TEMPLATES[0].params })}'`,
+    typeScriptCode: `import { HalfLifeClient } from "@half-life/sdk";\n\nconst client = new HalfLifeClient({\n  apiKey: "${defaultApiKey || "hl_live_YOUR_KEY"}",\n  baseUrl: "https://halflifes.vercel.app",\n});\n\nconst decision = await client.ask({\n  intent: "${TEMPLATES[0].intent}",\n  stake: ${TEMPLATES[0].stake},\n  params: ${JSON.stringify(TEMPLATES[0].params)},\n});\nconsole.log(decision.action); // 'buy' or 'reuse'`,
+    pythonCode: `import requests\n\nresponse = requests.post(\n    "https://halflifes.vercel.app/api/v1/ask",\n    headers={"Authorization": "Bearer ${defaultApiKey || "hl_live_YOUR_KEY"}"},\n    json={\n        "intent": "${TEMPLATES[0].intent}",\n        "stake": ${TEMPLATES[0].stake},\n        "requestId": "agent_req_01",\n        "params": ${JSON.stringify(TEMPLATES[0].params)}\n    }\n)\nprint(response.json())`,
+  });
 
   // Execution & Live Results
   const [executionResult, setExecutionResult] = useState<any>(null);
@@ -104,11 +126,12 @@ export default function PlaygroundClient({
   const handleSelectTemplate = (tmpl: typeof TEMPLATES[0]) => {
     setSelectedTemplateId(tmpl.id);
     setPrompt(tmpl.prompt);
-    // Instant code preview for template
     setCodeResult({
       intent: tmpl.intent,
       stake: tmpl.stake,
       params: tmpl.params,
+      why: tmpl.why,
+      how: tmpl.how,
       explanation: tmpl.prompt,
       isAiGenerated: false,
       curlCode: `curl -X POST https://halflifes.vercel.app/api/v1/ask \\\n  -H "Authorization: Bearer ${apiKey || "hl_live_YOUR_KEY"}" \\\n  -H "Content-Type: application/json" \\\n  -d '${JSON.stringify({ intent: tmpl.intent, stake: tmpl.stake, requestId: "req_" + Date.now(), params: tmpl.params })}'`,
@@ -172,24 +195,10 @@ export default function PlaygroundClient({
 
   return (
     <div className="flex flex-col gap-8">
-      {/* Top Header & Mode Toggle */}
+      {/* Top Header & Tab Toggle */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-[var(--border)] pb-4">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="rounded bg-amber-100 px-2 py-0.5 text-xs font-mono font-bold uppercase tracking-wider text-amber-900">
-              Interactive Sandbox
-            </span>
-            {hasGeminiKey ? (
-              <span className="rounded border border-purple-200 bg-purple-50 px-2 py-0.5 text-[11px] font-mono text-purple-700">
-                ✨ Gemini 2.5 Flash Connected
-              </span>
-            ) : (
-              <span className="rounded border border-gray-200 bg-gray-50 px-2 py-0.5 text-[11px] font-mono text-[var(--secondary)]">
-                Template Mode (Add GEMINI_API_KEY in .env)
-              </span>
-            )}
-          </div>
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight">Agent Testing Studio &amp; AI Generator</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Agent Testing Studio &amp; AI Generator</h1>
           <p className="mt-1 text-sm text-[var(--secondary)]">
             Write queries with Gemini AI, test live Governor decisions, and inspect execution analytics.
           </p>
@@ -209,13 +218,13 @@ export default function PlaygroundClient({
           </button>
           <button
             onClick={handleOpenAnalytics}
-            className={`flex items-center gap-1.5 rounded px-3.5 py-1.5 text-xs font-mono font-medium transition ${
+            className={`rounded px-3.5 py-1.5 text-xs font-mono font-medium transition ${
               activeTab === "analytics"
                 ? "bg-[var(--foreground)] text-[var(--background)] shadow-xs"
                 : "text-[var(--secondary)] hover:text-[var(--foreground)]"
             }`}
           >
-            <span>📊 Analytics &amp; History</span>
+            Analytics &amp; History
           </button>
         </div>
       </div>
@@ -316,10 +325,38 @@ export default function PlaygroundClient({
                 disabled={isGenerating}
                 className="whitespace-nowrap rounded border border-purple-800 bg-purple-900 px-5 py-2 text-xs font-mono font-bold text-white hover:bg-purple-950 transition active:scale-98 disabled:opacity-50"
               >
-                {isGenerating ? "Generating..." : "✨ Generate Code"}
+                {isGenerating ? "Generating..." : "Generate Code"}
               </button>
             </div>
           </div>
+
+          {/* Why & How It Works Explanation Panel */}
+          {codeResult && (
+            <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
+              <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
+                <span className="text-xs font-mono uppercase tracking-wider text-[var(--secondary)] font-semibold">
+                  Why &amp; How It Works
+                </span>
+                <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-[var(--background)] border border-[var(--border)] text-[var(--secondary)]">
+                  Governor Logic
+                </span>
+              </div>
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs leading-relaxed">
+                <div className="rounded border border-[var(--border)] bg-[var(--background)] p-3.5">
+                  <span className="font-mono font-semibold uppercase text-xs text-[var(--foreground)] block mb-1.5">
+                    Why this Intent &amp; Stake:
+                  </span>
+                  <p className="text-[var(--secondary)] whitespace-pre-line leading-relaxed">{codeResult.why}</p>
+                </div>
+                <div className="rounded border border-[var(--border)] bg-[var(--background)] p-3.5">
+                  <span className="font-mono font-semibold uppercase text-xs text-[var(--foreground)] block mb-1.5">
+                    How Governor Evaluates:
+                  </span>
+                  <p className="text-[var(--secondary)] whitespace-pre-line leading-relaxed">{codeResult.how}</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Generated Code & Live Runner Section */}
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -369,7 +406,7 @@ export default function PlaygroundClient({
                   }}
                   className="text-xs font-mono text-[var(--secondary)] hover:text-[var(--foreground)]"
                 >
-                  {copiedCode ? "✓ Copied" : "Copy"}
+                  {copiedCode ? "Copied" : "Copy"}
                 </button>
               </div>
 
@@ -393,7 +430,7 @@ export default function PlaygroundClient({
                   disabled={isExecuting}
                   className="rounded border border-green-800 bg-green-800 px-4 py-2 text-xs font-mono font-bold text-white hover:bg-green-900 transition active:scale-98 disabled:opacity-50 shadow-xs"
                 >
-                  {isExecuting ? "Executing Ask..." : "🚀 Execute Live Ask"}
+                  {isExecuting ? "Executing Ask..." : "Execute Live Ask"}
                 </button>
               </div>
             </div>
@@ -414,7 +451,7 @@ export default function PlaygroundClient({
               <div className="p-5 flex-1 flex flex-col justify-between">
                 {executionError && (
                   <div className="rounded border border-red-300 bg-red-50 p-4 text-xs font-mono text-red-800 mb-4">
-                    ⚠️ {executionError}
+                    {executionError}
                   </div>
                 )}
 
@@ -491,10 +528,12 @@ export default function PlaygroundClient({
                   </div>
                 ) : (
                   <div className="h-full flex flex-col items-center justify-center p-8 text-center text-xs text-[var(--secondary)]">
-                    <span className="text-3xl mb-2">⚡</span>
-                    <p className="font-medium">No ask executed yet.</p>
-                    <p className="mt-1 max-w-xs">
-                      Select a scenario or generate code with Gemini, then click <strong>&quot;Execute Live Ask&quot;</strong> to watch the Governor calculate decay in real time!
+                    <div className="rounded border border-[var(--border)] bg-[var(--background)] px-3 py-1 font-mono text-[11px] uppercase font-semibold text-[var(--foreground)] mb-3">
+                      Awaiting Execution
+                    </div>
+                    <p className="font-medium text-[var(--foreground)]">No ask executed yet.</p>
+                    <p className="mt-1 max-w-xs leading-relaxed">
+                      Select a scenario or generate code with Gemini, then click <strong>&quot;Execute Live Ask&quot;</strong> to watch the Governor calculate decay in real time.
                     </p>
                   </div>
                 )}
@@ -511,6 +550,52 @@ export default function PlaygroundClient({
             </div>
           ) : analyticsData ? (
             <div className="flex flex-col gap-6">
+              {/* How Analytics Are Computed Explanation Card */}
+              <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
+                <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
+                  <span className="text-xs font-mono uppercase tracking-wider text-[var(--secondary)] font-semibold">
+                    How Half-Life Analytics Are Measured
+                  </span>
+                  <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-[var(--background)] border border-[var(--border)] text-[var(--secondary)]">
+                    Statistical Metrics
+                  </span>
+                </div>
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4 text-xs leading-relaxed">
+                  <div className="rounded border border-[var(--border)] bg-[var(--background)] p-3">
+                    <span className="font-mono font-semibold uppercase text-xs text-[var(--foreground)] block mb-1">
+                      Total Spend ($)
+                    </span>
+                    <p className="text-[var(--secondary)]">
+                      Capital paid out to Telegraph miners for fresh answers whenever expected drift exceeds the noise floor.
+                    </p>
+                  </div>
+                  <div className="rounded border border-[var(--border)] bg-[var(--background)] p-3">
+                    <span className="font-mono font-semibold uppercase text-xs text-green-700 block mb-1">
+                      Total Saved ($)
+                    </span>
+                    <p className="text-[var(--secondary)]">
+                      Miner purchase fees eliminated by reusing fresh cached answers at $0.00 without loss of fidelity.
+                    </p>
+                  </div>
+                  <div className="rounded border border-[var(--border)] bg-[var(--background)] p-3">
+                    <span className="font-mono font-semibold uppercase text-xs text-[var(--foreground)] block mb-1">
+                      Governor Reuse Rate
+                    </span>
+                    <p className="text-[var(--secondary)]">
+                      Percentage of requests served from cache. Higher reuse rates signify maximum bandwidth and capital efficiency.
+                    </p>
+                  </div>
+                  <div className="rounded border border-[var(--border)] bg-[var(--background)] p-3">
+                    <span className="font-mono font-semibold uppercase text-xs text-[var(--foreground)] block mb-1">
+                      Latency Reduction
+                    </span>
+                    <p className="text-[var(--secondary)]">
+                      Cached queries resolve in sub-5ms locally versus 1,000ms+ network consensus and miner signature latency.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               {/* Stat Metric Cards */}
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
                 <div className="border border-[var(--border)] bg-[var(--surface)] p-4 rounded-lg">
@@ -535,6 +620,105 @@ export default function PlaygroundClient({
                 </div>
               </div>
 
+              {/* Visual Performance Charts */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Visual Chart 1: Spend vs Savings Breakdown */}
+                <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-xs font-mono uppercase tracking-wider text-[var(--secondary)] font-semibold">
+                      Economic Efficiency: Spend vs Savings
+                    </span>
+                    <span className="text-xs font-mono text-[var(--secondary)]">
+                      Total Volume: ${(analyticsData.totalSpend + analyticsData.totalSavings).toFixed(3)}
+                    </span>
+                  </div>
+
+                  <div className="h-6 w-full flex rounded-full overflow-hidden border border-[var(--border)] bg-[var(--background)]">
+                    <div
+                      style={{
+                        width: `${
+                          analyticsData.totalSpend + analyticsData.totalSavings > 0
+                            ? (analyticsData.totalSpend / (analyticsData.totalSpend + analyticsData.totalSavings)) * 100
+                            : 50
+                        }%`,
+                      }}
+                      className="bg-amber-600 transition-all duration-500"
+                      title={`Spend: $${analyticsData.totalSpend}`}
+                    />
+                    <div
+                      style={{
+                        width: `${
+                          analyticsData.totalSpend + analyticsData.totalSavings > 0
+                            ? (analyticsData.totalSavings / (analyticsData.totalSpend + analyticsData.totalSavings)) * 100
+                            : 50
+                        }%`,
+                      }}
+                      className="bg-green-600 transition-all duration-500"
+                      title={`Saved: $${analyticsData.totalSavings}`}
+                    />
+                  </div>
+
+                  <div className="mt-3 flex items-center justify-between text-xs font-mono">
+                    <div className="flex items-center gap-2">
+                      <span className="inline-block h-3 w-3 rounded-xs bg-amber-600" />
+                      <span className="text-[var(--secondary)]">Miner Spend:</span>
+                      <span className="font-semibold">${analyticsData.totalSpend.toFixed(3)}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-block h-3 w-3 rounded-xs bg-green-600" />
+                      <span className="text-[var(--secondary)]">Governor Savings:</span>
+                      <span className="font-bold text-green-700">${analyticsData.totalSavings.toFixed(3)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Visual Chart 2: Governor Action Distribution */}
+                <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-xs font-mono uppercase tracking-wider text-[var(--secondary)] font-semibold">
+                      Decision Distribution (Buy vs Reuse)
+                    </span>
+                    <span className="text-xs font-mono text-[var(--secondary)]">
+                      {analyticsData.totalRuns} Total Invocations
+                    </span>
+                  </div>
+
+                  <div className="h-6 w-full flex rounded-full overflow-hidden border border-[var(--border)] bg-[var(--background)]">
+                    <div
+                      style={{
+                        width: `${
+                          analyticsData.totalRuns > 0 ? (analyticsData.buysCount / analyticsData.totalRuns) * 100 : 50
+                        }%`,
+                      }}
+                      className="bg-emerald-700 transition-all duration-500"
+                      title={`Buys: ${analyticsData.buysCount}`}
+                    />
+                    <div
+                      style={{
+                        width: `${
+                          analyticsData.totalRuns > 0 ? (analyticsData.reusesCount / analyticsData.totalRuns) * 100 : 50
+                        }%`,
+                      }}
+                      className="bg-blue-600 transition-all duration-500"
+                      title={`Reuses: ${analyticsData.reusesCount}`}
+                    />
+                  </div>
+
+                  <div className="mt-3 flex items-center justify-between text-xs font-mono">
+                    <div className="flex items-center gap-2">
+                      <span className="inline-block h-3 w-3 rounded-xs bg-emerald-700" />
+                      <span className="text-[var(--secondary)]">Purchased Fresh:</span>
+                      <span className="font-semibold">{analyticsData.buysCount} ({analyticsData.totalRuns > 0 ? Math.round((analyticsData.buysCount / analyticsData.totalRuns) * 100) : 0}%)</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-block h-3 w-3 rounded-xs bg-blue-600" />
+                      <span className="text-[var(--secondary)]">Reused from Cache:</span>
+                      <span className="font-bold text-blue-700">{analyticsData.reusesCount} ({analyticsData.savingsRate}%)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Runs Table */}
               <div className="overflow-x-auto border border-[var(--border)] bg-[var(--surface)] rounded-lg">
                 <table className="w-full text-left text-sm">
@@ -548,19 +732,27 @@ export default function PlaygroundClient({
                       <th className="px-4 py-3 text-right">Cost</th>
                       <th className="px-4 py-3 text-right">Saved</th>
                       <th className="px-4 py-3 text-right">Latency</th>
+                      <th className="px-4 py-3 text-center">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[var(--border)] font-mono text-xs">
                     {analyticsData.runs.length === 0 ? (
                       <tr>
-                        <td colSpan={8} className="p-8 text-center text-[var(--secondary)]">
-                          No test runs recorded yet. Execute an ask in the studio to see analytics!
+                        <td colSpan={9} className="p-8 text-center text-[var(--secondary)]">
+                          No test runs recorded yet. Execute an ask in the studio to see analytics.
                         </td>
                       </tr>
                     ) : (
                       analyticsData.runs.map((r: any) => (
                         <tr key={r.runId} className="hover:bg-[var(--background)]">
-                          <td className="px-4 py-3 font-semibold text-purple-900">{r.runId}</td>
+                          <td className="px-4 py-3">
+                            <Link
+                              href={`/app/playground/${r.runId}`}
+                              className="font-semibold text-purple-900 hover:underline"
+                            >
+                              {r.runId}
+                            </Link>
+                          </td>
                           <td className="px-4 py-3 text-[var(--secondary)]">{r.createdAt.slice(0, 19).replace("T", " ")}</td>
                           <td className="px-4 py-3 font-sans font-medium">{r.agentName}</td>
                           <td className="px-4 py-3">{r.intent}</td>
@@ -580,6 +772,14 @@ export default function PlaygroundClient({
                           <td className="px-4 py-3 text-right">${r.priceUsdc?.toFixed(3)}</td>
                           <td className="px-4 py-3 text-right font-bold text-green-700">${r.savingsUsdc?.toFixed(3)}</td>
                           <td className="px-4 py-3 text-right text-[var(--secondary)]">{r.latencyMs}ms</td>
+                          <td className="px-4 py-3 text-center">
+                            <Link
+                              href={`/app/playground/${r.runId}`}
+                              className="rounded border border-[var(--border)] bg-[var(--background)] px-2.5 py-1 text-[11px] font-mono hover:border-[var(--border-strong)] transition"
+                            >
+                              View Details &rarr;
+                            </Link>
+                          </td>
                         </tr>
                       ))
                     )}
