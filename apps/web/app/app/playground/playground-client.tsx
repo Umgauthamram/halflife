@@ -170,7 +170,7 @@ export default function PlaygroundClient({
         setExecutionError(res.error || "Failed to execute ask");
         setExecutionResult(null);
       } else {
-        setExecutionResult(res.result);
+        setExecutionResult({ ...res.result, runId: res.runId });
         setExecutionLatency(res.latencyMs ?? null);
       }
     });
@@ -523,6 +523,21 @@ export default function PlaygroundClient({
                     {executionResult.txHash && (
                       <div className="text-[11px] text-[var(--secondary)] truncate">
                         Sepolia Proof: <span className="font-mono text-xs">{executionResult.txHash}</span>
+                      </div>
+                    )}
+
+                    {/* Dedicated Analysis Link */}
+                    {executionResult.runId && (
+                      <div className="flex items-center justify-between border border-[var(--border)] bg-[var(--background)] p-3 rounded text-xs font-mono">
+                        <span className="text-[var(--secondary)]">
+                          Recorded Run: <span className="font-semibold text-purple-900">{executionResult.runId}</span>
+                        </span>
+                        <Link
+                          href={`/app/playground/${executionResult.runId}`}
+                          className="font-semibold text-purple-700 hover:text-purple-900 hover:underline"
+                        >
+                          View Full Test Summary &rarr;
+                        </Link>
                       </div>
                     )}
                   </div>
