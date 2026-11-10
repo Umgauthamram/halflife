@@ -12,11 +12,11 @@
 - **Status**: Complete & Production-Verified
 
 ## 3. Recent Progress (Rolling Snapshot - Max 5)
-- Created dedicated authenticated `/app/atlas` inside the dashboard shell with full AppLayout navigation and direct "Deploy Agent" action
-- Updated `apps/web/app/app/layout.tsx` to link to `/app/atlas` so logged-in users remain inside the app shell
-- Added automatic redirects on `/` and `/atlas`: authenticated users are seamlessly routed to `/app` and `/app/atlas`, preventing exposure to landing page or sign-in buttons
-- Resolved NextAuth v5 `MissingSecret` error by providing fallback secret in `apps/web/auth.ts`
-- All 53/53 tests pass, clean Next.js production build across all 20 routes
+- Deployed background sampling worker service to Render with automated 60s interval Telegraph sampling, MongoDB Atlas persistence, and emergency pause/resume controls
+- Created `/app/playground` Agent Testing Studio with virtual API key execution, 5 pre-built scenarios, and Google Gemini integration
+- Cleaned all icons/emojis and removed the top sandbox banner per user requirements
+- Added educational "Why & How It Works" explanation panel breaking down intent selection, stake sizing, and Governor decay mechanics
+- Added statistical analytics explanation, visual spend vs savings charts, and dedicated granular single-run inspection route `/app/playground/[id]`
 
 ## 4. Next Immediate Steps
 - [ ] Record final demo video following `docs/video-script.md`
