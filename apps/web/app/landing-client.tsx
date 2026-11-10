@@ -6,6 +6,67 @@ import { useState } from "react";
 export default function HalfLifeLandingPage() {
   const [emailInput, setEmailInput] = useState("");
   const [subscribed, setSubscribed] = useState(false);
+  const [demoScenario, setDemoScenario] = useState<"initial" | "reuse" | "compliance">("initial");
+
+  const DEMO_SCENARIOS = {
+    initial: {
+      id: "initial",
+      title: "1. Fresh Ask (Cache Miss)",
+      badge: "Decision: BUY",
+      badgeColor: "bg-emerald-600 text-white",
+      intent: "FX_NOW",
+      stake: 500,
+      query: "Check EUR/USD rate before settling $500 cross-border transfer",
+      action: "buy" as const,
+      reason: "No cached answer exists for EURUSD. Dispatched fresh purchase to top Telegraph miner on Sepolia.",
+      cost: "$0.010 USDC",
+      saved: "$0.000",
+      latency: "1,156ms",
+      drift: "0.00000",
+      noiseFloor: "0.0000",
+      payload: { pair: "EURUSD", rate: 1.0854, timestamp: 1794170246 },
+      proof: "0x13522a15fd5bf7c67406bbd63e118b7aba4677d29229ca4a89f91f4552b976f0",
+      explanation: "The first time an agent requests an intent, the Governor buys from Telegraph miners and commits the verified answer to cache.",
+    },
+    reuse: {
+      id: "reuse",
+      title: "2. Polling 3s Later (Cache Hit)",
+      badge: "Decision: REUSE",
+      badgeColor: "bg-blue-600 text-white",
+      intent: "FX_NOW",
+      stake: 500,
+      query: "Agent polls EUR/USD again 3 seconds later for real-time heartbeat check",
+      action: "reuse" as const,
+      reason: "Expected drift (0.00000) is within the miner noise floor (0.0000). Re-purchasing adds zero net intelligence.",
+      cost: "$0.000 USDC",
+      saved: "$0.010 USDC (100% Saved)",
+      latency: "2ms",
+      drift: "0.00000",
+      noiseFloor: "0.0000",
+      payload: { pair: "EURUSD", rate: 1.0854, cached: true },
+      proof: "0x13522a15fd5bf7c67406bbd63e118b7aba4677d29229ca4a89f91f4552b976f0",
+      explanation: "Instead of paying $0.010 again, the Governor serves the cached rate in 2ms for $0.00. Across 86,400 daily polls, this saves $864/day!",
+    },
+    compliance: {
+      id: "compliance",
+      title: "3. High-Stake Compliance Check",
+      badge: "Decision: BUY",
+      badgeColor: "bg-emerald-600 text-white",
+      intent: "SANCTIONS_SCREENING_MATCH",
+      stake: 10000,
+      query: "Screen entity 'Acme International' against OFAC sanctions database before clearing $10,000 transfer",
+      action: "buy" as const,
+      reason: "High compliance stake ($10,000) compresses acceptable drift tolerance. Fresh cryptographic screening required.",
+      cost: "$0.010 USDC",
+      saved: "$0.000",
+      latency: "840ms",
+      drift: "0.00000",
+      noiseFloor: "0.0020",
+      payload: { entity: "Acme International", status: "CLEAR", ofacListVersion: "2026-11-10" },
+      proof: "0x78a1bc92e44f801bc93411a098ef32470129bc4891a27e7f80b91cb45a9018e4",
+      explanation: "When financial loss from stale data exceeds the ask price, the Governor forces a fresh buy to protect high-value transactions.",
+    },
+  };
 
   const stats = [
     { value: "300s", label: "AVERAGE FX DRIFT HALF-LIFE" },
@@ -109,8 +170,8 @@ export default function HalfLifeLandingPage() {
               <Link href="#engine" className="hover:text-[#fc5000] transition">
                 Governor
               </Link>
-              <Link href="#missions" className="hover:text-[#fc5000] transition">
-                Mission 09
+              <Link href="#demo" className="hover:text-[#fc5000] transition">
+                Demo
               </Link>
               <Link href="#sdk" className="hover:text-[#fc5000] transition">
                 Docs
@@ -419,6 +480,259 @@ if (decision.shouldBuy) {
   await governor.recordPurchase(freshAnswer.receipt);
 }`}
               </pre>
+            </div>
+          </div>
+        </section>
+
+        {/* Application Interactive Demo & End-to-End Walkthrough Section */}
+        <section id="demo" className="rounded-[40px] bg-[#f7f6f2] p-8 sm:p-14 border border-[#070607]/10 flex flex-col gap-10">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[#070607]/10 pb-8">
+            <div className="max-w-2xl">
+              <span className="inline-flex rounded-[800px] bg-[#fc5000] px-3.5 py-1 text-xs font-bold text-white mb-3">
+                APPLICATION DEMO &bull; HOW IT ALL WORKS
+              </span>
+              <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-[#070607]">
+                SEE WHAT HALF-LIFE DOES BEFORE YOU START
+              </h2>
+              <p className="mt-3 text-sm sm:text-base font-medium text-[#070607]/70 leading-relaxed">
+                Autonomous AI agents waste thousands of dollars buying identical data over and over. Half-Life measures information decay so agents only pay when new information genuinely matters.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Link
+                href="/login"
+                className="rounded-full bg-[#070607] px-6 py-3 text-sm font-semibold text-white hover:bg-[#fc5000] transition shadow-sm"
+              >
+                Open Testing Studio &rarr;
+              </Link>
+            </div>
+          </div>
+
+          {/* 4 Architectural Pillars: What the whole application does */}
+          <div>
+            <div className="mb-4">
+              <span className="text-xs font-mono uppercase tracking-wider text-[#070607]/60 font-bold">
+                The 4 Stages of Half-Life
+              </span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="rounded-[28px] bg-white p-6 border border-[#070607]/10 flex flex-col justify-between">
+                <div>
+                  <span className="text-xs font-mono font-bold text-[#fc5000] block mb-2">STAGE 01</span>
+                  <h3 className="text-lg font-bold uppercase text-[#070607]">Atlas Sampler</h3>
+                  <p className="mt-2 text-xs font-medium text-[#070607]/70 leading-relaxed">
+                    A 24/7 background worker deployed on Render queries Telegraph miners every 60s, continuously tracking independent miner disagreement (Noise Floor &eta;).
+                  </p>
+                </div>
+                <div className="mt-4 pt-3 border-t border-[#070607]/10 text-[11px] font-mono text-[#070607]/60">
+                  Runs automatically in background
+                </div>
+              </div>
+
+              <div className="rounded-[28px] bg-white p-6 border border-[#070607]/10 flex flex-col justify-between">
+                <div>
+                  <span className="text-xs font-mono font-bold text-[#fc5000] block mb-2">STAGE 02</span>
+                  <h3 className="text-lg font-bold uppercase text-[#070607]">Governor Engine</h3>
+                  <p className="mt-2 text-xs font-medium text-[#070607]/70 leading-relaxed">
+                    Evaluates Expected Loss (Stake &times; Drift). If drift is below the noise floor, it returns a verified REUSE for $0.00 in &lt;5ms instead of paying miner fees.
+                  </p>
+                </div>
+                <div className="mt-4 pt-3 border-t border-[#070607]/10 text-[11px] font-mono text-[#070607]/60">
+                  Saves 64%+ of agent budgets
+                </div>
+              </div>
+
+              <div className="rounded-[28px] bg-white p-6 border border-[#070607]/10 flex flex-col justify-between">
+                <div>
+                  <span className="text-xs font-mono font-bold text-[#fc5000] block mb-2">STAGE 03</span>
+                  <h3 className="text-lg font-bold uppercase text-[#070607]">Testing Studio</h3>
+                  <p className="mt-2 text-xs font-medium text-[#070607]/70 leading-relaxed">
+                    Developers test live queries in a sandbox, generate custom cURL / TypeScript / Python code using Gemini AI, and inspect real-time Governor decisions.
+                  </p>
+                </div>
+                <div className="mt-4 pt-3 border-t border-[#070607]/10 text-[11px] font-mono text-[#070607]/60">
+                  5 pre-built templates included
+                </div>
+              </div>
+
+              <div className="rounded-[28px] bg-white p-6 border border-[#070607]/10 flex flex-col justify-between">
+                <div>
+                  <span className="text-xs font-mono font-bold text-[#fc5000] block mb-2">STAGE 04</span>
+                  <h3 className="text-lg font-bold uppercase text-[#070607]">On-Chain Proof</h3>
+                  <p className="mt-2 text-xs font-medium text-[#070607]/70 leading-relaxed">
+                    Every miner purchase and cryptographic consensus receipt is verified on Ethereum Sepolia with immutable Merkle proofs and complete audit history.
+                  </p>
+                </div>
+                <div className="mt-4 pt-3 border-t border-[#070607]/10 text-[11px] font-mono text-[#070607]/60">
+                  Sepolia x402 settlement
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Interactive Live Simulation Console */}
+          <div className="rounded-[32px] bg-[#070607] p-6 sm:p-10 text-white flex flex-col gap-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-6">
+              <div>
+                <span className="text-xs font-mono uppercase tracking-wider text-[#f5f28e] font-semibold">
+                  Interactive Simulator
+                </span>
+                <h3 className="text-2xl font-bold uppercase text-white mt-1">
+                  Try the Governor Right Here
+                </h3>
+                <p className="text-xs text-white/60 mt-0.5">
+                  Click a scenario below to see how the Governor calculates drift and decides whether to BUY or REUSE:
+                </p>
+              </div>
+
+              {/* Scenario Toggle Tabs */}
+              <div className="flex flex-wrap items-center gap-2">
+                {(Object.keys(DEMO_SCENARIOS) as (keyof typeof DEMO_SCENARIOS)[]).map((key) => {
+                  const s = DEMO_SCENARIOS[key];
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => setDemoScenario(key)}
+                      className={`rounded-full px-4 py-2 text-xs font-mono font-bold transition ${
+                        demoScenario === key
+                          ? "bg-[#fc5000] text-white shadow-sm"
+                          : "bg-white/10 text-white/70 hover:bg-white/20 hover:text-white"
+                      }`}
+                    >
+                      {s.title}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Active Simulation Display */}
+            {(() => {
+              const current = DEMO_SCENARIOS[demoScenario];
+              const isReuse = current.action === "reuse";
+              return (
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start font-mono text-xs">
+                  {/* Left Column: Simulated Request Context */}
+                  <div className="lg:col-span-5 flex flex-col gap-4 rounded-2xl bg-white/5 border border-white/10 p-5">
+                    <div>
+                      <span className="text-[10px] uppercase text-white/50 block mb-1">Simulated User Query:</span>
+                      <p className="font-sans text-sm font-semibold text-white leading-relaxed">
+                        &quot;{current.query}&quot;
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 pt-3 border-t border-white/10">
+                      <div>
+                        <span className="text-[10px] uppercase text-white/50 block">Intent:</span>
+                        <span className="font-bold text-[#f5f28e]">{current.intent}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] uppercase text-white/50 block">Stake Exposure:</span>
+                        <span className="font-bold text-white">${current.stake.toLocaleString()}</span>
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-white/10">
+                      <span className="text-[10px] uppercase text-white/50 block mb-1">Key Insight:</span>
+                      <p className="font-sans text-xs text-white/80 leading-relaxed">
+                        {current.explanation}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Right Column: Live Governor Decision Output */}
+                  <div className="lg:col-span-7 flex flex-col gap-4 rounded-2xl bg-[#121214] border border-white/10 p-5">
+                    {/* Verdict Banner */}
+                    <div className={`rounded-xl p-4 flex items-center justify-between border ${
+                      isReuse ? "bg-blue-950/60 border-blue-800 text-blue-200" : "bg-emerald-950/60 border-emerald-800 text-emerald-200"
+                    }`}>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white ${
+                            isReuse ? "bg-blue-600" : "bg-emerald-600"
+                          }`}>
+                            GOVERNOR: {current.action}
+                          </span>
+                          <span className="text-xs font-semibold text-white">
+                            {isReuse ? "Zero-Cost Cache Reuse" : "Fresh Miner Purchase"}
+                          </span>
+                        </div>
+                        <p className="mt-2 text-xs text-white/80 font-sans leading-relaxed">
+                          {current.reason}
+                        </p>
+                      </div>
+
+                      <div className="text-right shrink-0 ml-4">
+                        <div className="text-[10px] uppercase text-white/50">Fee Paid</div>
+                        <div className="text-base font-bold text-white">{current.cost}</div>
+                      </div>
+                    </div>
+
+                    {/* Mathematical Metrics */}
+                    <div className="grid grid-cols-3 gap-2 text-[11px]">
+                      <div className="rounded bg-white/5 p-2.5 border border-white/5">
+                        <span className="text-white/50 block text-[9px] uppercase">Drift d(&Delta;t)</span>
+                        <span className="font-semibold text-white">{current.drift}</span>
+                      </div>
+                      <div className="rounded bg-white/5 p-2.5 border border-white/5">
+                        <span className="text-white/50 block text-[9px] uppercase">Noise Floor &eta;</span>
+                        <span className="font-semibold text-white">{current.noiseFloor}</span>
+                      </div>
+                      <div className="rounded bg-white/5 p-2.5 border border-white/5">
+                        <span className="text-white/50 block text-[9px] uppercase">Execution Latency</span>
+                        <span className={`font-semibold ${isReuse ? "text-blue-400" : "text-emerald-400"}`}>
+                          {current.latency}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Result Payload Preview */}
+                    <div className="rounded bg-black/50 p-3 border border-white/5">
+                      <div className="flex items-center justify-between text-[10px] text-white/50 mb-1">
+                        <span>ANSWER PAYLOAD:</span>
+                        <span className="text-green-400 font-bold">{isReuse ? "$0.00 Saved" : "Sepolia Verified"}</span>
+                      </div>
+                      <pre className="text-green-400 overflow-x-auto text-[11px]">
+                        {JSON.stringify(current.payload, null, 2)}
+                      </pre>
+                    </div>
+
+                    {/* Proof Hash */}
+                    <div className="text-[10px] text-white/40 truncate">
+                      Sepolia Proof: <span className="text-white/70">{current.proof}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+
+          {/* Bottom Callout: What Users Do in the Full Application */}
+          <div className="rounded-[32px] bg-white p-8 border border-[#070607]/10 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div>
+              <h3 className="text-xl sm:text-2xl font-bold uppercase text-[#070607]">
+                Ready to wire intelligent freshness into your agents?
+              </h3>
+              <p className="mt-1 text-sm text-[#070607]/70">
+                Log in to create scoped agent keys, run custom scenarios in the Testing Studio, and monitor your cumulative savings.
+              </p>
+            </div>
+            <div className="flex items-center gap-3 shrink-0">
+              <Link
+                href="/login"
+                className="rounded-full bg-[#fc5000] px-7 py-3 text-sm font-bold text-white hover:opacity-90 transition shadow-sm"
+              >
+                Launch Dashboard
+              </Link>
+              <Link
+                href="/atlas"
+                className="rounded-full border border-[#070607]/20 px-6 py-3 text-sm font-semibold text-[#070607] hover:border-[#070607] transition"
+              >
+                Explore Atlas
+              </Link>
             </div>
           </div>
         </section>
