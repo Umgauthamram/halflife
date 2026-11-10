@@ -12,11 +12,11 @@
 - **Status**: Complete & Production-Verified
 
 ## 3. Recent Progress (Rolling Snapshot - Max 5)
-- Created `/app/playground` Agent Testing Studio with virtual API key execution, 5 pre-built scenarios, and Google Gemini integration
-- Cleaned all icons/emojis and removed the top sandbox banner per user requirements
 - Added educational "Why & How It Works" explanation panel breaking down intent selection, stake sizing, and Governor decay mechanics
 - Added statistical analytics explanation, visual spend vs savings charts, and dedicated granular single-run inspection route `/app/playground/[id]`
 - Implemented dedicated 4-part Test Analysis & Case Summary section on `/app/playground/[id]` (Why performed, Use Case, Observed Outcome, What it proves)
+- Added interactive Application Demo and 4-Stage Architecture Walkthrough section to the Landing Page (`#demo`) with live BUY vs REUSE simulations
+- All 53/53 tests pass, clean TypeScript verification across web and worker packages
 
 ## 4. Next Immediate Steps
 - [ ] Record final demo video following `docs/video-script.md`
