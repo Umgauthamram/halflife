@@ -91,10 +91,6 @@ export default async function LeaderboardPage() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-green-800 bg-green-50 px-3 py-1 font-mono text-xs text-green-900">
-              <span className="h-2 w-2 rounded-full bg-green-600 animate-pulse"></span>
-              Node 13.237.89.59:7148 Live
-            </span>
             <Link
               href="/app/agents/new"
               className="rounded border border-[var(--border-strong)] bg-[var(--foreground)] px-4 py-2 text-sm font-medium text-[var(--background)] hover:opacity-90"
