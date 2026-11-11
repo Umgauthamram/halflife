@@ -20,17 +20,10 @@ export default async function AgentsPage({ searchParams }: AgentsPageProps) {
   const user = await requireUser();
   const db = await getDb();
 
-  const agents = await db
-    .collection("agents")
-    .find({ ownerId: user.id })
-    .sort({ createdAt: -1 })
-    .toArray();
-
-  const keys = await db
-    .collection("api_keys")
-    .find({ ownerId: user.id })
-    .sort({ createdAt: -1 })
-    .toArray();
+  const [agents, keys] = await Promise.all([
+    db.collection("agents").find({ ownerId: user.id }).sort({ createdAt: -1 }).toArray(),
+    db.collection("api_keys").find({ ownerId: user.id }).sort({ createdAt: -1 }).toArray(),
+  ]);
 
   const keysMap: Record<string, string> = {};
   const countsMap: Record<string, number> = {};

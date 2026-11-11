@@ -12,9 +12,11 @@ export default async function AppAtlasPage() {
 
   const stats = await Promise.all(
     intents.map(async (intent) => {
-      const sampleCount = await db.collection("atlas_samples").countDocuments({ intent });
-      const firstSample = await db.collection("atlas_samples").findOne({ intent }, { sort: { ts: 1 } });
-      const noiseDocs = await db.collection("atlas_noise_measurements").find({ intent }).limit(50).toArray();
+      const [sampleCount, firstSample, noiseDocs] = await Promise.all([
+        db.collection("atlas_samples").countDocuments({ intent }),
+        db.collection("atlas_samples").findOne({ intent }, { sort: { ts: 1 } }),
+        db.collection("atlas_noise_measurements").find({ intent }).limit(50).toArray(),
+      ]);
 
       let avgNoiseFloor = 0.002;
       if (noiseDocs.length > 0) {

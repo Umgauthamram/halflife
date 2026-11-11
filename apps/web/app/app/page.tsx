@@ -8,9 +8,11 @@ export default async function DashboardPage() {
   const user = await requireUser();
   const db = await getDb();
 
-  const agentsCount = await db.collection("agents").countDocuments({ ownerId: user.id });
-  const purchasesCount = await db.collection("purchases").countDocuments({ ownerId: user.id });
-  const decisionsCount = await db.collection("decisions").countDocuments({ ownerId: user.id });
+  const [agentsCount, purchasesCount, decisionsCount] = await Promise.all([
+    db.collection("agents").countDocuments({ ownerId: user.id }),
+    db.collection("purchases").countDocuments({ ownerId: user.id }),
+    db.collection("decisions").countDocuments({ ownerId: user.id }),
+  ]);
 
   return (
     <div className="flex flex-col gap-8">

@@ -1,4 +1,5 @@
 import { ObjectId } from "mongodb";
+import { cache } from "react";
 import { auth } from "../auth";
 import { getDb } from "./mongodb";
 import type { User, UserRole, UserStatus } from "@half-life/shared";
@@ -12,9 +13,9 @@ export class HttpError extends Error {
 
 /**
  * Validates the caller's session and verifies active status from the database.
- * Never trusts client session alone.
+ * Memoized per request lifecycle using React cache() to prevent redundant DB calls across layout and pages.
  */
-export async function requireUser(): Promise<User> {
+export const requireUser = cache(async (): Promise<User> => {
   const session = await auth();
   if (!session?.user?.id && !session?.user?.email) {
     throw new HttpError(401, "Authentication required");
@@ -93,18 +94,18 @@ export async function requireUser(): Promise<User> {
     lastSignInAt: userDoc?.lastSignInAt || new Date(),
     createdAt: userDoc?.createdAt ?? new Date(),
   };
-}
+});
 
 /**
- * Enforces admin role check fresh from the database.
+ * Enforces admin role check fresh from the database (memoized per request).
  */
-export async function requireAdmin(): Promise<User> {
+export const requireAdmin = cache(async (): Promise<User> => {
   const user = await requireUser();
   if (user.role !== "admin") {
     throw new HttpError(403, "Administrator privileges required");
   }
   return user;
-}
+});
 
 /**
  * Enforces resource ownership scoped to the authenticated member.

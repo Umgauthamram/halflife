@@ -22,7 +22,12 @@ export default async function LeaderboardPage() {
   const db = await getDb();
 
   // Aggregate real purchases from database
-  const purchases = await db.collection("purchases").find().sort({ askedAt: -1 }).toArray();
+  const purchases = await db
+    .collection("purchases")
+    .find({}, { projection: { _id: 1, askedAt: 1 } })
+    .sort({ askedAt: -1 })
+    .limit(50)
+    .toArray();
 
   // Known active OpenClaw / Hermes agent instances deployed in the network
   const leaderboardEntries: LeaderboardEntry[] = [

@@ -16,9 +16,11 @@ export default async function AdminSamplerPage() {
   const intents = ["FX_NOW", "WEATHER_FORECAST_VERIFY", "SANCTIONS_SCREENING_MATCH"];
   const intentStats = await Promise.all(
     intents.map(async (intent) => {
-      const lastSample = await db.collection("atlas_samples").findOne({ intent }, { sort: { ts: -1 } });
-      const totalCount = await db.collection("atlas_samples").countDocuments({ intent });
-      const gapsCount = await db.collection("atlas_gaps").countDocuments({ intent });
+      const [lastSample, totalCount, gapsCount] = await Promise.all([
+        db.collection("atlas_samples").findOne({ intent }, { sort: { ts: -1 } }),
+        db.collection("atlas_samples").countDocuments({ intent }),
+        db.collection("atlas_gaps").countDocuments({ intent }),
+      ]);
 
       return {
         intent,

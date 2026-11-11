@@ -4,17 +4,22 @@ import { requireUser } from "../../../lib/dal";
 
 export const dynamic = "force-dynamic";
 
-export default async function BenchmarksPage() {
-  await requireUser();
+// Memoize static deterministic replay run to avoid recomputing on every hit
+let cachedComparison: ReturnType<typeof runSideBySideBenchmark> | null = null;
+let cachedEvidencePack: ReturnType<typeof generateEvidencePack> | null = null;
 
-  // Run a standardized deterministic benchmark run (180 recurring checks)
+function getBenchmarkData() {
+  if (cachedComparison && cachedEvidencePack) {
+    return { comparison: cachedComparison, evidencePack: cachedEvidencePack };
+  }
+
   const events: ReplayEvent[] = [];
   const baseTime = 1730700000000;
   let fxRate = 1.0850;
 
   for (let i = 0; i < 180; i++) {
     const timestampMs = baseTime + i * 60 * 1000;
-    fxRate += (Math.sin(i / 10) * 0.0002);
+    fxRate += Math.sin(i / 10) * 0.0002;
     events.push({
       timestampMs,
       intent: "FX_NOW",
@@ -43,8 +48,15 @@ export default async function BenchmarksPage() {
     },
   };
 
-  const comparison = runSideBySideBenchmark(events, mockStats, 5.0);
-  const evidencePack = generateEvidencePack(comparison);
+  cachedComparison = runSideBySideBenchmark(events, mockStats, 5.0);
+  cachedEvidencePack = generateEvidencePack(cachedComparison);
+
+  return { comparison: cachedComparison, evidencePack: cachedEvidencePack };
+}
+
+export default async function BenchmarksPage() {
+  await requireUser();
+  const { comparison, evidencePack } = getBenchmarkData();
 
   return (
     <div className="flex flex-col gap-8">
