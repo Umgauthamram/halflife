@@ -85,3 +85,70 @@ export async function toggleAgentStatusAction(agentId: string, currentStatus: st
 
   revalidatePath("/app/agents");
 }
+
+export async function getAgentApiKeysAction(agentId: string) {
+  const user = await requireUser();
+  const agent = await getOwnedAgent(user.id, agentId);
+  if (!agent) {
+    throw new Error("Agent not found or unauthorized");
+  }
+
+  const db = await getDb();
+  const keys = await db
+    .collection("api_keys")
+    .find({ agentId, ownerId: user.id })
+    .sort({ createdAt: -1 })
+    .toArray();
+
+  return keys.map((k) => ({
+    id: k._id.toString(),
+    prefix: k.prefix || "hl_live_...",
+    scopes: (k.scopes as string[]) || ["read", "ask"],
+    status: k.revokedAt ? ("cancelled" as const) : ("active" as const),
+    createdAt: k.createdAt ? new Date(k.createdAt).toISOString() : new Date().toISOString(),
+    lastUsedAt: k.lastUsedAt ? new Date(k.lastUsedAt).toISOString() : null,
+    revokedAt: k.revokedAt ? new Date(k.revokedAt).toISOString() : null,
+  }));
+}
+
+export async function createAgentApiKeyDirectAction(agentId: string) {
+  const user = await requireUser();
+  const agent = await getOwnedAgent(user.id, agentId);
+  if (!agent) {
+    throw new Error("Agent not found or unauthorized");
+  }
+
+  const { rawKey, prefix, keyId } = await createAgentApiKey(agentId, user.id);
+  revalidatePath("/app/agents");
+
+  return {
+    rawKey,
+    prefix,
+    keyId,
+  };
+}
+
+export async function cancelAgentApiKeyAction(keyId: string, agentId: string) {
+  const user = await requireUser();
+  const agent = await getOwnedAgent(user.id, agentId);
+  if (!agent) {
+    throw new Error("Agent not found or unauthorized");
+  }
+
+  const db = await getDb();
+  let queryId: string | ObjectId = keyId;
+  try {
+    queryId = new ObjectId(keyId);
+  } catch {}
+
+  const result = await db.collection("api_keys").updateOne(
+    { _id: queryId as unknown as ObjectId, ownerId: user.id, agentId },
+    { $set: { revokedAt: new Date() } }
+  );
+
+  revalidatePath("/app/agents");
+
+  return {
+    success: result.modifiedCount > 0,
+  };
+}
