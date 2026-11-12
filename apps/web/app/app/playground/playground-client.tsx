@@ -106,7 +106,7 @@ export default function PlaygroundClient({
     how: TEMPLATES[0].how,
     explanation: TEMPLATES[0].prompt,
     isAiGenerated: false,
-    curlCode: `curl -X POST https://halflifes.vercel.app/api/v1/ask \\\n  -H "Authorization: Bearer ${defaultApiKey || "hl_live_YOUR_KEY"}" \\\n  -H "Content-Type: application/json" \\\n  -d '${JSON.stringify({ intent: TEMPLATES[0].intent, stake: TEMPLATES[0].stake, requestId: "req_" + Date.now(), params: TEMPLATES[0].params })}'`,
+    curlCode: `curl -X POST https://halflifes.vercel.app/api/v1/ask \\\n  -H "Authorization: Bearer ${defaultApiKey || "hl_live_YOUR_KEY"}" \\\n  -H "Content-Type: application/json" \\\n  -d '${JSON.stringify({ intent: TEMPLATES[0].intent, stake: TEMPLATES[0].stake, requestId: "req_01", params: TEMPLATES[0].params })}'`,
     typeScriptCode: `import { HalfLifeClient } from "@half-life/sdk";\n\nconst client = new HalfLifeClient({\n  apiKey: "${defaultApiKey || "hl_live_YOUR_KEY"}",\n  baseUrl: "https://halflifes.vercel.app",\n});\n\nconst decision = await client.ask({\n  intent: "${TEMPLATES[0].intent}",\n  stake: ${TEMPLATES[0].stake},\n  params: ${JSON.stringify(TEMPLATES[0].params)},\n});\nconsole.log(decision.action); // 'buy' or 'reuse'`,
     pythonCode: `import requests\n\nresponse = requests.post(\n    "https://halflifes.vercel.app/api/v1/ask",\n    headers={"Authorization": "Bearer ${defaultApiKey || "hl_live_YOUR_KEY"}"},\n    json={\n        "intent": "${TEMPLATES[0].intent}",\n        "stake": ${TEMPLATES[0].stake},\n        "requestId": "agent_req_01",\n        "params": ${JSON.stringify(TEMPLATES[0].params)}\n    }\n)\nprint(response.json())`,
   });
@@ -133,10 +133,20 @@ export default function PlaygroundClient({
     how: tmpl.how,
     explanation: tmpl.prompt,
     isAiGenerated: false,
-    curlCode: `curl -X POST https://halflifes.vercel.app/api/v1/ask \\\n  -H "Authorization: Bearer ${keyToUse || "hl_live_YOUR_KEY"}" \\\n  -H "Content-Type: application/json" \\\n  -d '${JSON.stringify({ intent: tmpl.intent, stake: tmpl.stake, requestId: "req_" + Date.now(), params: tmpl.params })}'`,
+    curlCode: `curl -X POST https://halflifes.vercel.app/api/v1/ask \\\n  -H "Authorization: Bearer ${keyToUse || "hl_live_YOUR_KEY"}" \\\n  -H "Content-Type: application/json" \\\n  -d '${JSON.stringify({ intent: tmpl.intent, stake: tmpl.stake, requestId: "req_01", params: tmpl.params })}'`,
     typeScriptCode: `import { HalfLifeClient } from "@half-life/sdk";\n\nconst client = new HalfLifeClient({\n  apiKey: "${keyToUse || "hl_live_YOUR_KEY"}",\n  baseUrl: "https://halflifes.vercel.app",\n});\n\nconst decision = await client.ask({\n  intent: "${tmpl.intent}",\n  stake: ${tmpl.stake},\n  params: ${JSON.stringify(tmpl.params)},\n});\nconsole.log(decision.action); // 'buy' or 'reuse'`,
     pythonCode: `import requests\n\nresponse = requests.post(\n    "https://halflifes.vercel.app/api/v1/ask",\n    headers={"Authorization": "Bearer ${keyToUse || "hl_live_YOUR_KEY"}"},\n    json={\n        "intent": "${tmpl.intent}",\n        "stake": ${tmpl.stake},\n        "requestId": "agent_req_01",\n        "params": ${JSON.stringify(tmpl.params)}\n    }\n)\nprint(response.json())`,
   });
+
+  const updateCodeKey = (prev: AiCodeGenerationResult, newKey: string): AiCodeGenerationResult => {
+    const keyToUse = newKey || "hl_live_YOUR_KEY";
+    return {
+      ...prev,
+      curlCode: prev.curlCode.replace(/Bearer\s+hl_live_[a-zA-Z0-9_.]+/g, `Bearer ${keyToUse}`),
+      typeScriptCode: prev.typeScriptCode.replace(/apiKey:\s*"hl_live_[a-zA-Z0-9_.]*"/g, `apiKey: "${keyToUse}"`),
+      pythonCode: prev.pythonCode.replace(/Bearer\s+hl_live_[a-zA-Z0-9_.]+/g, `Bearer ${keyToUse}`),
+    };
+  };
 
   // Apply template immediately without needing code generation button
   const handleSelectTemplate = (tmpl: typeof TEMPLATES[0], keyOverride?: string) => {
@@ -153,6 +163,8 @@ export default function PlaygroundClient({
     if (selectedTemplateId) {
       const tmpl = TEMPLATES.find((t) => t.id === selectedTemplateId) || TEMPLATES[0];
       setCodeResult(buildTemplateCode(tmpl, fullKey));
+    } else {
+      setCodeResult((prev) => (prev ? updateCodeKey(prev, fullKey) : prev));
     }
   };
 
@@ -161,6 +173,8 @@ export default function PlaygroundClient({
     if (selectedTemplateId && studioMode === "template") {
       const tmpl = TEMPLATES.find((t) => t.id === selectedTemplateId) || TEMPLATES[0];
       setCodeResult(buildTemplateCode(tmpl, newKey));
+    } else {
+      setCodeResult((prev) => (prev ? updateCodeKey(prev, newKey) : prev));
     }
   };
 
