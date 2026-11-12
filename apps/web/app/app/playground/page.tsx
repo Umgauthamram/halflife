@@ -19,25 +19,36 @@ export default async function PlaygroundPage() {
     .sort({ createdAt: -1 })
     .toArray();
 
-  const keysByAgentId = new Map<string, string>();
+  const fullKeysByAgentId = new Map<string, string>();
   for (const k of keys) {
-    if (k.agentId && !keysByAgentId.has(k.agentId)) {
-      keysByAgentId.set(k.agentId, k.prefix);
+    if (k.agentId && !fullKeysByAgentId.has(k.agentId) && k.key) {
+      fullKeysByAgentId.set(k.agentId, k.key);
+    }
+  }
+
+  // Ensure every active agent has a full active working key for sandbox testing
+  for (const ag of agents) {
+    const agentId = ag._id.toString();
+    if (!fullKeysByAgentId.has(agentId)) {
+      const { createAgentApiKey } = await import("../../../lib/api-key");
+      const { rawKey } = await createAgentApiKey(agentId, user.id);
+      fullKeysByAgentId.set(agentId, rawKey);
     }
   }
 
   const userAgents = agents.map((ag) => ({
     id: ag._id.toString(),
     name: ag.name,
-    prefix: keysByAgentId.get(ag._id.toString()),
+    fullKey: fullKeysByAgentId.get(ag._id.toString()) || "",
   }));
 
   const hasGeminiKey = Boolean(process.env.GEMINI_API_KEY?.trim());
+  const initialDefaultKey = userAgents[0]?.fullKey || process.env.api || "";
 
   return (
     <PlaygroundClient
       userAgents={userAgents}
-      defaultApiKey={process.env.api || ""}
+      defaultApiKey={initialDefaultKey}
       hasGeminiKey={hasGeminiKey}
     />
   );

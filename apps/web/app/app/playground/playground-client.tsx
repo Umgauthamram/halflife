@@ -12,6 +12,7 @@ import {
 interface AgentSummary {
   id: string;
   name: string;
+  fullKey?: string;
   prefix?: string;
 }
 
@@ -90,11 +91,12 @@ export default function PlaygroundClient({
   hasGeminiKey,
 }: PlaygroundClientProps) {
   const [activeTab, setActiveTab] = useState<"studio" | "analytics">("studio");
+  const [studioMode, setStudioMode] = useState<"template" | "custom">("template");
   const [apiKey, setApiKey] = useState(defaultApiKey);
 
   // Studio State
-  const [prompt, setPrompt] = useState(TEMPLATES[0].prompt);
-  const [selectedTemplateId, setSelectedTemplateId] = useState(TEMPLATES[0].id);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(TEMPLATES[0].id);
+  const [customPrompt, setCustomPrompt] = useState("");
   const [activeLanguage, setActiveLanguage] = useState<"curl" | "ts" | "py">("curl");
   const [codeResult, setCodeResult] = useState<AiCodeGenerationResult>({
     intent: TEMPLATES[0].intent,
@@ -122,29 +124,52 @@ export default function PlaygroundClient({
   const [isLoadingAnalytics, startLoadingAnalytics] = useTransition();
   const [copiedCode, setCopiedCode] = useState(false);
 
-  // Apply template
-  const handleSelectTemplate = (tmpl: typeof TEMPLATES[0]) => {
+  // Helper to re-render code with specific API key
+  const buildTemplateCode = (tmpl: typeof TEMPLATES[0], keyToUse: string) => ({
+    intent: tmpl.intent,
+    stake: tmpl.stake,
+    params: tmpl.params,
+    why: tmpl.why,
+    how: tmpl.how,
+    explanation: tmpl.prompt,
+    isAiGenerated: false,
+    curlCode: `curl -X POST https://halflifes.vercel.app/api/v1/ask \\\n  -H "Authorization: Bearer ${keyToUse || "hl_live_YOUR_KEY"}" \\\n  -H "Content-Type: application/json" \\\n  -d '${JSON.stringify({ intent: tmpl.intent, stake: tmpl.stake, requestId: "req_" + Date.now(), params: tmpl.params })}'`,
+    typeScriptCode: `import { HalfLifeClient } from "@half-life/sdk";\n\nconst client = new HalfLifeClient({\n  apiKey: "${keyToUse || "hl_live_YOUR_KEY"}",\n  baseUrl: "https://halflifes.vercel.app",\n});\n\nconst decision = await client.ask({\n  intent: "${tmpl.intent}",\n  stake: ${tmpl.stake},\n  params: ${JSON.stringify(tmpl.params)},\n});\nconsole.log(decision.action); // 'buy' or 'reuse'`,
+    pythonCode: `import requests\n\nresponse = requests.post(\n    "https://halflifes.vercel.app/api/v1/ask",\n    headers={"Authorization": "Bearer ${keyToUse || "hl_live_YOUR_KEY"}"},\n    json={\n        "intent": "${tmpl.intent}",\n        "stake": ${tmpl.stake},\n        "requestId": "agent_req_01",\n        "params": ${JSON.stringify(tmpl.params)}\n    }\n)\nprint(response.json())`,
+  });
+
+  // Apply template immediately without needing code generation button
+  const handleSelectTemplate = (tmpl: typeof TEMPLATES[0], keyOverride?: string) => {
     setSelectedTemplateId(tmpl.id);
-    setPrompt(tmpl.prompt);
-    setCodeResult({
-      intent: tmpl.intent,
-      stake: tmpl.stake,
-      params: tmpl.params,
-      why: tmpl.why,
-      how: tmpl.how,
-      explanation: tmpl.prompt,
-      isAiGenerated: false,
-      curlCode: `curl -X POST https://halflifes.vercel.app/api/v1/ask \\\n  -H "Authorization: Bearer ${apiKey || "hl_live_YOUR_KEY"}" \\\n  -H "Content-Type: application/json" \\\n  -d '${JSON.stringify({ intent: tmpl.intent, stake: tmpl.stake, requestId: "req_" + Date.now(), params: tmpl.params })}'`,
-      typeScriptCode: `import { HalfLifeClient } from "@half-life/sdk";\n\nconst client = new HalfLifeClient({\n  apiKey: "${apiKey || "hl_live_YOUR_KEY"}",\n  baseUrl: "https://halflifes.vercel.app",\n});\n\nconst decision = await client.ask({\n  intent: "${tmpl.intent}",\n  stake: ${tmpl.stake},\n  params: ${JSON.stringify(tmpl.params)},\n});\nconsole.log(decision.action); // 'buy' or 'reuse'`,
-      pythonCode: `import requests\n\nresponse = requests.post(\n    "https://halflifes.vercel.app/api/v1/ask",\n    headers={"Authorization": "Bearer ${apiKey || "hl_live_YOUR_KEY"}"},\n    json={\n        "intent": "${tmpl.intent}",\n        "stake": ${tmpl.stake},\n        "requestId": "agent_req_01",\n        "params": ${JSON.stringify(tmpl.params)}\n    }\n)\nprint(response.json())`,
-    });
+    setStudioMode("template");
+    const activeKey = keyOverride || apiKey || "hl_live_YOUR_KEY";
+    setCodeResult(buildTemplateCode(tmpl, activeKey));
   };
 
-  // Run Gemini Code Generation
-  const handleGenerateCode = () => {
+  // Auto-fill full active API key from user's agent
+  const handleAutoFill = (ag: AgentSummary) => {
+    const fullKey = ag.fullKey || ag.prefix || defaultApiKey;
+    setApiKey(fullKey);
+    if (selectedTemplateId) {
+      const tmpl = TEMPLATES.find((t) => t.id === selectedTemplateId) || TEMPLATES[0];
+      setCodeResult(buildTemplateCode(tmpl, fullKey));
+    }
+  };
+
+  const handleApiKeyChange = (newKey: string) => {
+    setApiKey(newKey);
+    if (selectedTemplateId && studioMode === "template") {
+      const tmpl = TEMPLATES.find((t) => t.id === selectedTemplateId) || TEMPLATES[0];
+      setCodeResult(buildTemplateCode(tmpl, newKey));
+    }
+  };
+
+  // Run AI Code Generator for Custom / Own Idea
+  const handleGenerateCustomCode = () => {
+    const query = customPrompt.trim() || "Check EUR/USD rate before settling a $500 cross-border supplier payment";
     startGenerating(async () => {
       setExecutionError(null);
-      const res = await generateAiCodeAction(prompt, apiKey || "hl_live_YOUR_KEY");
+      const res = await generateAiCodeAction(query, apiKey || "hl_live_YOUR_KEY");
       setCodeResult(res);
     });
   };
@@ -152,7 +177,7 @@ export default function PlaygroundClient({
   // Run Live Ask Request
   const handleExecuteAsk = () => {
     if (!apiKey.trim()) {
-      setExecutionError("Please provide an Agent API Key first (copy from /app/agents).");
+      setExecutionError("Please provide an Agent API Key first (copy from /app/agents or click auto-fill).");
       return;
     }
 
@@ -200,7 +225,7 @@ export default function PlaygroundClient({
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Agent Testing Studio &amp; AI Generator</h1>
           <p className="mt-1 text-sm text-[var(--secondary)]">
-            Write queries with Gemini AI, test live Governor decisions, and inspect execution analytics.
+            Test pre-built scenario templates or write custom queries with Gemini AI.
           </p>
         </div>
 
@@ -250,8 +275,9 @@ export default function PlaygroundClient({
                     <button
                       key={ag.id}
                       type="button"
-                      onClick={() => setApiKey(ag.prefix ? `${ag.prefix}...` : defaultApiKey)}
-                      className="rounded border border-[var(--border)] bg-[var(--background)] px-2 py-1 text-xs font-mono hover:border-[var(--border-strong)] transition"
+                      onClick={() => handleAutoFill(ag)}
+                      className="rounded border border-[var(--border)] bg-[var(--background)] px-2.5 py-1 text-xs font-mono hover:border-purple-600 hover:text-purple-900 transition font-medium cursor-pointer"
+                      title={`Click to fill full active API key for ${ag.name}`}
                     >
                       {ag.name}
                     </button>
@@ -265,69 +291,131 @@ export default function PlaygroundClient({
                 type="text"
                 placeholder="hl_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
                 value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
+                onChange={(e) => handleApiKeyChange(e.target.value)}
                 className="w-full rounded border border-[var(--border)] bg-[var(--background)] px-3.5 py-2 font-mono text-xs focus-visible:outline-2 focus-visible:outline-[var(--border-strong)]"
               />
             </div>
           </div>
 
-          {/* 5 Pre-Built Scenarios */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-mono uppercase tracking-wider text-[var(--secondary)] font-semibold">
-                Or Select from 5 Pre-Built Scenarios
-              </span>
-            </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-5">
-              {TEMPLATES.map((tmpl) => (
+          {/* Mode Switcher: Pre-built Scenarios vs Own Idea (AI Code Writer) */}
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-[var(--border)] pb-3">
+              <div className="flex items-center gap-2">
                 <button
-                  key={tmpl.id}
                   type="button"
-                  onClick={() => handleSelectTemplate(tmpl)}
-                  className={`flex flex-col justify-between text-left rounded-lg border p-3.5 transition ${
-                    selectedTemplateId === tmpl.id
-                      ? "border-[var(--border-strong)] bg-amber-50/50 shadow-xs"
-                      : "border-[var(--border)] bg-[var(--surface)] hover:border-[var(--border-strong)]"
+                  onClick={() => {
+                    setStudioMode("template");
+                    if (!selectedTemplateId) {
+                      handleSelectTemplate(TEMPLATES[0]);
+                    }
+                  }}
+                  className={`rounded px-3 py-1.5 text-xs font-mono font-semibold transition ${
+                    studioMode === "template"
+                      ? "bg-[var(--foreground)] text-[var(--background)] shadow-xs"
+                      : "border border-[var(--border)] bg-[var(--surface)] text-[var(--secondary)] hover:text-[var(--foreground)]"
                   }`}
                 >
-                  <div>
-                    <span className={`inline-block rounded border px-1.5 py-0.5 text-[10px] font-mono font-medium ${tmpl.badgeColor}`}>
-                      {tmpl.tag}
-                    </span>
-                    <h3 className="mt-2 text-xs font-semibold text-[var(--foreground)] line-clamp-1">{tmpl.title}</h3>
-                    <p className="mt-1 text-[11px] text-[var(--secondary)] line-clamp-2 leading-relaxed">{tmpl.prompt}</p>
-                  </div>
-                  <div className="mt-3 pt-2 border-t border-[var(--border)] flex items-center justify-between font-mono text-[10px] text-[var(--secondary)]">
-                    <span>{tmpl.intent}</span>
-                    <span className="font-semibold">${tmpl.stake}</span>
-                  </div>
+                  Pre-Built Scenarios (5)
                 </button>
-              ))}
-            </div>
-          </div>
 
-          {/* Natural Language Prompt & AI Generator */}
-          <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
-            <label className="text-xs font-mono uppercase tracking-wider text-[var(--secondary)] font-semibold">
-              Natural Language Scenario / Prompt
-            </label>
-            <div className="mt-2 flex flex-col gap-3 sm:flex-row">
-              <textarea
-                rows={2}
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                placeholder="Describe your query scenario (e.g. Check EUR/USD rate before settling a $500 cross-border supplier payment)..."
-                className="w-full rounded border border-[var(--border)] bg-[var(--background)] px-3.5 py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-[var(--border-strong)]"
-              />
-              <button
-                type="button"
-                onClick={handleGenerateCode}
-                disabled={isGenerating}
-                className="whitespace-nowrap rounded border border-purple-800 bg-purple-900 px-5 py-2 text-xs font-mono font-bold text-white hover:bg-purple-950 transition active:scale-98 disabled:opacity-50"
-              >
-                {isGenerating ? "Generating..." : "Generate Code"}
-              </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStudioMode("custom");
+                    setSelectedTemplateId(null);
+                  }}
+                  className={`rounded px-3 py-1.5 text-xs font-mono font-semibold transition flex items-center gap-1.5 ${
+                    studioMode === "custom"
+                      ? "bg-purple-900 text-white shadow-xs border border-purple-800"
+                      : "border border-purple-300 bg-purple-50 text-purple-900 hover:bg-purple-100"
+                  }`}
+                >
+                  <span>+ Write Own Idea (AI Code Writer)</span>
+                </button>
+              </div>
+
+              <span className="text-[11px] font-mono text-[var(--secondary)]">
+                {studioMode === "template"
+                  ? "Select any scenario &mdash; code is ready to execute immediately."
+                  : "Type any idea &mdash; Google Gemini AI will write the integration code."}
+              </span>
             </div>
+
+            {/* Template Mode: 5 Pre-Built Scenarios (NO Generate Code Button needed) */}
+            {studioMode === "template" && (
+              <div>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-5">
+                  {TEMPLATES.map((tmpl) => (
+                    <button
+                      key={tmpl.id}
+                      type="button"
+                      onClick={() => handleSelectTemplate(tmpl)}
+                      className={`flex flex-col justify-between text-left rounded-lg border p-3.5 transition cursor-pointer ${
+                        selectedTemplateId === tmpl.id
+                          ? "border-[var(--border-strong)] bg-amber-50/50 shadow-xs ring-1 ring-[var(--border-strong)]"
+                          : "border-[var(--border)] bg-[var(--surface)] hover:border-[var(--border-strong)]"
+                      }`}
+                    >
+                      <div>
+                        <span className={`inline-block rounded border px-1.5 py-0.5 text-[10px] font-mono font-medium ${tmpl.badgeColor}`}>
+                          {tmpl.tag}
+                        </span>
+                        <h3 className="mt-2 text-xs font-semibold text-[var(--foreground)] line-clamp-1">{tmpl.title}</h3>
+                        <p className="mt-1 text-[11px] text-[var(--secondary)] line-clamp-2 leading-relaxed">{tmpl.prompt}</p>
+                      </div>
+                      <div className="mt-3 pt-2 border-t border-[var(--border)] flex items-center justify-between font-mono text-[10px] text-[var(--secondary)]">
+                        <span>{tmpl.intent}</span>
+                        <span className="font-semibold">${tmpl.stake}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Custom Mode: Dedicated AI Code Writer for Own Idea */}
+            {studioMode === "custom" && (
+              <div className="rounded-lg border-2 border-purple-300 bg-purple-50/40 p-5">
+                <div className="flex items-center justify-between border-b border-purple-200 pb-3 mb-3">
+                  <div>
+                    <span className="text-xs font-mono uppercase tracking-wider text-purple-900 font-bold block">
+                      Own Idea &bull; AI Code Writer
+                    </span>
+                    <span className="text-xs text-[var(--secondary)]">
+                      Describe your query scenario in plain English. Gemini AI will configure the Telegraph intent, calculate the risk stake, and write client code.
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStudioMode("template");
+                      handleSelectTemplate(TEMPLATES[0]);
+                    }}
+                    className="text-xs font-mono text-purple-900 hover:underline shrink-0"
+                  >
+                    &larr; Switch to Pre-Built Templates
+                  </button>
+                </div>
+
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <textarea
+                    rows={2}
+                    value={customPrompt}
+                    onChange={(e) => setCustomPrompt(e.target.value)}
+                    placeholder="Describe your custom scenario (e.g. Monitor GBP/JPY currency arbitrage before settling a $5,000 liquidity swap)..."
+                    className="w-full rounded border border-[var(--border)] bg-[var(--background)] px-3.5 py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-purple-600 font-sans"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleGenerateCustomCode}
+                    disabled={isGenerating}
+                    className="whitespace-nowrap rounded border border-purple-800 bg-purple-900 px-5 py-2 text-xs font-mono font-bold text-white hover:bg-purple-950 transition active:scale-98 disabled:opacity-50 shrink-0 shadow-sm"
+                  >
+                    {isGenerating ? "Writing Code..." : "Generate with AI"}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Why & How It Works Explanation Panel */}
@@ -413,22 +501,22 @@ export default function PlaygroundClient({
               <div className="p-4 flex-1 bg-[#121214] text-gray-200 font-mono text-xs overflow-x-auto leading-relaxed">
                 <pre>
                   {activeLanguage === "curl"
-                    ? codeResult?.curlCode || "// Click 'Generate Code' or select a template above"
+                    ? codeResult?.curlCode || "// Select a scenario or generate custom code above"
                     : activeLanguage === "ts"
-                    ? codeResult?.typeScriptCode || "// Click 'Generate Code' or select a template above"
-                    : codeResult?.pythonCode || "# Click 'Generate Code' or select a template above"}
+                    ? codeResult?.typeScriptCode || "// Select a scenario or generate custom code above"
+                    : codeResult?.pythonCode || "# Select a scenario or generate custom code above"}
                 </pre>
               </div>
 
               <div className="border-t border-[var(--border)] p-3 bg-[var(--background)] flex items-center justify-between">
-                <span className="text-[11px] font-mono text-[var(--secondary)]">
+                <span className="text-[11px] font-mono text-[var(--secondary)] line-clamp-1 mr-2">
                   {codeResult?.explanation || "Ready to execute against Telegraph Governor."}
                 </span>
                 <button
                   type="button"
                   onClick={handleExecuteAsk}
                   disabled={isExecuting}
-                  className="rounded border border-green-800 bg-green-800 px-4 py-2 text-xs font-mono font-bold text-white hover:bg-green-900 transition active:scale-98 disabled:opacity-50 shadow-xs"
+                  className="rounded border border-green-800 bg-green-800 px-4 py-2 text-xs font-mono font-bold text-white hover:bg-green-900 transition active:scale-98 disabled:opacity-50 shadow-xs shrink-0 cursor-pointer"
                 >
                   {isExecuting ? "Executing Ask..." : "Execute Live Ask"}
                 </button>

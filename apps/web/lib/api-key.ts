@@ -39,6 +39,7 @@ export async function createAgentApiKey(
     ownerId,
     prefix,
     hash,
+    key: rawKey,
     scopes,
     createdAt: new Date(),
   });
