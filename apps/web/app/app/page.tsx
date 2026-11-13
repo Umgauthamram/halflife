@@ -1,6 +1,9 @@
-import Link from "next/link";
 import { getDb } from "../../lib/mongodb";
 import { requireUser } from "../../lib/dal";
+import DashboardClient, {
+  type DashboardCallItem,
+  type DashboardKeyItem,
+} from "./dashboard-client";
 
 export const dynamic = "force-dynamic";
 
@@ -8,74 +11,95 @@ export default async function DashboardPage() {
   const user = await requireUser();
   const db = await getDb();
 
-  const [agentsCount, purchasesCount, decisionsCount] = await Promise.all([
-    db.collection("agents").countDocuments({ ownerId: user.id }),
-    db.collection("purchases").countDocuments({ ownerId: user.id }),
-    db.collection("decisions").countDocuments({ ownerId: user.id }),
+  const [agents, apiKeys, decisions, playgroundRuns] = await Promise.all([
+    db.collection("agents").find({ ownerId: user.id }).toArray(),
+    db.collection("api_keys").find({ ownerId: user.id }).sort({ createdAt: -1 }).toArray(),
+    db.collection("decisions").find({ ownerId: user.id }).sort({ createdAt: -1 }).limit(100).toArray(),
+    db.collection("playground_runs").find({ userId: user.id }).sort({ createdAt: -1 }).limit(100).toArray(),
   ]);
 
+  const agentMap = new Map<string, string>();
+  for (const ag of agents) {
+    agentMap.set(ag._id.toString(), ag.name);
+  }
+
+  // Build unified calls list
+  const calls: DashboardCallItem[] = [];
+
+  // Decisions (live calls via /api/v1/ask)
+  for (const d of decisions) {
+    const isBuy = d.action === "buy";
+    const priceUsdc = isBuy ? (d.inputs?.price ?? 0.01) : 0;
+    const savingsUsdc = d.action === "reuse" ? (d.inputs?.price ?? 0.01) : 0;
+    const agentName = agentMap.get(String(d.agentId)) || "Unknown Agent";
+
+    calls.push({
+      id: d._id.toString(),
+      timestamp: d.createdAt ? new Date(d.createdAt).toISOString() : new Date().toISOString(),
+      agentName,
+      agentId: String(d.agentId),
+      apiKeyPrefix: d.apiKeyPrefix || "hl_live_...",
+      intent: d.intent || "FX_NOW",
+      action: d.action || "reuse",
+      priceUsdc,
+      savingsUsdc,
+      latencyMs: d.latencyMs ?? null,
+      reason: d.reason || "",
+      txHash: d.txHash || null,
+      source: "API (Live)",
+    });
+  }
+
+  // Playground Runs
+  for (const r of playgroundRuns) {
+    calls.push({
+      id: r.runId || r._id.toString(),
+      timestamp: r.createdAt ? new Date(r.createdAt).toISOString() : new Date().toISOString(),
+      agentName: r.agentName || agentMap.get(String(r.agentId)) || "Testing Studio",
+      agentId: String(r.agentId || ""),
+      apiKeyPrefix: r.apiKeyPrefix || "hl_live_...",
+      intent: r.intent || "FX_NOW",
+      action: r.action || "buy",
+      priceUsdc: Number(r.priceUsdc) || 0,
+      savingsUsdc: Number(r.savingsUsdc) || 0,
+      latencyMs: r.latencyMs ?? null,
+      reason: r.reason || "",
+      txHash: r.txHash || null,
+      source: "Testing Studio",
+    });
+  }
+
+  // Sort calls chronologically descending
+  calls.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+  // Compute total spend and savings
+  let totalSpendUsdc = 0;
+  let totalSavedUsdc = 0;
+  for (const c of calls) {
+    totalSpendUsdc += c.priceUsdc;
+    totalSavedUsdc += c.savingsUsdc;
+  }
+
+  // Build keys list
+  const keys: DashboardKeyItem[] = apiKeys.map((k) => ({
+    id: k._id.toString(),
+    prefix: k.prefix || "hl_live_...",
+    agentId: String(k.agentId),
+    agentName: agentMap.get(String(k.agentId)) || "General Agent",
+    status: k.revokedAt ? "blocked" : "active",
+    createdAt: k.createdAt ? new Date(k.createdAt).toISOString() : new Date().toISOString(),
+    lastUsedAt: k.lastUsedAt ? new Date(k.lastUsedAt).toISOString() : null,
+    revokedAt: k.revokedAt ? new Date(k.revokedAt).toISOString() : null,
+    revocationReason: k.revocationReason || null,
+  }));
+
   return (
-    <div className="flex flex-col gap-8">
-      {/* Page Title & Actions */}
-      <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Overview</h1>
-          <p className="mt-1 text-sm text-[var(--secondary)]">
-            Manage your autonomous intelligence agents and monitor freshness decisions.
-          </p>
-        </div>
-        <Link
-          href="/app/agents/new"
-          className="rounded border border-[var(--border-strong)] bg-[var(--foreground)] px-4 py-2 text-sm font-medium text-[var(--background)] hover:opacity-90"
-        >
-          Create Agent
-        </Link>
-      </div>
-
-      {/* Metric Cards */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-4">
-        <div className="border border-[var(--border)] bg-[var(--surface)] p-6">
-          <span className="font-mono text-xs uppercase text-[var(--secondary)]">Active Agents</span>
-          <div className="mt-2 text-3xl font-semibold">{agentsCount}</div>
-        </div>
-        <div className="border border-[var(--border)] bg-[var(--surface)] p-6">
-          <span className="font-mono text-xs uppercase text-[var(--secondary)]">Verified Purchases</span>
-          <div className="mt-2 text-3xl font-semibold">{purchasesCount}</div>
-        </div>
-        <div className="border border-[var(--border)] bg-[var(--surface)] p-6">
-          <span className="font-mono text-xs uppercase text-[var(--secondary)]">Governor Decisions</span>
-          <div className="mt-2 text-3xl font-semibold">{decisionsCount}</div>
-        </div>
-        <div className="border border-[var(--border)] bg-[var(--surface)] p-6">
-          <span className="font-mono text-xs uppercase text-[var(--secondary)]">Spend Leaderboard</span>
-          <div className="mt-2 flex items-center justify-between">
-            <span className="text-xl font-semibold text-green-700">On-Chain Proof</span>
-            <Link href="/app/leaderboard" className="text-xs font-mono text-blue-600 hover:underline">
-              View &rarr;
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* Getting Started Guide if 0 agents */}
-      {agentsCount === 0 && (
-        <div className="border border-[var(--border)] bg-[var(--surface)] p-8">
-          <h2 className="text-lg font-semibold">Get Started with Half-Life</h2>
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-[var(--secondary)]">
-            Create an agent to test automated recurring intelligence checks. You can run naive mode
-            (buys every heartbeat) or Half-Life mode (buys only when decay exceeds miner noise floor and stake warrants it).
-          </p>
-          <div className="mt-6">
-            <Link
-              href="/app/agents/new"
-              className="inline-flex rounded border border-[var(--border-strong)] bg-[var(--foreground)] px-4 py-2 text-sm font-medium text-[var(--background)] hover:opacity-90"
-            >
-              Create your first agent &rarr;
-            </Link>
-          </div>
-        </div>
-      )}
-    </div>
+    <DashboardClient
+      calls={calls}
+      keys={keys}
+      agentsCount={agents.length}
+      totalSpendUsdc={totalSpendUsdc}
+      totalSavedUsdc={totalSavedUsdc}
+    />
   );
 }
-

@@ -128,11 +128,20 @@ export async function createAgentApiKeyDirectAction(agentId: string) {
   };
 }
 
-export async function cancelAgentApiKeyAction(keyId: string, agentId: string) {
+export async function cancelAgentApiKeyAction(
+  keyId: string,
+  agentId: string,
+  reason: string = "User manual block",
+  confirmationWord?: string
+) {
   const user = await requireUser();
   const agent = await getOwnedAgent(user.id, agentId);
   if (!agent) {
     throw new Error("Agent not found or unauthorized");
+  }
+
+  if (confirmationWord && confirmationWord.trim().toUpperCase() !== "DELETE") {
+    throw new Error("Confirmation failed: You must type 'DELETE' to block this key.");
   }
 
   const db = await getDb();
@@ -141,12 +150,33 @@ export async function cancelAgentApiKeyAction(keyId: string, agentId: string) {
     queryId = new ObjectId(keyId);
   } catch {}
 
+  const now = new Date();
   const result = await db.collection("api_keys").updateOne(
     { _id: queryId as unknown as ObjectId, ownerId: user.id, agentId },
-    { $set: { revokedAt: new Date() } }
+    {
+      $set: {
+        revokedAt: now,
+        revocationReason: reason.trim(),
+        revokedBy: user.id,
+      },
+    }
   );
 
+  await db.collection("audit_log").insertOne({
+    ts: now,
+    actorType: "USER",
+    actorId: user.id,
+    action: "api_key.blocked",
+    target: keyId,
+    detail: {
+      agentId,
+      agentName: agent.name,
+      reason: reason.trim(),
+    },
+  });
+
   revalidatePath("/app/agents");
+  revalidatePath("/app");
 
   return {
     success: result.modifiedCount > 0,

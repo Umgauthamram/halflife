@@ -54,6 +54,8 @@ export default function ApiKeysDrawer({
 
   // Confirmation state for cancellation
   const [cancellingKeyId, setCancellingKeyId] = useState<string | null>(null);
+  const [cancelReason, setCancelReason] = useState<string>("");
+  const [cancelDeleteWord, setCancelDeleteWord] = useState<string>("");
 
   const [isGenerating, startGenerating] = useTransition();
   const [isCancelling, startCancelling] = useTransition();
@@ -135,11 +137,25 @@ export default function ApiKeysDrawer({
   // Handle Cancel / Revoke Key
   const handleCancelKey = (keyId: string) => {
     if (!agent) return;
+    if (cancelDeleteWord.trim().toUpperCase() !== "DELETE") {
+      setError("Please type 'DELETE' to confirm blocking this key.");
+      return;
+    }
+    if (!cancelReason.trim()) {
+      setError("Please provide a reason for blocking this API key.");
+      return;
+    }
+
     setError(null);
 
     startCancelling(async () => {
       try {
-        const res = await cancelAgentApiKeyAction(keyId, agent.id);
+        const res = await cancelAgentApiKeyAction(
+          keyId,
+          agent.id,
+          cancelReason.trim(),
+          cancelDeleteWord.trim()
+        );
         if (res.success) {
           setKeys((prev) =>
             prev.map((k) =>
@@ -149,6 +165,8 @@ export default function ApiKeysDrawer({
             )
           );
           setCancellingKeyId(null);
+          setCancelReason("");
+          setCancelDeleteWord("");
 
           // Update latest active key prefix in parent if available
           const remainingActive = keys.find((k) => k.id !== keyId && k.status === "active");
@@ -381,37 +399,81 @@ export default function ApiKeysDrawer({
 
                         {/* Action: Cancel Key / Confirm Revocation */}
                         {!isRevoked && (
-                          <div>
-                            {isConfirming ? (
-                              <div className="flex items-center gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => handleCancelKey(key.id)}
-                                  disabled={isCancelling}
-                                  className="rounded bg-red-700 px-2.5 py-1 text-xs font-mono font-bold text-white hover:bg-red-800 transition disabled:opacity-50"
-                                >
-                                  {isCancelling ? "Cancelling..." : "Confirm Cancel"}
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setCancellingKeyId(null)}
-                                  className="text-xs font-mono text-[var(--secondary)] hover:text-[var(--foreground)] underline"
-                                >
-                                  Back
-                                </button>
-                              </div>
-                            ) : (
+                          <div className="shrink-0">
+                            {!isConfirming && (
                               <button
                                 type="button"
-                                onClick={() => setCancellingKeyId(key.id)}
-                                className="rounded border border-red-200 bg-red-50/60 px-2.5 py-1 text-xs font-mono font-medium text-red-700 hover:bg-red-100 transition"
+                                onClick={() => {
+                                  setCancellingKeyId(key.id);
+                                  setCancelReason("");
+                                  setCancelDeleteWord("");
+                                }}
+                                className="rounded border border-red-200 bg-red-50/60 px-2.5 py-1 text-xs font-mono font-medium text-red-700 hover:bg-red-100 transition cursor-pointer"
                               >
-                                Cancel Key
+                                Block Key
                               </button>
                             )}
                           </div>
                         )}
                       </div>
+
+                      {/* Confirmation Block inside Drawer */}
+                      {isConfirming && (
+                        <div className="mt-3 p-3 rounded border border-red-300 bg-red-50/60 flex flex-col gap-2 font-mono text-xs">
+                          <span className="font-bold text-red-900">
+                            Confirm Blocking Key ({key.prefix}...)
+                          </span>
+                          <div>
+                            <label className="text-[10px] text-red-800 uppercase block mb-0.5">
+                              1. Reason for blocking:
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="e.g. Key leaked, testing complete..."
+                              value={cancelReason}
+                              onChange={(e) => setCancelReason(e.target.value)}
+                              className="w-full rounded border border-red-300 bg-white px-2.5 py-1 text-xs font-mono text-red-950"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-red-800 uppercase block mb-0.5">
+                              2. Type <strong>DELETE</strong> to confirm:
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="DELETE"
+                              value={cancelDeleteWord}
+                              onChange={(e) => setCancelDeleteWord(e.target.value)}
+                              className="w-full rounded border border-red-300 bg-white px-2.5 py-1 text-xs font-mono text-red-900 font-bold"
+                            />
+                          </div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <button
+                              type="button"
+                              onClick={() => handleCancelKey(key.id)}
+                              disabled={
+                                isCancelling ||
+                                cancelDeleteWord.trim().toUpperCase() !== "DELETE" ||
+                                !cancelReason.trim()
+                              }
+                              className="rounded bg-red-700 px-3 py-1 text-xs font-mono font-bold text-white hover:bg-red-800 transition disabled:opacity-40 cursor-pointer"
+                            >
+                              {isCancelling ? "Blocking..." : "Confirm & Block"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setCancellingKeyId(null);
+                                setCancelReason("");
+                                setCancelDeleteWord("");
+                              }}
+                              className="text-xs font-mono text-[var(--secondary)] hover:text-[var(--foreground)] underline cursor-pointer"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
 
                       {/* Scopes & Permissions */}
                       <div className="border-t border-[var(--border)] pt-2 flex items-center justify-between text-[11px] font-mono text-[var(--secondary)]">

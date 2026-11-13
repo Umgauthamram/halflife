@@ -8,15 +8,15 @@
 - **Languages**: TypeScript
 
 ## 2. Active Feature / Milestone
-- **Current Focus**: Playground Testing Studio, Analytics & AI Generator
-- **Status**: Production-Verified & Confirmed by User
+- **Current Focus**: Dashboard API Audit & Call Charges Graph with Mandatory "DELETE" Key Blocking
+- **Status**: Implemented & Verified Across Monorepo
 
 ## 3. Recent Progress (Rolling Snapshot - Max 5)
-- Fully verified Agent Testing Studio with real-time Governor execution (BUY/REUSE decisions, cryptographic proofs, and latency measurements).
-- Enhanced Playground testing studio: separated pre-built scenarios (direct execution with zero redundant generate button) from custom ideas ("Own Idea • AI Code Writer" with Gemini prompt generator).
-- Upgraded agent API key autofill to populate the full 72-character active key (`hl_live_...`) without truncation, ensuring 100% plug-and-play testing in Playground.
-- Implemented smooth right-to-left animated slide-over API Keys Drawer on `/app/agents` with key listing, instant revocation/cancellation, and raw key creation.
-- Executed comprehensive performance overhaul: MongoDB connection pooling, automated database indexing, React request-level caching, and parallelized database queries.
+- Implemented comprehensive API Call Audit Feed & Visual Expense Graph on the main dashboard (`/app`), charting charges per call ($0.010 BUY vs $0.000 REUSE) and cumulative savings.
+- Added secure API Key blocking modal with mandatory reason requirement and "DELETE" confirmation word verification to prevent accidental revocations.
+- Integrated audit log recording for all key revocations into `audit_log` with actor tracking and revocation reasons.
+- Enhanced Playground testing studio: separated pre-built scenarios from custom ideas ("Own Idea • AI Code Writer" with Gemini prompt generator).
+- Upgraded agent API key autofill to populate the full 72-character active key (`hl_live_...`) without truncation, ensuring 100% plug-and-play testing.
 
 ## 4. Next Immediate Steps
 - [ ] Record final demo video following `docs/video-script.md`
