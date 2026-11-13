@@ -1,8 +1,18 @@
 "use client";
 
-import { useState, useTransition, useMemo } from "react";
+import { useEffect, useState, useTransition, useMemo } from "react";
 import Link from "next/link";
 import { blockApiKeyAction } from "./actions";
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  Legend,
+} from "recharts";
 
 export interface DashboardCallItem {
   id: string;
@@ -47,6 +57,56 @@ const QUICK_REASONS = [
   "Rotating to a fresh key",
 ];
 
+function RechartsCustomTooltip({ active, payload }: any) {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    const isBuy = data.action === "BUY";
+    const isReuse = data.action === "REUSE";
+
+    return (
+      <div className="rounded-lg border border-[var(--border)] bg-[#18181b] p-3 text-xs font-mono text-white shadow-2xl min-w-[240px]">
+        <div className="flex items-center justify-between border-b border-gray-700 pb-1.5 mb-2">
+          <span className="font-bold text-amber-300">
+            {data.name} &bull; {data.intent}
+          </span>
+          <span
+            className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${
+              isReuse
+                ? "bg-blue-900 text-blue-200"
+                : isBuy
+                ? "bg-amber-900 text-amber-200"
+                : "bg-red-900 text-red-200"
+            }`}
+          >
+            {data.action}
+          </span>
+        </div>
+        <div className="flex flex-col gap-1 text-[11px] text-gray-300">
+          <div className="flex justify-between">
+            <span className="text-gray-400">Agent:</span>
+            <span className="font-semibold text-white truncate max-w-[140px]">{data.agentName}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-400">Query Charge:</span>
+            <span className={isBuy ? "text-amber-400 font-bold" : "text-emerald-400 font-bold"}>
+              ${data.charge.toFixed(3)} USDC
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-400">Capital Saved:</span>
+            <span className="text-emerald-400 font-bold">${data.saved.toFixed(3)} USDC</span>
+          </div>
+          <div className="flex justify-between text-[10px] text-gray-400 pt-1.5 border-t border-gray-800 mt-1">
+            <span>{data.timestamp} UTC</span>
+            <span>{data.latencyMs ? `${data.latencyMs}ms` : "<5ms"}</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  return null;
+}
+
 export default function DashboardClient({
   calls,
   keys: initialKeys,
@@ -54,6 +114,11 @@ export default function DashboardClient({
   totalSpendUsdc,
   totalSavedUsdc,
 }: DashboardClientProps) {
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const [keysList, setKeysList] = useState<DashboardKeyItem[]>(initialKeys);
   const [selectedGraphView, setSelectedGraphView] = useState<"charges" | "cumulative">("charges");
   const [selectedIntentFilter, setSelectedIntentFilter] = useState<string>("ALL");
@@ -164,131 +229,32 @@ export default function DashboardClient({
     return { call: graphCalls[idx], index: idx };
   }, [graphCalls, hoveredPointIndex]);
 
-  // Line Graph Geometry Calculations
-  const lineGraphData = useMemo(() => {
-    if (graphCalls.length === 0) return null;
+  // Format dataset for Recharts
+  const rechartsData = useMemo(() => {
+    let accSpend = 0;
+    let accSaved = 0;
 
-    const padLeft = 65;
-    const padRight = 35;
-    const padTop = 25;
-    const padBottom = 40;
-    const plotW = 800 - padLeft - padRight; // 700
-    const plotH = 220 - padTop - padBottom; // 155
-    const baseLineY = padTop + plotH; // 180
-
-    const count = graphCalls.length;
-    const getX = (idx: number) => {
-      if (count === 1) return padLeft + plotW / 2;
-      return padLeft + (idx / (count - 1)) * plotW;
-    };
-
-    if (selectedGraphView === "charges") {
-      // Cost per Call ($0.000 to $0.012)
-      const maxY = 0.012;
-      const points = graphCalls.map((c, i) => {
-        const x = getX(i);
-        const y = padTop + plotH * (1 - Math.min(c.priceUsdc, maxY) / maxY);
-        return { x, y, call: c, index: i };
-      });
-
-      const linePath =
-        count === 1
-          ? `M ${padLeft},${points[0].y} L ${padLeft + plotW},${points[0].y}`
-          : `M ${points.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" L ")}`;
-
-      const areaPath =
-        count === 1
-          ? `M ${padLeft},${baseLineY} L ${padLeft},${points[0].y} L ${padLeft + plotW},${points[0].y} L ${padLeft + plotW},${baseLineY} Z`
-          : `M ${points[0].x.toFixed(1)},${baseLineY} L ${points.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" L ")} L ${points[points.length - 1].x.toFixed(1)},${baseLineY} Z`;
-
-      const gridLines = [
-        { label: "$0.010", y: padTop + plotH * (1 - 0.01 / maxY) },
-        { label: "$0.005", y: padTop + plotH * (1 - 0.005 / maxY) },
-        { label: "$0.000", y: baseLineY },
-      ];
+    return graphCalls.map((c, i) => {
+      accSpend += c.priceUsdc;
+      accSaved += c.savingsUsdc;
 
       return {
-        mode: "charges" as const,
-        points,
-        linePath,
-        areaPath,
-        gridLines,
-        baseLineY,
-        padLeft,
-        padRight,
-        plotW,
+        index: i,
+        name: `#${i + 1}`,
+        charge: Number(c.priceUsdc.toFixed(3)),
+        saved: Number(c.savingsUsdc.toFixed(3)),
+        cumSpend: Number(accSpend.toFixed(3)),
+        cumSaved: Number(accSaved.toFixed(3)),
+        intent: c.intent,
+        action: c.action.toUpperCase(),
+        agentName: c.agentName,
+        apiKeyPrefix: c.apiKeyPrefix,
+        timestamp: new Date(c.timestamp).toISOString().replace("T", " ").slice(0, 19),
+        latencyMs: c.latencyMs,
+        call: c,
       };
-    } else {
-      // Cumulative Spend vs Cumulative Saved
-      let accSpend = 0;
-      let accSaved = 0;
-      const spendVals: number[] = [];
-      const savedVals: number[] = [];
-
-      for (const c of graphCalls) {
-        accSpend += c.priceUsdc;
-        accSaved += c.savingsUsdc;
-        spendVals.push(accSpend);
-        savedVals.push(accSaved);
-      }
-
-      const maxY = Math.max(0.02, ...spendVals, ...savedVals) * 1.15;
-
-      const spendPoints = graphCalls.map((c, i) => {
-        const x = getX(i);
-        const y = padTop + plotH * (1 - spendVals[i] / maxY);
-        return { x, y, value: spendVals[i], call: c, index: i };
-      });
-
-      const savedPoints = graphCalls.map((c, i) => {
-        const x = getX(i);
-        const y = padTop + plotH * (1 - savedVals[i] / maxY);
-        return { x, y, value: savedVals[i], call: c, index: i };
-      });
-
-      const spendLinePath =
-        count === 1
-          ? `M ${padLeft},${spendPoints[0].y} L ${padLeft + plotW},${spendPoints[0].y}`
-          : `M ${spendPoints.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" L ")}`;
-
-      const spendAreaPath =
-        count === 1
-          ? `M ${padLeft},${baseLineY} L ${padLeft},${spendPoints[0].y} L ${padLeft + plotW},${spendPoints[0].y} L ${padLeft + plotW},${baseLineY} Z`
-          : `M ${spendPoints[0].x.toFixed(1)},${baseLineY} L ${spendPoints.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" L ")} L ${spendPoints[spendPoints.length - 1].x.toFixed(1)},${baseLineY} Z`;
-
-      const savedLinePath =
-        count === 1
-          ? `M ${padLeft},${savedPoints[0].y} L ${padLeft + plotW},${savedPoints[0].y}`
-          : `M ${savedPoints.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" L ")}`;
-
-      const savedAreaPath =
-        count === 1
-          ? `M ${padLeft},${baseLineY} L ${padLeft},${savedPoints[0].y} L ${padLeft + plotW},${savedPoints[0].y} L ${padLeft + plotW},${baseLineY} Z`
-          : `M ${savedPoints[0].x.toFixed(1)},${baseLineY} L ${savedPoints.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" L ")} L ${savedPoints[savedPoints.length - 1].x.toFixed(1)},${baseLineY} Z`;
-
-      const midVal = maxY / 2;
-      const gridLines = [
-        { label: `$${maxY.toFixed(3)}`, y: padTop },
-        { label: `$${midVal.toFixed(3)}`, y: padTop + plotH / 2 },
-        { label: "$0.000", y: baseLineY },
-      ];
-
-      return {
-        mode: "cumulative" as const,
-        spendPoints,
-        savedPoints,
-        spendLinePath,
-        spendAreaPath,
-        savedLinePath,
-        savedAreaPath,
-        gridLines,
-        baseLineY,
-        padLeft,
-        padRight,
-        plotW,
-      };
-    }
-  }, [graphCalls, selectedGraphView]);
+    });
+  }, [graphCalls]);
 
   return (
     <div className="flex flex-col gap-8">
@@ -415,7 +381,7 @@ export default function DashboardClient({
           </div>
         </div>
 
-        {graphCalls.length === 0 || !lineGraphData ? (
+        {graphCalls.length === 0 ? (
           <div className="p-12 text-center text-xs font-mono text-[var(--secondary)]">
             No API activity recorded yet. Run a scenario in the{" "}
             <Link href="/app/playground" className="underline hover:text-[var(--foreground)]">
@@ -428,7 +394,7 @@ export default function DashboardClient({
             {/* Chart Legend */}
             <div className="flex flex-wrap items-center justify-between gap-4 text-xs font-mono">
               <div className="flex items-center gap-6">
-                {lineGraphData.mode === "charges" ? (
+                {selectedGraphView === "charges" ? (
                   <>
                     <div className="flex items-center gap-2">
                       <span className="h-2.5 w-2.5 rounded-full bg-amber-500 inline-block ring-2 ring-amber-200" />
@@ -454,258 +420,191 @@ export default function DashboardClient({
               </div>
 
               <span className="text-[11px] text-[var(--secondary)]">
-                Showing {graphCalls.length} call{graphCalls.length === 1 ? "" : "s"} &bull; Click any point to inspect
+                Showing {graphCalls.length} call{graphCalls.length === 1 ? "" : "s"} &bull; Click or hover any point
               </span>
             </div>
 
-            {/* Responsive SVG Line Chart */}
-            <div className="relative w-full rounded-lg border border-[var(--border)] bg-[var(--background)] p-2">
-              <svg
-                viewBox="0 0 800 220"
-                className="w-full h-56 sm:h-64 overflow-visible"
-                preserveAspectRatio="none"
-              >
-                <defs>
-                  <linearGradient id="chargesAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.25" />
-                    <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.0" />
-                  </linearGradient>
-                  <linearGradient id="spendAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#d97706" stopOpacity="0.30" />
-                    <stop offset="100%" stopColor="#d97706" stopOpacity="0.0" />
-                  </linearGradient>
-                  <linearGradient id="savedAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#059669" stopOpacity="0.25" />
-                    <stop offset="100%" stopColor="#059669" stopOpacity="0.0" />
-                  </linearGradient>
-                </defs>
-
-                {/* Horizontal Gridlines & Y-Axis Labels */}
-                {lineGraphData.gridLines.map((gl, i) => (
-                  <g key={i}>
-                    <line
-                      x1={lineGraphData.padLeft}
-                      y1={gl.y}
-                      x2={lineGraphData.padLeft + lineGraphData.plotW}
-                      y2={gl.y}
-                      stroke="var(--border)"
-                      strokeDasharray="4 4"
-                      strokeWidth={1}
+            {/* Recharts Responsive Container */}
+            <div className="w-full h-72 sm:h-80 rounded-lg border border-[var(--border)] bg-[var(--background)] p-4 flex flex-col justify-center">
+              {!isMounted ? (
+                <div className="w-full h-full flex items-center justify-center font-mono text-xs text-[var(--secondary)]">
+                  Loading chart engine...
+                </div>
+              ) : selectedGraphView === "charges" ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart
+                    data={rechartsData}
+                    margin={{ top: 12, right: 20, left: 10, bottom: 4 }}
+                    onMouseMove={(e: any) => {
+                      if (e && e.activeTooltipIndex !== undefined && e.activeTooltipIndex !== null) {
+                        setHoveredPointIndex(Number(e.activeTooltipIndex));
+                      }
+                    }}
+                    onClick={(e: any) => {
+                      if (e && e.activeTooltipIndex !== undefined && e.activeTooltipIndex !== null) {
+                        setHoveredPointIndex(Number(e.activeTooltipIndex));
+                      }
+                    }}
+                  >
+                    <defs>
+                      <linearGradient id="chargeGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.35} />
+                        <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                    <XAxis
+                      dataKey="name"
+                      stroke="var(--secondary)"
+                      tick={{ fill: "var(--secondary)", fontSize: 11, fontFamily: "monospace" }}
+                      tickLine={false}
                     />
-                    <text
-                      x={lineGraphData.padLeft - 10}
-                      y={gl.y + 4}
-                      textAnchor="end"
-                      fill="var(--secondary)"
-                      fontSize="11"
-                      fontFamily="monospace"
-                    >
-                      {gl.label}
-                    </text>
-                  </g>
-                ))}
-
-                {/* Vertical Axis Line */}
-                <line
-                  x1={lineGraphData.padLeft}
-                  y1={25}
-                  x2={lineGraphData.padLeft}
-                  y2={lineGraphData.baseLineY}
-                  stroke="var(--border-strong)"
-                  strokeWidth={1.5}
-                />
-                {/* Horizontal Axis Baseline */}
-                <line
-                  x1={lineGraphData.padLeft}
-                  y1={lineGraphData.baseLineY}
-                  x2={lineGraphData.padLeft + lineGraphData.plotW}
-                  y2={lineGraphData.baseLineY}
-                  stroke="var(--border-strong)"
-                  strokeWidth={1.5}
-                />
-
-                {/* MODE 1: Cost per Call Line */}
-                {lineGraphData.mode === "charges" && (
-                  <>
-                    <path
-                      d={lineGraphData.areaPath}
-                      fill="url(#chargesAreaGrad)"
+                    <YAxis
+                      domain={[0, 0.012]}
+                      ticks={[0, 0.005, 0.01]}
+                      tickFormatter={(v: number) => `$${v.toFixed(3)}`}
+                      stroke="var(--secondary)"
+                      tick={{ fill: "var(--secondary)", fontSize: 11, fontFamily: "monospace" }}
+                      tickLine={false}
+                      axisLine={false}
                     />
-                    <path
-                      d={lineGraphData.linePath}
-                      fill="none"
-                      stroke="#f59e0b"
-                      strokeWidth={2.5}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-
-                    {/* Active Point Vertical Guideline */}
-                    {activeCall && lineGraphData.points[activeCall.index] && (
-                      <line
-                        x1={lineGraphData.points[activeCall.index].x}
-                        y1={25}
-                        x2={lineGraphData.points[activeCall.index].x}
-                        y2={lineGraphData.baseLineY}
-                        stroke="#f59e0b"
-                        strokeDasharray="3 3"
-                        strokeWidth={1.5}
-                        opacity={0.8}
-                      />
-                    )}
-
-                    {/* Circles on each point */}
-                    {lineGraphData.points.map((pt, i) => {
-                      const isSelected = activeCall?.index === i;
-                      const isBuy = pt.call.action === "buy";
-                      const ptColor = isBuy ? "#d97706" : "#059669";
-
-                      return (
-                        <g key={i}>
-                          {isSelected && (
-                            <circle
-                              cx={pt.x}
-                              cy={pt.y}
-                              r={10}
-                              fill="none"
-                              stroke={ptColor}
-                              strokeWidth={2}
-                              opacity={0.5}
-                            />
-                          )}
-                          <circle
-                            cx={pt.x}
-                            cy={pt.y}
-                            r={isSelected ? 6 : 4.5}
-                            fill={ptColor}
-                            stroke="#ffffff"
-                            strokeWidth={2}
-                          />
-                          <text
-                            x={pt.x}
-                            y={lineGraphData.baseLineY + 18}
-                            textAnchor="middle"
-                            fill="var(--secondary)"
-                            fontSize="10"
-                            fontFamily="monospace"
-                          >
-                            #{i + 1}
-                          </text>
-                        </g>
-                      );
-                    })}
-                  </>
-                )}
-
-                {/* MODE 2: Cumulative Spend vs Saved Lines */}
-                {lineGraphData.mode === "cumulative" && (
-                  <>
-                    {/* Saved Area & Line */}
-                    <path
-                      d={lineGraphData.savedAreaPath}
-                      fill="url(#savedAreaGrad)"
-                    />
-                    <path
-                      d={lineGraphData.savedLinePath}
-                      fill="none"
-                      stroke="#059669"
-                      strokeWidth={2.5}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-
-                    {/* Spend Area & Line */}
-                    <path
-                      d={lineGraphData.spendAreaPath}
-                      fill="url(#spendAreaGrad)"
-                    />
-                    <path
-                      d={lineGraphData.spendLinePath}
-                      fill="none"
+                    <Tooltip content={<RechartsCustomTooltip />} />
+                    <Area
+                      type="monotone"
+                      dataKey="charge"
+                      name="Query Cost"
                       stroke="#d97706"
                       strokeWidth={2.5}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-
-                    {/* Active Point Vertical Guideline */}
-                    {activeCall && lineGraphData.spendPoints[activeCall.index] && (
-                      <line
-                        x1={lineGraphData.spendPoints[activeCall.index].x}
-                        y1={25}
-                        x2={lineGraphData.spendPoints[activeCall.index].x}
-                        y2={lineGraphData.baseLineY}
-                        stroke="var(--border-strong)"
-                        strokeDasharray="3 3"
-                        strokeWidth={1.5}
-                      />
-                    )}
-
-                    {/* Circles on each point */}
-                    {lineGraphData.spendPoints.map((pt, i) => {
-                      const isSelected = activeCall?.index === i;
-                      const savedPt = lineGraphData.savedPoints[i];
-
-                      return (
-                        <g key={i}>
-                          {/* Saved Circle */}
+                      fillOpacity={1}
+                      fill="url(#chargeGradient)"
+                      activeDot={{
+                        r: 6,
+                        stroke: "#f59e0b",
+                        strokeWidth: 2,
+                        fill: "#18181b",
+                      }}
+                      dot={(props: any) => {
+                        const { cx, cy, payload } = props;
+                        if (cx == null || cy == null) return null;
+                        const isBuy = payload.action === "BUY";
+                        const isSelected = activeCall?.index === payload.index;
+                        return (
                           <circle
-                            cx={savedPt.x}
-                            cy={savedPt.y}
+                            key={`charge-dot-${payload.index}`}
+                            cx={cx}
+                            cy={cy}
                             r={isSelected ? 6 : 4}
+                            fill={isBuy ? "#d97706" : "#059669"}
+                            stroke={isSelected ? "#ffffff" : "var(--background)"}
+                            strokeWidth={2}
+                            className="cursor-pointer transition-all"
+                            onClick={() => setHoveredPointIndex(payload.index)}
+                          />
+                        );
+                      }}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart
+                    data={rechartsData}
+                    margin={{ top: 12, right: 20, left: 10, bottom: 4 }}
+                    onMouseMove={(e: any) => {
+                      if (e && e.activeTooltipIndex !== undefined && e.activeTooltipIndex !== null) {
+                        setHoveredPointIndex(Number(e.activeTooltipIndex));
+                      }
+                    }}
+                    onClick={(e: any) => {
+                      if (e && e.activeTooltipIndex !== undefined && e.activeTooltipIndex !== null) {
+                        setHoveredPointIndex(Number(e.activeTooltipIndex));
+                      }
+                    }}
+                  >
+                    <defs>
+                      <linearGradient id="spendGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#d97706" stopOpacity={0.30} />
+                        <stop offset="95%" stopColor="#d97706" stopOpacity={0.0} />
+                      </linearGradient>
+                      <linearGradient id="savedGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#059669" stopOpacity={0.30} />
+                        <stop offset="95%" stopColor="#059669" stopOpacity={0.0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                    <XAxis
+                      dataKey="name"
+                      stroke="var(--secondary)"
+                      tick={{ fill: "var(--secondary)", fontSize: 11, fontFamily: "monospace" }}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tickFormatter={(v: number) => `$${v.toFixed(3)}`}
+                      stroke="var(--secondary)"
+                      tick={{ fill: "var(--secondary)", fontSize: 11, fontFamily: "monospace" }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <Tooltip content={<RechartsCustomTooltip />} />
+                    <Area
+                      type="monotone"
+                      dataKey="cumSaved"
+                      name="Cumulative Saved"
+                      stroke="#059669"
+                      strokeWidth={2.5}
+                      fillOpacity={1}
+                      fill="url(#savedGradient)"
+                      activeDot={{ r: 6, stroke: "#10b981", strokeWidth: 2, fill: "#18181b" }}
+                      dot={(props: any) => {
+                        const { cx, cy, payload } = props;
+                        if (cx == null || cy == null) return null;
+                        const isSelected = activeCall?.index === payload.index;
+                        return (
+                          <circle
+                            key={`saved-dot-${payload.index}`}
+                            cx={cx}
+                            cy={cy}
+                            r={isSelected ? 5.5 : 3.5}
                             fill="#059669"
-                            stroke="#ffffff"
-                            strokeWidth={2}
+                            stroke={isSelected ? "#ffffff" : "var(--background)"}
+                            strokeWidth={1.5}
+                            className="cursor-pointer"
+                            onClick={() => setHoveredPointIndex(payload.index)}
                           />
-                          {/* Spend Circle */}
-                          <circle
-                            cx={pt.x}
-                            cy={pt.y}
-                            r={isSelected ? 6 : 4}
-                            fill="#d97706"
-                            stroke="#ffffff"
-                            strokeWidth={2}
-                          />
-                          <text
-                            x={pt.x}
-                            y={lineGraphData.baseLineY + 18}
-                            textAnchor="middle"
-                            fill="var(--secondary)"
-                            fontSize="10"
-                            fontFamily="monospace"
-                          >
-                            #{i + 1}
-                          </text>
-                        </g>
-                      );
-                    })}
-                  </>
-                )}
-
-                {/* Transparent Interactive Hover Slices across the full width */}
-                {graphCalls.map((_, i) => {
-                  const count = graphCalls.length;
-                  const sliceW = count > 1 ? lineGraphData.plotW / (count - 1) : lineGraphData.plotW;
-                  const xPos =
-                    count > 1
-                      ? lineGraphData.padLeft + (i - 0.5) * sliceW
-                      : lineGraphData.padLeft;
-
-                  return (
-                    <rect
-                      key={i}
-                      x={Math.max(lineGraphData.padLeft, xPos)}
-                      y={0}
-                      width={sliceW}
-                      height={220}
-                      fill="transparent"
-                      className="cursor-pointer"
-                      onMouseEnter={() => setHoveredPointIndex(i)}
-                      onClick={() => setHoveredPointIndex(i)}
+                        );
+                      }}
                     />
-                  );
-                })}
-              </svg>
+                    <Area
+                      type="monotone"
+                      dataKey="cumSpend"
+                      name="Cumulative Spend"
+                      stroke="#d97706"
+                      strokeWidth={2.5}
+                      fillOpacity={1}
+                      fill="url(#spendGradient)"
+                      activeDot={{ r: 6, stroke: "#f59e0b", strokeWidth: 2, fill: "#18181b" }}
+                      dot={(props: any) => {
+                        const { cx, cy, payload } = props;
+                        if (cx == null || cy == null) return null;
+                        const isSelected = activeCall?.index === payload.index;
+                        return (
+                          <circle
+                            key={`spend-dot-${payload.index}`}
+                            cx={cx}
+                            cy={cy}
+                            r={isSelected ? 5.5 : 3.5}
+                            fill="#d97706"
+                            stroke={isSelected ? "#ffffff" : "var(--background)"}
+                            strokeWidth={1.5}
+                            className="cursor-pointer"
+                            onClick={() => setHoveredPointIndex(payload.index)}
+                          />
+                        );
+                      }}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              )}
             </div>
 
             {/* Interactive Call Inspector Card (Directly below the graph for 100% clarity) */}

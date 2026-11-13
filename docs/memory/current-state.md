@@ -8,12 +8,12 @@
 - **Languages**: TypeScript
 
 ## 2. Active Feature / Milestone
-- **Current Focus**: Dashboard Line Graph Visualization & Interactive Call Inspector
+- **Current Focus**: Dashboard Professional Recharts Integration (`ResponsiveContainer`, `AreaChart`, custom tooltips & active inspector)
 - **Status**: Implemented & Production-Verified
 
 ## 3. Recent Progress (Rolling Snapshot - Max 5)
-- Upgraded dashboard activity visualization to a full-width SVG Line Graph with smooth curves, dual modes (Cost per Call vs. Cumulative Spend & Saved), and clear Y-axis dollar grids.
-- Added interactive Data Inspector panel below the line graph to cleanly display full call metrics (timestamp, intent, decision, charge, latency) without cramped tooltips.
+- Integrated `recharts` for the Dashboard API Activity & Charges section with fluid `AreaChart`, responsive container, monotone curves, gradient fills, and dark-themed interactive tooltips.
+- Added interactive Data Inspector card beneath the chart enabling instant point click/hover inspection of agent, intent, decision (BUY $0.010 vs REUSE Free), charges, and latency.
 - Added secure API Key blocking modal with mandatory reason requirement and "DELETE" confirmation word verification to prevent accidental revocations.
 - Implemented comprehensive API Call Audit Feed on the main dashboard (`/app`), tracking all calls, miner charges, and cache savings.
 - Enhanced Playground testing studio: separated pre-built scenarios from custom ideas ("Own Idea • AI Code Writer" with Gemini prompt generator).
