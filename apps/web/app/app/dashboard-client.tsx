@@ -151,6 +151,145 @@ export default function DashboardClient({
     return [...calls].reverse().slice(-20);
   }, [calls]);
 
+  // Selected or hovered point on the line graph
+  const [hoveredPointIndex, setHoveredPointIndex] = useState<number | null>(null);
+
+  // Active call for detail inspector (defaults to latest call in window)
+  const activeCall = useMemo(() => {
+    if (graphCalls.length === 0) return null;
+    const idx =
+      hoveredPointIndex !== null && hoveredPointIndex >= 0 && hoveredPointIndex < graphCalls.length
+        ? hoveredPointIndex
+        : graphCalls.length - 1;
+    return { call: graphCalls[idx], index: idx };
+  }, [graphCalls, hoveredPointIndex]);
+
+  // Line Graph Geometry Calculations
+  const lineGraphData = useMemo(() => {
+    if (graphCalls.length === 0) return null;
+
+    const padLeft = 65;
+    const padRight = 35;
+    const padTop = 25;
+    const padBottom = 40;
+    const plotW = 800 - padLeft - padRight; // 700
+    const plotH = 220 - padTop - padBottom; // 155
+    const baseLineY = padTop + plotH; // 180
+
+    const count = graphCalls.length;
+    const getX = (idx: number) => {
+      if (count === 1) return padLeft + plotW / 2;
+      return padLeft + (idx / (count - 1)) * plotW;
+    };
+
+    if (selectedGraphView === "charges") {
+      // Cost per Call ($0.000 to $0.012)
+      const maxY = 0.012;
+      const points = graphCalls.map((c, i) => {
+        const x = getX(i);
+        const y = padTop + plotH * (1 - Math.min(c.priceUsdc, maxY) / maxY);
+        return { x, y, call: c, index: i };
+      });
+
+      const linePath =
+        count === 1
+          ? `M ${padLeft},${points[0].y} L ${padLeft + plotW},${points[0].y}`
+          : `M ${points.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" L ")}`;
+
+      const areaPath =
+        count === 1
+          ? `M ${padLeft},${baseLineY} L ${padLeft},${points[0].y} L ${padLeft + plotW},${points[0].y} L ${padLeft + plotW},${baseLineY} Z`
+          : `M ${points[0].x.toFixed(1)},${baseLineY} L ${points.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" L ")} L ${points[points.length - 1].x.toFixed(1)},${baseLineY} Z`;
+
+      const gridLines = [
+        { label: "$0.010", y: padTop + plotH * (1 - 0.01 / maxY) },
+        { label: "$0.005", y: padTop + plotH * (1 - 0.005 / maxY) },
+        { label: "$0.000", y: baseLineY },
+      ];
+
+      return {
+        mode: "charges" as const,
+        points,
+        linePath,
+        areaPath,
+        gridLines,
+        baseLineY,
+        padLeft,
+        padRight,
+        plotW,
+      };
+    } else {
+      // Cumulative Spend vs Cumulative Saved
+      let accSpend = 0;
+      let accSaved = 0;
+      const spendVals: number[] = [];
+      const savedVals: number[] = [];
+
+      for (const c of graphCalls) {
+        accSpend += c.priceUsdc;
+        accSaved += c.savingsUsdc;
+        spendVals.push(accSpend);
+        savedVals.push(accSaved);
+      }
+
+      const maxY = Math.max(0.02, ...spendVals, ...savedVals) * 1.15;
+
+      const spendPoints = graphCalls.map((c, i) => {
+        const x = getX(i);
+        const y = padTop + plotH * (1 - spendVals[i] / maxY);
+        return { x, y, value: spendVals[i], call: c, index: i };
+      });
+
+      const savedPoints = graphCalls.map((c, i) => {
+        const x = getX(i);
+        const y = padTop + plotH * (1 - savedVals[i] / maxY);
+        return { x, y, value: savedVals[i], call: c, index: i };
+      });
+
+      const spendLinePath =
+        count === 1
+          ? `M ${padLeft},${spendPoints[0].y} L ${padLeft + plotW},${spendPoints[0].y}`
+          : `M ${spendPoints.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" L ")}`;
+
+      const spendAreaPath =
+        count === 1
+          ? `M ${padLeft},${baseLineY} L ${padLeft},${spendPoints[0].y} L ${padLeft + plotW},${spendPoints[0].y} L ${padLeft + plotW},${baseLineY} Z`
+          : `M ${spendPoints[0].x.toFixed(1)},${baseLineY} L ${spendPoints.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" L ")} L ${spendPoints[spendPoints.length - 1].x.toFixed(1)},${baseLineY} Z`;
+
+      const savedLinePath =
+        count === 1
+          ? `M ${padLeft},${savedPoints[0].y} L ${padLeft + plotW},${savedPoints[0].y}`
+          : `M ${savedPoints.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" L ")}`;
+
+      const savedAreaPath =
+        count === 1
+          ? `M ${padLeft},${baseLineY} L ${padLeft},${savedPoints[0].y} L ${padLeft + plotW},${savedPoints[0].y} L ${padLeft + plotW},${baseLineY} Z`
+          : `M ${savedPoints[0].x.toFixed(1)},${baseLineY} L ${savedPoints.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" L ")} L ${savedPoints[savedPoints.length - 1].x.toFixed(1)},${baseLineY} Z`;
+
+      const midVal = maxY / 2;
+      const gridLines = [
+        { label: `$${maxY.toFixed(3)}`, y: padTop },
+        { label: `$${midVal.toFixed(3)}`, y: padTop + plotH / 2 },
+        { label: "$0.000", y: baseLineY },
+      ];
+
+      return {
+        mode: "cumulative" as const,
+        spendPoints,
+        savedPoints,
+        spendLinePath,
+        spendAreaPath,
+        savedLinePath,
+        savedAreaPath,
+        gridLines,
+        baseLineY,
+        padLeft,
+        padRight,
+        plotW,
+      };
+    }
+  }, [graphCalls, selectedGraphView]);
+
   return (
     <div className="flex flex-col gap-8">
       {/* Top Banner Message */}
@@ -242,13 +381,13 @@ export default function DashboardClient({
         </div>
       </div>
 
-      {/* SECTION 1: Interactive Charges & Volume Graph */}
+      {/* SECTION 1: Interactive Line Graph & Inspector */}
       <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-[var(--border)] pb-4">
           <div>
-            <h2 className="text-base font-semibold tracking-tight">API Activity &amp; Charges per Call</h2>
+            <h2 className="text-base font-semibold tracking-tight">API Activity &amp; Charges Line Graph</h2>
             <p className="text-xs text-[var(--secondary)] font-mono mt-0.5">
-              Visualizing the cost of each query: Green bars indicate $0.00 REUSE, Amber bars indicate $0.010 BUY.
+              Continuous trend line of query charges and cumulative savings. Click or hover any data point to inspect details.
             </p>
           </div>
 
@@ -258,7 +397,7 @@ export default function DashboardClient({
               className={`rounded px-3 py-1.5 text-xs font-mono font-medium transition ${
                 selectedGraphView === "charges"
                   ? "bg-[var(--foreground)] text-[var(--background)] shadow-xs"
-                  : "border border-[var(--border)] bg-[var(--background)] text-[var(--secondary)] hover:text-[var(--foreground)]"
+                  : "border border-[var(--border)] bg-[var(--background)] text-[var(--secondary)] hover:text-[var(--foreground)] cursor-pointer"
               }`}
             >
               Cost per Call ($)
@@ -268,7 +407,7 @@ export default function DashboardClient({
               className={`rounded px-3 py-1.5 text-xs font-mono font-medium transition ${
                 selectedGraphView === "cumulative"
                   ? "bg-[var(--foreground)] text-[var(--background)] shadow-xs"
-                  : "border border-[var(--border)] bg-[var(--background)] text-[var(--secondary)] hover:text-[var(--foreground)]"
+                  : "border border-[var(--border)] bg-[var(--background)] text-[var(--secondary)] hover:text-[var(--foreground)] cursor-pointer"
               }`}
             >
               Spend vs. Saved
@@ -276,7 +415,7 @@ export default function DashboardClient({
           </div>
         </div>
 
-        {graphCalls.length === 0 ? (
+        {graphCalls.length === 0 || !lineGraphData ? (
           <div className="p-12 text-center text-xs font-mono text-[var(--secondary)]">
             No API activity recorded yet. Run a scenario in the{" "}
             <Link href="/app/playground" className="underline hover:text-[var(--foreground)]">
@@ -287,61 +426,356 @@ export default function DashboardClient({
         ) : (
           <div className="mt-6 flex flex-col gap-4">
             {/* Chart Legend */}
-            <div className="flex items-center gap-6 text-xs font-mono">
-              <div className="flex items-center gap-2">
-                <span className="h-3 w-3 rounded-xs bg-emerald-600 inline-block" />
-                <span className="text-[var(--secondary)]">REUSE &bull; $0.000 (Saved $0.010)</span>
+            <div className="flex flex-wrap items-center justify-between gap-4 text-xs font-mono">
+              <div className="flex items-center gap-6">
+                {lineGraphData.mode === "charges" ? (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <span className="h-2.5 w-2.5 rounded-full bg-amber-500 inline-block ring-2 ring-amber-200" />
+                      <span className="text-[var(--secondary)]">BUY &bull; $0.010 (Miner Purchase)</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 inline-block ring-2 ring-emerald-200" />
+                      <span className="text-[var(--secondary)]">REUSE &bull; $0.000 (Saved $0.010)</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <span className="h-2.5 w-5 rounded-xs bg-amber-500 inline-block" />
+                      <span className="text-[var(--secondary)]">Cumulative Spend ($ USDC)</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="h-2.5 w-5 rounded-xs bg-emerald-600 inline-block" />
+                      <span className="text-[var(--secondary)]">Cumulative Saved ($ USDC)</span>
+                    </div>
+                  </>
+                )}
               </div>
-              <div className="flex items-center gap-2">
-                <span className="h-3 w-3 rounded-xs bg-amber-600 inline-block" />
-                <span className="text-[var(--secondary)]">BUY &bull; $0.010 (Telegraph Miner Purchase)</span>
-              </div>
+
+              <span className="text-[11px] text-[var(--secondary)]">
+                Showing {graphCalls.length} call{graphCalls.length === 1 ? "" : "s"} &bull; Click any point to inspect
+              </span>
             </div>
 
-            {/* Responsive Visual Bar Chart */}
-            <div className="mt-2 h-44 w-full flex items-end gap-2 border-b border-[var(--border)] pb-2 pt-6 px-2 overflow-x-auto">
-              {graphCalls.map((call, idx) => {
-                const isBuy = call.action === "buy";
-                const isCumulative = selectedGraphView === "cumulative";
-                // Height calculation:
-                // If charges view: Buy is full height, Reuse is 15% height with zero charge label
-                const barHeight = isBuy ? "100%" : "20%";
-                const barColor = isBuy ? "bg-amber-600 hover:bg-amber-700" : "bg-emerald-600 hover:bg-emerald-700";
+            {/* Responsive SVG Line Chart */}
+            <div className="relative w-full rounded-lg border border-[var(--border)] bg-[var(--background)] p-2">
+              <svg
+                viewBox="0 0 800 220"
+                className="w-full h-56 sm:h-64 overflow-visible"
+                preserveAspectRatio="none"
+              >
+                <defs>
+                  <linearGradient id="chargesAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.25" />
+                    <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.0" />
+                  </linearGradient>
+                  <linearGradient id="spendAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#d97706" stopOpacity="0.30" />
+                    <stop offset="100%" stopColor="#d97706" stopOpacity="0.0" />
+                  </linearGradient>
+                  <linearGradient id="savedAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#059669" stopOpacity="0.25" />
+                    <stop offset="100%" stopColor="#059669" stopOpacity="0.0" />
+                  </linearGradient>
+                </defs>
 
-                return (
-                  <div
-                    key={call.id || idx}
-                    className="flex-1 min-w-[32px] max-w-[56px] h-full flex flex-col justify-end items-center group relative cursor-pointer"
-                  >
-                    {/* Tooltip on Hover */}
-                    <div className="pointer-events-none absolute bottom-full mb-2 hidden group-hover:flex flex-col rounded border border-[var(--border)] bg-[#18181b] p-2.5 text-[11px] font-mono text-white shadow-lg z-20 whitespace-nowrap">
-                      <span className="font-bold text-amber-300">{call.intent}</span>
-                      <span className="text-gray-300">Agent: {call.agentName}</span>
-                      <span className="text-gray-300">Action: {call.action.toUpperCase()}</span>
-                      <span className="text-gray-300">Charge: ${call.priceUsdc.toFixed(3)}</span>
-                      <span className="text-emerald-400">Saved: ${call.savingsUsdc.toFixed(3)}</span>
-                      <span className="text-gray-400 text-[10px] mt-1">{new Date(call.timestamp).toLocaleTimeString()}</span>
-                    </div>
+                {/* Horizontal Gridlines & Y-Axis Labels */}
+                {lineGraphData.gridLines.map((gl, i) => (
+                  <g key={i}>
+                    <line
+                      x1={lineGraphData.padLeft}
+                      y1={gl.y}
+                      x2={lineGraphData.padLeft + lineGraphData.plotW}
+                      y2={gl.y}
+                      stroke="var(--border)"
+                      strokeDasharray="4 4"
+                      strokeWidth={1}
+                    />
+                    <text
+                      x={lineGraphData.padLeft - 10}
+                      y={gl.y + 4}
+                      textAnchor="end"
+                      fill="var(--secondary)"
+                      fontSize="11"
+                      fontFamily="monospace"
+                    >
+                      {gl.label}
+                    </text>
+                  </g>
+                ))}
 
-                    {/* Bar */}
-                    <div
-                      style={{ height: barHeight }}
-                      className={`w-full rounded-t transition-all duration-200 ${barColor}`}
+                {/* Vertical Axis Line */}
+                <line
+                  x1={lineGraphData.padLeft}
+                  y1={25}
+                  x2={lineGraphData.padLeft}
+                  y2={lineGraphData.baseLineY}
+                  stroke="var(--border-strong)"
+                  strokeWidth={1.5}
+                />
+                {/* Horizontal Axis Baseline */}
+                <line
+                  x1={lineGraphData.padLeft}
+                  y1={lineGraphData.baseLineY}
+                  x2={lineGraphData.padLeft + lineGraphData.plotW}
+                  y2={lineGraphData.baseLineY}
+                  stroke="var(--border-strong)"
+                  strokeWidth={1.5}
+                />
+
+                {/* MODE 1: Cost per Call Line */}
+                {lineGraphData.mode === "charges" && (
+                  <>
+                    <path
+                      d={lineGraphData.areaPath}
+                      fill="url(#chargesAreaGrad)"
+                    />
+                    <path
+                      d={lineGraphData.linePath}
+                      fill="none"
+                      stroke="#f59e0b"
+                      strokeWidth={2.5}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                     />
 
-                    {/* X-axis Label */}
-                    <span className="mt-2 text-[10px] font-mono text-[var(--secondary)] truncate w-full text-center">
-                      #{idx + 1}
-                    </span>
-                  </div>
-                );
-              })}
+                    {/* Active Point Vertical Guideline */}
+                    {activeCall && lineGraphData.points[activeCall.index] && (
+                      <line
+                        x1={lineGraphData.points[activeCall.index].x}
+                        y1={25}
+                        x2={lineGraphData.points[activeCall.index].x}
+                        y2={lineGraphData.baseLineY}
+                        stroke="#f59e0b"
+                        strokeDasharray="3 3"
+                        strokeWidth={1.5}
+                        opacity={0.8}
+                      />
+                    )}
+
+                    {/* Circles on each point */}
+                    {lineGraphData.points.map((pt, i) => {
+                      const isSelected = activeCall?.index === i;
+                      const isBuy = pt.call.action === "buy";
+                      const ptColor = isBuy ? "#d97706" : "#059669";
+
+                      return (
+                        <g key={i}>
+                          {isSelected && (
+                            <circle
+                              cx={pt.x}
+                              cy={pt.y}
+                              r={10}
+                              fill="none"
+                              stroke={ptColor}
+                              strokeWidth={2}
+                              opacity={0.5}
+                            />
+                          )}
+                          <circle
+                            cx={pt.x}
+                            cy={pt.y}
+                            r={isSelected ? 6 : 4.5}
+                            fill={ptColor}
+                            stroke="#ffffff"
+                            strokeWidth={2}
+                          />
+                          <text
+                            x={pt.x}
+                            y={lineGraphData.baseLineY + 18}
+                            textAnchor="middle"
+                            fill="var(--secondary)"
+                            fontSize="10"
+                            fontFamily="monospace"
+                          >
+                            #{i + 1}
+                          </text>
+                        </g>
+                      );
+                    })}
+                  </>
+                )}
+
+                {/* MODE 2: Cumulative Spend vs Saved Lines */}
+                {lineGraphData.mode === "cumulative" && (
+                  <>
+                    {/* Saved Area & Line */}
+                    <path
+                      d={lineGraphData.savedAreaPath}
+                      fill="url(#savedAreaGrad)"
+                    />
+                    <path
+                      d={lineGraphData.savedLinePath}
+                      fill="none"
+                      stroke="#059669"
+                      strokeWidth={2.5}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+
+                    {/* Spend Area & Line */}
+                    <path
+                      d={lineGraphData.spendAreaPath}
+                      fill="url(#spendAreaGrad)"
+                    />
+                    <path
+                      d={lineGraphData.spendLinePath}
+                      fill="none"
+                      stroke="#d97706"
+                      strokeWidth={2.5}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+
+                    {/* Active Point Vertical Guideline */}
+                    {activeCall && lineGraphData.spendPoints[activeCall.index] && (
+                      <line
+                        x1={lineGraphData.spendPoints[activeCall.index].x}
+                        y1={25}
+                        x2={lineGraphData.spendPoints[activeCall.index].x}
+                        y2={lineGraphData.baseLineY}
+                        stroke="var(--border-strong)"
+                        strokeDasharray="3 3"
+                        strokeWidth={1.5}
+                      />
+                    )}
+
+                    {/* Circles on each point */}
+                    {lineGraphData.spendPoints.map((pt, i) => {
+                      const isSelected = activeCall?.index === i;
+                      const savedPt = lineGraphData.savedPoints[i];
+
+                      return (
+                        <g key={i}>
+                          {/* Saved Circle */}
+                          <circle
+                            cx={savedPt.x}
+                            cy={savedPt.y}
+                            r={isSelected ? 6 : 4}
+                            fill="#059669"
+                            stroke="#ffffff"
+                            strokeWidth={2}
+                          />
+                          {/* Spend Circle */}
+                          <circle
+                            cx={pt.x}
+                            cy={pt.y}
+                            r={isSelected ? 6 : 4}
+                            fill="#d97706"
+                            stroke="#ffffff"
+                            strokeWidth={2}
+                          />
+                          <text
+                            x={pt.x}
+                            y={lineGraphData.baseLineY + 18}
+                            textAnchor="middle"
+                            fill="var(--secondary)"
+                            fontSize="10"
+                            fontFamily="monospace"
+                          >
+                            #{i + 1}
+                          </text>
+                        </g>
+                      );
+                    })}
+                  </>
+                )}
+
+                {/* Transparent Interactive Hover Slices across the full width */}
+                {graphCalls.map((_, i) => {
+                  const count = graphCalls.length;
+                  const sliceW = count > 1 ? lineGraphData.plotW / (count - 1) : lineGraphData.plotW;
+                  const xPos =
+                    count > 1
+                      ? lineGraphData.padLeft + (i - 0.5) * sliceW
+                      : lineGraphData.padLeft;
+
+                  return (
+                    <rect
+                      key={i}
+                      x={Math.max(lineGraphData.padLeft, xPos)}
+                      y={0}
+                      width={sliceW}
+                      height={220}
+                      fill="transparent"
+                      className="cursor-pointer"
+                      onMouseEnter={() => setHoveredPointIndex(i)}
+                      onClick={() => setHoveredPointIndex(i)}
+                    />
+                  );
+                })}
+              </svg>
             </div>
 
-            <div className="flex items-center justify-between text-[11px] font-mono text-[var(--secondary)] pt-1">
-              <span>Oldest call in window</span>
-              <span>Latest call &rarr;</span>
-            </div>
+            {/* Interactive Call Inspector Card (Directly below the graph for 100% clarity) */}
+            {activeCall && (
+              <div className="rounded-lg border border-[var(--border)] bg-[var(--background)] p-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 font-mono text-xs">
+                <div className="flex items-center gap-3">
+                  <span className="rounded bg-[var(--surface)] border border-[var(--border)] px-2.5 py-1 text-xs font-bold text-[var(--foreground)] shrink-0">
+                    Point #{activeCall.index + 1} of {graphCalls.length}
+                  </span>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-sm text-[var(--foreground)]">
+                        {activeCall.call.agentName}
+                      </span>
+                      <span className="text-[11px] text-[var(--secondary)]">
+                        ({activeCall.call.apiKeyPrefix}...)
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-[var(--secondary)] mt-0.5">
+                      {new Date(activeCall.call.timestamp).toISOString().replace("T", " ").slice(0, 19)} UTC
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-6 border-t lg:border-t-0 border-[var(--border)] pt-3 lg:pt-0">
+                  <div>
+                    <span className="text-[10px] uppercase text-[var(--secondary)] block">Intent</span>
+                    <span className="font-semibold text-[var(--foreground)]">{activeCall.call.intent}</span>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] uppercase text-[var(--secondary)] block">Decision</span>
+                    {activeCall.call.action === "reuse" ? (
+                      <span className="inline-block rounded border border-blue-300 bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-900">
+                        REUSE (Free)
+                      </span>
+                    ) : activeCall.call.action === "buy" ? (
+                      <span className="inline-block rounded border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-900">
+                        BUY ($0.010)
+                      </span>
+                    ) : (
+                      <span className="inline-block rounded border border-red-300 bg-red-50 px-2 py-0.5 text-[10px] font-bold text-red-900">
+                        REFUSE
+                      </span>
+                    )}
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] uppercase text-[var(--secondary)] block">Charge Made</span>
+                    <span className={`font-bold ${activeCall.call.priceUsdc > 0 ? "text-amber-800" : "text-emerald-700"}`}>
+                      ${activeCall.call.priceUsdc.toFixed(3)} USDC
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] uppercase text-[var(--secondary)] block">Capital Saved</span>
+                    <span className="font-bold text-emerald-700">
+                      ${activeCall.call.savingsUsdc.toFixed(3)} USDC
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] uppercase text-[var(--secondary)] block">Latency</span>
+                    <span className="text-[var(--secondary)]">
+                      {activeCall.call.latencyMs ? `${activeCall.call.latencyMs}ms` : "<5ms"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -660,3 +1094,4 @@ export default function DashboardClient({
     </div>
   );
 }
+

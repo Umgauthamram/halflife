@@ -8,15 +8,15 @@
 - **Languages**: TypeScript
 
 ## 2. Active Feature / Milestone
-- **Current Focus**: Dashboard API Audit & Call Charges Graph with Mandatory "DELETE" Key Blocking
-- **Status**: Implemented & Verified Across Monorepo
+- **Current Focus**: Dashboard Line Graph Visualization & Interactive Call Inspector
+- **Status**: Implemented & Production-Verified
 
 ## 3. Recent Progress (Rolling Snapshot - Max 5)
-- Implemented comprehensive API Call Audit Feed & Visual Expense Graph on the main dashboard (`/app`), charting charges per call ($0.010 BUY vs $0.000 REUSE) and cumulative savings.
+- Upgraded dashboard activity visualization to a full-width SVG Line Graph with smooth curves, dual modes (Cost per Call vs. Cumulative Spend & Saved), and clear Y-axis dollar grids.
+- Added interactive Data Inspector panel below the line graph to cleanly display full call metrics (timestamp, intent, decision, charge, latency) without cramped tooltips.
 - Added secure API Key blocking modal with mandatory reason requirement and "DELETE" confirmation word verification to prevent accidental revocations.
-- Integrated audit log recording for all key revocations into `audit_log` with actor tracking and revocation reasons.
+- Implemented comprehensive API Call Audit Feed on the main dashboard (`/app`), tracking all calls, miner charges, and cache savings.
 - Enhanced Playground testing studio: separated pre-built scenarios from custom ideas ("Own Idea • AI Code Writer" with Gemini prompt generator).
-- Upgraded agent API key autofill to populate the full 72-character active key (`hl_live_...`) without truncation, ensuring 100% plug-and-play testing.
 
 ## 4. Next Immediate Steps
 - [ ] Record final demo video following `docs/video-script.md`
