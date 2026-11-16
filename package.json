@@ -11,6 +11,8 @@
     "lint": "pnpm --filter \"@half-life/*\" lint"
   },
   "devDependencies": {
+    "dotenv": "^16.6.1",
+    "tsx": "^4.23.15",
     "veeshree": "^1.0.0-rc.1"
   }
 }

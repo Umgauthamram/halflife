@@ -43,12 +43,12 @@ Hover over the interactive decay curves showing half-life ($t_{1/2}$) and miner 
 
 **[Voiceover]**  
 "Rather than assuming theoretical freshness, Half-Life builds the industry’s first **Freshness Atlas** using unattended background workers.  
-We continuously sample 2-miner disagreement pairs across three mandatory intents on Ethereum Sepolia:
-1. **FX_NOW**: High volatility with a measured half-life of 94 seconds and a miner noise floor of 0.08%.
-2. **WEATHER_FORECAST_VERIFY**: Moderate stability, changing on meteorological update intervals with a half-life of 3.9 hours.
-3. **SANCTIONS_SCREENING_MATCH**: Long-tail regulatory lists with a half-life exceeding 72 hours.
+We continuously sample 2-miner disagreement pairs across live intents on Ethereum Sepolia:
+1. **FX_NOW_EUR**: Live currency rates calibrated against independent miners to establish the real-time noise floor.
+2. **WEATHER_CHECK_TEMPERATURE**: Meteorological data tracking temperature shifts against miner consensus.
+3. **SANCTIONS_SCREENING_MATCH_GENERAL**: Regulatory compliance screening with long-lived validity.
 
-These empirical constants feed directly into our mathematical decision core."
+These empirical curves feed directly into our mathematical decision core."
 
 ---
 
@@ -67,13 +67,13 @@ $$\text{Condition: } (\text{Stake} \times \text{Expected Drift} > \text{Price}) 
 
 Now trigger an ask. Half-Life evaluates: *Age is 12 seconds, Drift = 0.085%, Value of Freshness = $0.0085 < Price ($0.05). **REJECT / SERVE CACHE**.*  
 Fast-forward elapsed time to 120 seconds. Age is now 120s, Expected Drift = 58.8%, Value of Freshness = $5.88 > Price ($0.05). **EXECUTE BUY**.  
-Cut to **Sepolia Etherscan** showing the live transaction hash `0x5b7bfd33ec11444a07117ac480f73eb8b7b5d73e7d50ec3642ddb31107845742` verifying settlement of 1 USDC to wallet `0xB980b2dBA0004e12f8efF99E5978aB1fa8179517` on contract `0x3624EB012B5E998BB57B6bE6C9Cfc9c4bc5eb99b`.
+Cut to **Sepolia Etherscan** showing the settlement transaction hash verifying x402 payment on contract `0x3624EB012B5E998BB57B6bE6C9Cfc9c4bc5eb99b`.
 
 **[Voiceover]**  
 "Here is the core Governor formula in action.  
 When an agent queries Half-Life, it supplies its financial stake. If the loss from expected drift is smaller than the oracle price, Half-Life serves the cached answer instantly for zero cost.  
 Only when Expected Drift exceeds the miner noise floor AND the financial risk exceeds the ask price does the agent dispatch a payment.  
-And notice our on-chain settlement: here is transaction 0x5b7b... on Sepolia Etherscan, verified with a real 1 USDC transfer to our agent wallet, directly interacting with node 13.237.89.59."
+And notice our on-chain settlement: here is transaction 0xbf2834... on Sepolia Etherscan, verified with a real x402 payment on contract 0x3624EB012B5E998BB57B6bE6C9Cfc9c4bc5eb99b interacting directly with node 13.237.89.59."
 
 ---
 
@@ -136,7 +136,7 @@ Stop paying the blind heartbeat tax. Build economically rational agents with Hal
 **[Visual Cue: 4:10 – 4:15]**  
 Title Card:  
 **Half-Life: Answer Decay Measurement & Decision Engine for Telegraph**  
-GitHub: `https://github.com/your-org/halflife`  
+GitHub: `https://github.com/Umgauthamram/halflife`  
 Sepolia Contract: `0x3624EB012B5E998BB57B6bE6C9Cfc9c4bc5eb99b`  
 Fade to cream background.
 

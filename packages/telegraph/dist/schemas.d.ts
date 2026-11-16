@@ -1,46 +1,73 @@
 import { z } from "zod";
-export declare const FxNowParamsSchema: z.ZodObject<{
-    pair: z.ZodString;
+export declare const FxNowParamsSchema: z.ZodEffects<z.ZodObject<{
+    pair: z.ZodOptional<z.ZodString>;
+    currency: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
-    pair: string;
+    pair?: string | undefined;
+    currency?: string | undefined;
 }, {
-    pair: string;
+    pair?: string | undefined;
+    currency?: string | undefined;
+}>, {
+    pair?: string | undefined;
+    currency?: string | undefined;
+}, {
+    pair?: string | undefined;
+    currency?: string | undefined;
 }>;
 export declare const FxNowAnswerSchema: z.ZodObject<{
-    pair: z.ZodString;
     rate: z.ZodNumber;
-    timestamp: z.ZodNumber;
+    pair: z.ZodOptional<z.ZodString>;
+    timestamp: z.ZodOptional<z.ZodUnion<[z.ZodNumber, z.ZodString]>>;
 }, "strip", z.ZodTypeAny, {
-    pair: string;
     rate: number;
-    timestamp: number;
+    pair?: string | undefined;
+    timestamp?: string | number | undefined;
 }, {
-    pair: string;
     rate: number;
-    timestamp: number;
+    pair?: string | undefined;
+    timestamp?: string | number | undefined;
 }>;
 export declare const WeatherForecastParamsSchema: z.ZodObject<{
-    location: z.ZodString;
+    location: z.ZodOptional<z.ZodString>;
+    city: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
-    location: string;
+    location?: string | undefined;
+    city?: string | undefined;
 }, {
-    location: string;
+    location?: string | undefined;
+    city?: string | undefined;
 }>;
-export declare const WeatherForecastAnswerSchema: z.ZodObject<{
-    location: z.ZodString;
-    temperatureC: z.ZodNumber;
-    condition: z.ZodString;
-    forecastTimestamp: z.ZodNumber;
+export declare const WeatherForecastAnswerSchema: z.ZodEffects<z.ZodObject<{
+    location: z.ZodOptional<z.ZodString>;
+    temperatureC: z.ZodOptional<z.ZodNumber>;
+    temperature: z.ZodOptional<z.ZodNumber>;
+    condition: z.ZodOptional<z.ZodString>;
+    forecastTimestamp: z.ZodOptional<z.ZodUnion<[z.ZodNumber, z.ZodString]>>;
 }, "strip", z.ZodTypeAny, {
-    location: string;
-    temperatureC: number;
-    condition: string;
-    forecastTimestamp: number;
+    location?: string | undefined;
+    temperatureC?: number | undefined;
+    temperature?: number | undefined;
+    condition?: string | undefined;
+    forecastTimestamp?: string | number | undefined;
 }, {
-    location: string;
-    temperatureC: number;
-    condition: string;
-    forecastTimestamp: number;
+    location?: string | undefined;
+    temperatureC?: number | undefined;
+    temperature?: number | undefined;
+    condition?: string | undefined;
+    forecastTimestamp?: string | number | undefined;
+}>, {
+    location?: string | undefined;
+    temperatureC?: number | undefined;
+    temperature?: number | undefined;
+    condition?: string | undefined;
+    forecastTimestamp?: string | number | undefined;
+}, {
+    location?: string | undefined;
+    temperatureC?: number | undefined;
+    temperature?: number | undefined;
+    condition?: string | undefined;
+    forecastTimestamp?: string | number | undefined;
 }>;
 export declare const SanctionsScreeningParamsSchema: z.ZodObject<{
     entity: z.ZodString;
@@ -50,20 +77,56 @@ export declare const SanctionsScreeningParamsSchema: z.ZodObject<{
     entity: string;
 }>;
 export declare const SanctionsScreeningAnswerSchema: z.ZodObject<{
-    entity: z.ZodString;
+    entity: z.ZodOptional<z.ZodString>;
     matched: z.ZodBoolean;
-    matchScore: z.ZodNumber;
+    matchScore: z.ZodOptional<z.ZodNumber>;
     listName: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
-    entity: string;
     matched: boolean;
-    matchScore: number;
+    entity?: string | undefined;
+    matchScore?: number | undefined;
     listName?: string | undefined;
 }, {
-    entity: string;
     matched: boolean;
-    matchScore: number;
+    entity?: string | undefined;
+    matchScore?: number | undefined;
     listName?: string | undefined;
+}>;
+export declare const CryptoPriceParamsSchema: z.ZodObject<{
+    symbol: z.ZodOptional<z.ZodString>;
+    currency: z.ZodOptional<z.ZodString>;
+}, "strip", z.ZodTypeAny, {
+    symbol?: string | undefined;
+    currency?: string | undefined;
+}, {
+    symbol?: string | undefined;
+    currency?: string | undefined;
+}>;
+export declare const CryptoPriceAnswerSchema: z.ZodEffects<z.ZodObject<{
+    symbol: z.ZodOptional<z.ZodString>;
+    priceUsd: z.ZodOptional<z.ZodNumber>;
+    price: z.ZodOptional<z.ZodNumber>;
+    timestamp: z.ZodOptional<z.ZodUnion<[z.ZodNumber, z.ZodString]>>;
+}, "strip", z.ZodTypeAny, {
+    symbol?: string | undefined;
+    timestamp?: string | number | undefined;
+    priceUsd?: number | undefined;
+    price?: number | undefined;
+}, {
+    symbol?: string | undefined;
+    timestamp?: string | number | undefined;
+    priceUsd?: number | undefined;
+    price?: number | undefined;
+}>, {
+    symbol?: string | undefined;
+    timestamp?: string | number | undefined;
+    priceUsd?: number | undefined;
+    price?: number | undefined;
+}, {
+    symbol?: string | undefined;
+    timestamp?: string | number | undefined;
+    priceUsd?: number | undefined;
+    price?: number | undefined;
 }>;
 export declare const WebSearchParamsSchema: z.ZodObject<{
     query: z.ZodString;
@@ -73,293 +136,24 @@ export declare const WebSearchParamsSchema: z.ZodObject<{
     query: string;
 }>;
 export declare const WebSearchAnswerSchema: z.ZodObject<{
-    query: z.ZodString;
-    snippets: z.ZodArray<z.ZodString, "many">;
+    query: z.ZodOptional<z.ZodString>;
+    snippets: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
     sources: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
+    result: z.ZodOptional<z.ZodUnknown>;
 }, "strip", z.ZodTypeAny, {
-    query: string;
-    snippets: string[];
+    query?: string | undefined;
+    snippets?: string[] | undefined;
     sources?: string[] | undefined;
+    result?: unknown;
 }, {
-    query: string;
-    snippets: string[];
+    query?: string | undefined;
+    snippets?: string[] | undefined;
     sources?: string[] | undefined;
+    result?: unknown;
 }>;
-export declare const QuestionAnsweringParamsSchema: z.ZodObject<{
-    query: z.ZodString;
-    context: z.ZodOptional<z.ZodString>;
-}, "strip", z.ZodTypeAny, {
-    query: string;
-    context?: string | undefined;
-}, {
-    query: string;
-    context?: string | undefined;
+export declare const IntentSchemas: Record<string, {
+    params: z.ZodTypeAny;
+    answer: z.ZodTypeAny;
 }>;
-export declare const QuestionAnsweringAnswerSchema: z.ZodObject<{
-    answer: z.ZodString;
-    confidence: z.ZodOptional<z.ZodNumber>;
-    citations: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
-}, "strip", z.ZodTypeAny, {
-    answer: string;
-    confidence?: number | undefined;
-    citations?: string[] | undefined;
-}, {
-    answer: string;
-    confidence?: number | undefined;
-    citations?: string[] | undefined;
-}>;
-export declare const WeatherCheckParamsSchema: z.ZodObject<{
-    location: z.ZodString;
-}, "strip", z.ZodTypeAny, {
-    location: string;
-}, {
-    location: string;
-}>;
-export declare const WeatherCheckAnswerSchema: z.ZodObject<{
-    location: z.ZodString;
-    temperatureC: z.ZodNumber;
-    condition: z.ZodString;
-}, "strip", z.ZodTypeAny, {
-    location: string;
-    temperatureC: number;
-    condition: string;
-}, {
-    location: string;
-    temperatureC: number;
-    condition: string;
-}>;
-export declare const CryptoPriceParamsSchema: z.ZodObject<{
-    symbol: z.ZodString;
-}, "strip", z.ZodTypeAny, {
-    symbol: string;
-}, {
-    symbol: string;
-}>;
-export declare const CryptoPriceAnswerSchema: z.ZodObject<{
-    symbol: z.ZodString;
-    priceUsd: z.ZodNumber;
-    timestamp: z.ZodNumber;
-}, "strip", z.ZodTypeAny, {
-    symbol: string;
-    timestamp: number;
-    priceUsd: number;
-}, {
-    symbol: string;
-    timestamp: number;
-    priceUsd: number;
-}>;
-export declare const TaskExecutionQualityParamsSchema: z.ZodObject<{
-    output: z.ZodString;
-    rubric: z.ZodOptional<z.ZodString>;
-}, "strip", z.ZodTypeAny, {
-    output: string;
-    rubric?: string | undefined;
-}, {
-    output: string;
-    rubric?: string | undefined;
-}>;
-export declare const TaskExecutionQualityAnswerSchema: z.ZodObject<{
-    score: z.ZodNumber;
-    passed: z.ZodBoolean;
-    reasoning: z.ZodOptional<z.ZodString>;
-}, "strip", z.ZodTypeAny, {
-    score: number;
-    passed: boolean;
-    reasoning?: string | undefined;
-}, {
-    score: number;
-    passed: boolean;
-    reasoning?: string | undefined;
-}>;
-export declare const IntentSchemas: {
-    readonly FX_NOW: {
-        readonly params: z.ZodObject<{
-            pair: z.ZodString;
-        }, "strip", z.ZodTypeAny, {
-            pair: string;
-        }, {
-            pair: string;
-        }>;
-        readonly answer: z.ZodObject<{
-            pair: z.ZodString;
-            rate: z.ZodNumber;
-            timestamp: z.ZodNumber;
-        }, "strip", z.ZodTypeAny, {
-            pair: string;
-            rate: number;
-            timestamp: number;
-        }, {
-            pair: string;
-            rate: number;
-            timestamp: number;
-        }>;
-    };
-    readonly WEATHER_FORECAST_VERIFY: {
-        readonly params: z.ZodObject<{
-            location: z.ZodString;
-        }, "strip", z.ZodTypeAny, {
-            location: string;
-        }, {
-            location: string;
-        }>;
-        readonly answer: z.ZodObject<{
-            location: z.ZodString;
-            temperatureC: z.ZodNumber;
-            condition: z.ZodString;
-            forecastTimestamp: z.ZodNumber;
-        }, "strip", z.ZodTypeAny, {
-            location: string;
-            temperatureC: number;
-            condition: string;
-            forecastTimestamp: number;
-        }, {
-            location: string;
-            temperatureC: number;
-            condition: string;
-            forecastTimestamp: number;
-        }>;
-    };
-    readonly SANCTIONS_SCREENING_MATCH: {
-        readonly params: z.ZodObject<{
-            entity: z.ZodString;
-        }, "strip", z.ZodTypeAny, {
-            entity: string;
-        }, {
-            entity: string;
-        }>;
-        readonly answer: z.ZodObject<{
-            entity: z.ZodString;
-            matched: z.ZodBoolean;
-            matchScore: z.ZodNumber;
-            listName: z.ZodOptional<z.ZodString>;
-        }, "strip", z.ZodTypeAny, {
-            entity: string;
-            matched: boolean;
-            matchScore: number;
-            listName?: string | undefined;
-        }, {
-            entity: string;
-            matched: boolean;
-            matchScore: number;
-            listName?: string | undefined;
-        }>;
-    };
-    readonly WEB_SEARCH: {
-        readonly params: z.ZodObject<{
-            query: z.ZodString;
-        }, "strip", z.ZodTypeAny, {
-            query: string;
-        }, {
-            query: string;
-        }>;
-        readonly answer: z.ZodObject<{
-            query: z.ZodString;
-            snippets: z.ZodArray<z.ZodString, "many">;
-            sources: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
-        }, "strip", z.ZodTypeAny, {
-            query: string;
-            snippets: string[];
-            sources?: string[] | undefined;
-        }, {
-            query: string;
-            snippets: string[];
-            sources?: string[] | undefined;
-        }>;
-    };
-    readonly QUESTION_ANSWERING: {
-        readonly params: z.ZodObject<{
-            query: z.ZodString;
-            context: z.ZodOptional<z.ZodString>;
-        }, "strip", z.ZodTypeAny, {
-            query: string;
-            context?: string | undefined;
-        }, {
-            query: string;
-            context?: string | undefined;
-        }>;
-        readonly answer: z.ZodObject<{
-            answer: z.ZodString;
-            confidence: z.ZodOptional<z.ZodNumber>;
-            citations: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
-        }, "strip", z.ZodTypeAny, {
-            answer: string;
-            confidence?: number | undefined;
-            citations?: string[] | undefined;
-        }, {
-            answer: string;
-            confidence?: number | undefined;
-            citations?: string[] | undefined;
-        }>;
-    };
-    readonly WEATHER_CHECK: {
-        readonly params: z.ZodObject<{
-            location: z.ZodString;
-        }, "strip", z.ZodTypeAny, {
-            location: string;
-        }, {
-            location: string;
-        }>;
-        readonly answer: z.ZodObject<{
-            location: z.ZodString;
-            temperatureC: z.ZodNumber;
-            condition: z.ZodString;
-        }, "strip", z.ZodTypeAny, {
-            location: string;
-            temperatureC: number;
-            condition: string;
-        }, {
-            location: string;
-            temperatureC: number;
-            condition: string;
-        }>;
-    };
-    readonly CRYPTO_PRICE: {
-        readonly params: z.ZodObject<{
-            symbol: z.ZodString;
-        }, "strip", z.ZodTypeAny, {
-            symbol: string;
-        }, {
-            symbol: string;
-        }>;
-        readonly answer: z.ZodObject<{
-            symbol: z.ZodString;
-            priceUsd: z.ZodNumber;
-            timestamp: z.ZodNumber;
-        }, "strip", z.ZodTypeAny, {
-            symbol: string;
-            timestamp: number;
-            priceUsd: number;
-        }, {
-            symbol: string;
-            timestamp: number;
-            priceUsd: number;
-        }>;
-    };
-    readonly TASK_EXECUTION_QUALITY: {
-        readonly params: z.ZodObject<{
-            output: z.ZodString;
-            rubric: z.ZodOptional<z.ZodString>;
-        }, "strip", z.ZodTypeAny, {
-            output: string;
-            rubric?: string | undefined;
-        }, {
-            output: string;
-            rubric?: string | undefined;
-        }>;
-        readonly answer: z.ZodObject<{
-            score: z.ZodNumber;
-            passed: z.ZodBoolean;
-            reasoning: z.ZodOptional<z.ZodString>;
-        }, "strip", z.ZodTypeAny, {
-            score: number;
-            passed: boolean;
-            reasoning?: string | undefined;
-        }, {
-            score: number;
-            passed: boolean;
-            reasoning?: string | undefined;
-        }>;
-    };
-};
 export declare function validateAnswerForIntent(intent: string, answer: unknown): unknown;
 //# sourceMappingURL=schemas.d.ts.map

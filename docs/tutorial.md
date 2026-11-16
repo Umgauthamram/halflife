@@ -8,7 +8,7 @@ In this tutorial, you will learn how to integrate the **Half-Life SDK** into an 
 
 ## 1. Get an API Key
 
-1. Sign in to your Half-Life dashboard using Google: `https://your-domain.app/login`.
+1. Sign in to your Half-Life dashboard using Google: `https://halflifes.vercel.app/login`.
 2. Navigate to **Agents** &rarr; **Create Agent**.
 3. Name your agent (e.g. `Treasury Guard`), select **Half-Life Mode**, and configure your spending limits:
    - Per-ask cap: `$0.05`
@@ -37,13 +37,13 @@ import { HalfLifeClient } from "@half-life/sdk";
 
 const client = new HalfLifeClient({
   apiKey: process.env.HALFLIFE_API_KEY!,
-  baseUrl: "https://your-domain.app",
+  baseUrl: "https://halflifes.vercel.app",
 });
 
 async function checkExchangeRateBeforePayout() {
   const response = await client.ask({
-    intent: "FX_NOW",
-    params: { pair: "EUR/USD" },
+    intent: "FX_NOW_EUR",
+    params: { currency: "EUR" },
     stake: 500, // $500 value at risk for this payment
   });
 

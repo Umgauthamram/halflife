@@ -122,6 +122,7 @@ export class MockTelegraphClient {
             confidence: 0.95,
             askedAt: new Date(),
             answeredAt: new Date(),
+            outcome: "paid",
         };
         this.requests.set(request.requestId, receipt);
         return receipt;

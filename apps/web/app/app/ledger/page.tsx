@@ -17,12 +17,15 @@ export default async function LedgerPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-[var(--border)] pb-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Purchase Ledger</h1>
           <p className="mt-1 text-sm text-[var(--secondary)]">
-            Every transaction executed by your agents, settled on-chain.
+            Every transaction executed by your agents, settled on Ethereum Sepolia.
           </p>
+        </div>
+        <div className="rounded border border-blue-900/30 bg-blue-950/20 px-3 py-1 font-mono text-xs text-blue-300">
+          Network: <strong>Ethereum Sepolia (Chain ID 11155111)</strong>
         </div>
       </div>
 
@@ -41,24 +44,26 @@ export default async function LedgerPage() {
                 <th className="px-4 py-3">Time (UTC)</th>
                 <th className="px-4 py-3">Intent</th>
                 <th className="px-4 py-3">Miner (Rank)</th>
-                <th className="px-4 py-3 text-right">Price</th>
+                <th className="px-4 py-3 text-right">Price (USDC)</th>
                 <th className="px-4 py-3">Settlement TX</th>
-                <th className="px-4 py-3">Verification</th>
+                <th className="px-4 py-3">Receipt Hash</th>
+                <th className="px-4 py-3">Outcome / Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border)]">
               {purchases.map((p) => {
                 const id = p._id.toString();
                 const time = new Date(p.askedAt).toISOString().replace("T", " ").slice(0, 19);
-                const txShort = p.txHash ? `${p.txHash.slice(0, 10)}...${p.txHash.slice(-6)}` : "n/a";
+                const txShort = p.txHash ? `${p.txHash.slice(0, 8)}...${p.txHash.slice(-6)}` : "n/a";
                 const isConfirmed = p.verification === "confirmed";
+                const isFailedPaid = p.outcome === "failed_paid";
 
                 return (
                   <tr key={id} className="hover:bg-[var(--background)]">
                     <td className="px-4 py-3 font-mono text-xs">{time}</td>
                     <td className="px-4 py-3 font-mono text-xs font-semibold">{p.intent}</td>
                     <td className="px-4 py-3 font-mono text-xs text-[var(--secondary)]">
-                      {p.minerId} (#{p.minerRank})
+                      {p.minerName || p.minerId} (#{p.minerRank || 1})
                     </td>
                     <td className="px-4 py-3 text-right font-mono text-xs font-semibold">
                       ${p.priceUsdc?.toFixed(3) ?? "0.010"}
@@ -77,16 +82,25 @@ export default async function LedgerPage() {
                         "n/a"
                       )}
                     </td>
+                    <td className="px-4 py-3 font-mono text-xs text-[var(--secondary)]">
+                      {p.receiptHash ? `${p.receiptHash.slice(0, 8)}...` : "n/a"}
+                    </td>
                     <td className="px-4 py-3">
-                      <span
-                        className={`inline-block rounded px-2 py-0.5 text-xs font-mono uppercase ${
-                          isConfirmed
-                            ? "border border-green-800 bg-green-50 text-green-800"
-                            : "border border-gray-400 bg-gray-100 text-gray-700"
-                        }`}
-                      >
-                        {p.verification}
-                      </span>
+                      {isFailedPaid ? (
+                        <span className="inline-block rounded px-2 py-0.5 text-xs font-mono uppercase border border-red-800 bg-red-950/30 text-red-400">
+                          FAILED_PAID
+                        </span>
+                      ) : (
+                        <span
+                          className={`inline-block rounded px-2 py-0.5 text-xs font-mono uppercase ${
+                            isConfirmed
+                              ? "border border-green-800 bg-green-50 text-green-800"
+                              : "border border-gray-400 bg-gray-100 text-gray-700"
+                          }`}
+                        >
+                          {p.verification || "confirmed"}
+                        </span>
+                      )}
                     </td>
                   </tr>
                 );
@@ -98,4 +112,3 @@ export default async function LedgerPage() {
     </div>
   );
 }
-

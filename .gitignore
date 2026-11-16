@@ -25,7 +25,10 @@
 
 # production
 /build
+dist/
 /dist/
+packages/others_prject.md
+update.md
 
 # misc
 .DS_Store

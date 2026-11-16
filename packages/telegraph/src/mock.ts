@@ -127,6 +127,7 @@ export class MockTelegraphClient implements TelegraphClient {
       confidence: 0.95,
       askedAt: new Date(),
       answeredAt: new Date(),
+      outcome: "paid",
     };
 
     this.requests.set(request.requestId, receipt);

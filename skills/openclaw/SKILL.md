@@ -3,7 +3,7 @@ name: openclaw-half-life-governor
 description: ClawHub Skill that wires Telegraph inference and Half-Life freshness governor into OpenClaw's 24/7 heartbeat loop.
 version: 1.0.0
 author: Half-Life Team
-repository: https://github.com/your-org/halflife
+repository: https://github.com/Umgauthamram/halflife
 intents:
   - WEB_SEARCH
   - QUESTION_ANSWERING

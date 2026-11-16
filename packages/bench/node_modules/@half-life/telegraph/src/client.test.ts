@@ -74,8 +74,34 @@ describe("Telegraph Client & Schema Validation", () => {
     }).toThrow();
 
     expect(() => {
+      validateAnswerForIntent("FX_NOW", null);
+    }).toThrow();
+
+    expect(() => {
+      validateAnswerForIntent("FX_NOW", {});
+    }).toThrow();
+
+    expect(() => {
       validateAnswerForIntent("SANCTIONS_SCREENING_MATCH", { entity: "Test Corp", matchScore: 1.5 }); // > 1
     }).toThrow();
+  });
+
+  it("handles failed_paid state safely without crashing", () => {
+    const failedReceipt = {
+      minerId: "miner_1",
+      minerAddress: "0x3624EB012B5E998BB57B6bE6C9Cfc9c4bc5eb99b",
+      minerRank: 1,
+      priceUsdc: 0.01,
+      txHash: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+      signalHash: "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+      answer: null,
+      askedAt: new Date(),
+      answeredAt: new Date(),
+      outcome: "failed_paid" as const,
+    };
+
+    expect(failedReceipt.outcome).toBe("failed_paid");
+    expect(failedReceipt.answer).toBeNull();
   });
 });
 

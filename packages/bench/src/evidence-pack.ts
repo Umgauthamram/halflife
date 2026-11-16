@@ -38,8 +38,7 @@ export interface EvidencePackBundle {
 export function generateEvidencePack(
   comparison: SideBySideComparison,
   sampleTxHashes: string[] = [
-    "0x9f5a7b6c3d2e1f0a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a",
-    "0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b",
+    "0xbf283485aacb2e2964bf53fbd7eba05e080e710a77a756711a3f596a78989c1b"
   ]
 ): EvidencePackBundle {
   return {

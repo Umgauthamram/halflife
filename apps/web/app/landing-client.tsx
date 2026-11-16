@@ -375,9 +375,9 @@ export default function HalfLifeLandingPage() {
                     0.050 USD / ask
                   </div>
                   <div className="p-3 bg-black/40 rounded-xl space-y-1.5 text-[11px] text-white/90">
-                    <div className="truncate">Tx: 0x5b7bfd33ec11444a07117ac...</div>
-                    <div className="truncate">Operator: 0xB980b2dBA0004e12f...</div>
-                    <div className="text-[#9fe870] font-bold">Status: Confirmed on Sepolia</div>
+                    <div>Network: Ethereum Sepolia (11155111)</div>
+                    <div className="truncate">Telegraph: 0x3624EB012B5E998BB57B6...</div>
+                    <div className="text-[#9fe870] font-bold">Settlement: x402 Micropayments</div>
                   </div>
                 </div>
               </div>

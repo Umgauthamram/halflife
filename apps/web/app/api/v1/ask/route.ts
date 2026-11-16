@@ -4,10 +4,9 @@ import { ObjectId } from "mongodb";
 import { getDb } from "../../../../lib/mongodb";
 import { authenticateApiKey } from "../../../../lib/api-key";
 import { decide, type CachedAnswer } from "@half-life/governor";
-import { MockTelegraphClient } from "@half-life/telegraph";
+import { createTelegraphClient, type TelegraphReceipt } from "@half-life/telegraph";
+import { verifySettlementTx, createSepoliaClient } from "@half-life/chain";
 import type { AtlasStats } from "@half-life/shared";
-
-const telegraphClient = new MockTelegraphClient();
 
 export async function POST(req: NextRequest) {
   try {
@@ -110,6 +109,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 7. Get Miners and Price
+    const telegraphClient = createTelegraphClient();
     const miners = await telegraphClient.listMiners(intent);
     const topMiner = miners[0];
     const priceUsdc = topMiner?.priceUsdc ?? 0.01;
@@ -147,8 +147,34 @@ export async function POST(req: NextRequest) {
         purchaseId: cachedEntry.purchaseId,
         cacheEntryId: cachedEntry._id.toString(),
         cachedAnswer: cachedEntry.answer,
+        shadowCostUsdc: priceUsdc,
+        savedUsdc: priceUsdc,
         createdAt: new Date(),
       });
+
+      // Record in Shadow Ledger (Live Savings)
+      await db.collection("shadow_ledger").insertOne({
+        agentId,
+        ownerId,
+        intent,
+        requestId,
+        action: "reuse",
+        naiveCostUsdc: priceUsdc,
+        actualCostUsdc: 0.0,
+        capitalSavedUsdc: priceUsdc,
+        createdAt: new Date(),
+      });
+
+      // Update Agent aggregates
+      await db.collection("agents").updateOne(
+        { $or: [{ _id: agentQueryId as unknown as ObjectId }, { id: agentId }] },
+        {
+          $inc: {
+            "stats.totalReuses": 1,
+            "stats.capitalSavedUsdc": priceUsdc,
+          },
+        }
+      );
 
       return NextResponse.json({
         action: "reuse",
@@ -157,6 +183,7 @@ export async function POST(req: NextRequest) {
         ageSeconds: decisionResult.inputs.ageSeconds,
         purchaseId: cachedEntry.purchaseId,
         inputs: decisionResult.inputs,
+        capitalSavedUsdc: priceUsdc,
       });
     }
 
@@ -194,13 +221,42 @@ export async function POST(req: NextRequest) {
     }
 
     // Call Telegraph to execute buy
-    const receipt = await telegraphClient.ask({
-      intent,
-      params,
-      maxPriceUsdc: perAskCap,
-      paymentMode: "x402",
-      requestId,
-    });
+    let receipt: TelegraphReceipt;
+    try {
+      receipt = await telegraphClient.ask({
+        intent,
+        params,
+        maxPriceUsdc: perAskCap,
+        paymentMode: "x402",
+        requestId,
+      });
+    } catch (askErr: any) {
+      // Release the reserved budget on failure
+      await db.collection("budget_counters").updateOne(
+        { agentId, period: todayPeriod },
+        { $inc: { spentUsdc: -priceUsdc } }
+      );
+      return NextResponse.json(
+        { action: "failed", error: `Telegraph execution failed: ${askErr.message || String(askErr)}` },
+        { status: 502 }
+      );
+    }
+
+    // Verify settlement transaction on Sepolia
+    let verificationStatus: "confirmed" | "failed" | "pending" | "unverified" = "confirmed";
+    if (receipt.txHash && receipt.txHash.startsWith("0x")) {
+      try {
+        const sepoliaClient = createSepoliaClient(process.env.SEPOLIA_RPC_URL || "https://rpc.sepolia.org");
+        const vResult = await verifySettlementTx(
+          sepoliaClient,
+          receipt.txHash as `0x${string}`,
+          process.env.TELEGRAPH_CONTRACT || "0x3624EB012B5E998BB57B6bE6C9Cfc9c4bc5eb99b"
+        );
+        verificationStatus = vResult.status;
+      } catch {
+        verificationStatus = "unverified";
+      }
+    }
 
     // Store in purchases ledger
     const purchaseDoc = {
@@ -209,16 +265,19 @@ export async function POST(req: NextRequest) {
       intent,
       params,
       minerId: receipt.minerId,
+      minerName: receipt.minerName,
       minerRank: receipt.minerRank,
       priceUsdc: receipt.priceUsdc,
       paymentMode: "x402",
       txHash: receipt.txHash,
+      receiptHash: receipt.receiptHash,
       signalHash: receipt.signalHash,
       answer: receipt.answer,
       confidence: receipt.confidence,
+      outcome: receipt.outcome || "paid",
       askedAt: receipt.askedAt,
       answeredAt: receipt.answeredAt,
-      verification: "confirmed",
+      verification: verificationStatus,
       verifiedAt: new Date(),
       createdAt: new Date(),
     };
@@ -226,20 +285,52 @@ export async function POST(req: NextRequest) {
     const purchaseInsert = await db.collection("purchases").insertOne(purchaseDoc);
     const purchaseId = purchaseInsert.insertedId.toString();
 
-    // Upsert into cache_entries
-    await db.collection("cache_entries").updateOne(
-      { agentId, intent, paramsHash },
-      {
-        $set: {
-          ownerId,
-          purchaseId,
-          answer: receipt.answer,
-          confidence: receipt.confidence,
-          answeredAt: receipt.answeredAt,
+    // Only update cache if the answer is valid (never cache failed_paid)
+    if (receipt.outcome === "paid") {
+      // Check if this was replacing a stale cache entry and compare drift
+      if (cachedEntry?.answer) {
+        try {
+          const oldVal = typeof cachedEntry.answer === "number" ? cachedEntry.answer : parseFloat(cachedEntry.answer?.rate || cachedEntry.answer?.rates?.USD || cachedEntry.answer?.value);
+          const newVal = typeof receipt.answer === "number" ? receipt.answer : parseFloat((receipt.answer as any)?.rate || (receipt.answer as any)?.rates?.USD || (receipt.answer as any)?.value);
+          if (!isNaN(oldVal) && !isNaN(newVal) && oldVal !== 0) {
+            const actualDrift = Math.abs(newVal - oldVal) / Math.abs(oldVal);
+            const tolerance = stats?.noiseFloor ?? 0.002;
+            const wasStale = actualDrift > tolerance;
+            await db.collection("stale_decision_events").insertOne({
+              agentId,
+              ownerId,
+              intent,
+              cachedVal: oldVal,
+              freshVal: newVal,
+              actualDrift,
+              tolerance,
+              wasStale,
+              ts: new Date(),
+            });
+            if (wasStale) {
+              await db.collection("agents").updateOne(
+                { $or: [{ _id: agentQueryId as unknown as ObjectId }, { id: agentId }] },
+                { $inc: { "stats.staleErrorsCount": 1 } }
+              );
+            }
+          }
+        } catch {}
+      }
+
+      await db.collection("cache_entries").updateOne(
+        { agentId, intent, paramsHash },
+        {
+          $set: {
+            ownerId,
+            purchaseId,
+            answer: receipt.answer,
+            confidence: receipt.confidence,
+            answeredAt: receipt.answeredAt,
+          },
         },
-      },
-      { upsert: true }
-    );
+        { upsert: true }
+      );
+    }
 
     // Record decision
     await db.collection("decisions").insertOne({
@@ -248,7 +339,7 @@ export async function POST(req: NextRequest) {
       requestId,
       intent,
       stake,
-      action: "buy",
+      action: receipt.outcome === "paid" ? "buy" : "failed_paid",
       reason: decisionResult.reason,
       inputs: decisionResult.inputs,
       purchaseId,
@@ -256,13 +347,16 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({
-      action: "buy",
+      action: receipt.outcome === "paid" ? "buy" : "failed_paid",
       reason: decisionResult.reason,
       answer: receipt.answer,
       ageSeconds: 0,
       purchaseId,
       txHash: receipt.txHash,
-      verification: "confirmed",
+      receiptHash: receipt.receiptHash,
+      signalHash: receipt.signalHash,
+      outcome: receipt.outcome,
+      verification: verificationStatus,
       inputs: decisionResult.inputs,
     });
   } catch (err: unknown) {

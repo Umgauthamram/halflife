@@ -24,8 +24,9 @@ export declare function normalizeAnswerValue(intent: string, answer: any): {
  * Executes a single sampling round for a given intent:
  * 1. Claims distributed lock in MongoDB to prevent concurrent worker runs.
  * 2. Checks top miners available.
- * 3. Purchases from top 2 miners to measure instantaneous disagreement (noise floor).
- * 4. Records samples and ledger purchases.
+ * 3. Purchases from top 2 named miners concurrently to measure instantaneous disagreement (noise floor).
+ * 4. Records samples and ledger purchases with verification and outcomeState.
+ * 5. Updates empirical decay estimates in atlas_stats.
  */
 export declare function sampleIntent(db: Db, client: TelegraphClient, intent: string, systemAgentId: string, samplerPolicy: AgentPolicy): Promise<{
     samplesCount: number;

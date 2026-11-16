@@ -17,12 +17,15 @@ export default async function DecisionsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-[var(--border)] pb-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Governor Decisions</h1>
           <p className="mt-1 text-sm text-[var(--secondary)]">
             Every buy-or-reuse decision with its mathematical rationale, age, and noise-floor comparison.
           </p>
+        </div>
+        <div className="rounded border border-blue-900/30 bg-blue-950/20 px-3 py-1 font-mono text-xs text-blue-300">
+          Network: <strong>Ethereum Sepolia (Chain ID 11155111)</strong>
         </div>
       </div>
 
@@ -43,9 +46,9 @@ export default async function DecisionsPage() {
                 <th className="px-4 py-3">Action</th>
                 <th className="px-4 py-3 text-right">Stake</th>
                 <th className="px-4 py-3 text-right">Age</th>
-                <th className="px-4 py-3 text-right">Drift</th>
+                <th className="px-4 py-3 text-right">Drift (Δ)</th>
                 <th className="px-4 py-3 text-right">Noise Floor</th>
-                <th className="px-4 py-3">Reason</th>
+                <th className="px-4 py-3">Explain: Mathematical Rule</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border)]">
@@ -54,6 +57,11 @@ export default async function DecisionsPage() {
                 const time = new Date(d.createdAt).toISOString().replace("T", " ").slice(0, 19);
                 const isBuy = d.action === "buy";
                 const isReuse = d.action === "reuse";
+                const stake = d.stake || 100;
+                const drift = d.inputs?.drift ?? 0;
+                const noiseFloor = d.inputs?.noiseFloor ?? 0.002;
+                const price = d.inputs?.price ?? 0.01;
+                const riskVal = stake * drift;
 
                 return (
                   <tr key={id} className="hover:bg-[var(--background)]">
@@ -73,19 +81,37 @@ export default async function DecisionsPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right font-mono text-xs">
-                      ${d.stake?.toFixed(0) ?? "100"}
+                      ${stake.toFixed(0)}
                     </td>
                     <td className="px-4 py-3 text-right font-mono text-xs">
                       {d.inputs?.ageSeconds !== undefined ? `${d.inputs.ageSeconds.toFixed(1)}s` : "0s"}
                     </td>
                     <td className="px-4 py-3 text-right font-mono text-xs">
-                      {d.inputs?.drift !== undefined ? d.inputs.drift.toFixed(4) : "0.0000"}
+                      {drift.toFixed(4)}
                     </td>
                     <td className="px-4 py-3 text-right font-mono text-xs">
-                      {d.inputs?.noiseFloor !== undefined ? d.inputs.noiseFloor.toFixed(4) : "0.0020"}
+                      {noiseFloor.toFixed(4)}
                     </td>
-                    <td className="px-4 py-3 text-xs text-[var(--secondary)] max-w-xs truncate" title={d.reason}>
-                      {d.reason}
+                    <td className="px-4 py-3 text-xs font-mono">
+                      {isReuse ? (
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-green-500">
+                            {drift <= noiseFloor
+                              ? `Δ (${drift.toFixed(4)}) ≤ Noise (${noiseFloor.toFixed(4)}) → Zero new info`
+                              : `Stake×Δ ($${riskVal.toFixed(3)}) ≤ Price ($${price.toFixed(3)}) → Risk < Cost`}
+                          </span>
+                          <span className="text-[10px] text-[var(--secondary)]">Saved $0.010 USDC</span>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-amber-500">
+                            {d.reason.includes("No cached")
+                              ? "Cold Start (No cached answer)"
+                              : `Stake×Δ ($${riskVal.toFixed(3)}) > Price ($${price.toFixed(3)}) → Freshness justified`}
+                          </span>
+                          <span className="text-[10px] text-[var(--secondary)]">Purchased on-chain ($0.010)</span>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 );
@@ -97,4 +123,3 @@ export default async function DecisionsPage() {
     </div>
   );
 }
-

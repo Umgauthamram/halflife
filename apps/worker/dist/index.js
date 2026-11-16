@@ -1,11 +1,11 @@
 import { validateEnv } from "@half-life/shared";
 import { MongoClient } from "mongodb";
-import { MockTelegraphClient } from "@half-life/telegraph";
+import { createTelegraphClient } from "@half-life/telegraph";
 import { sampleIntent } from "./sampler.js";
 import http from "node:http";
 import dotenv from "dotenv";
 dotenv.config();
-const INTENTS = ["FX_NOW", "WEATHER_FORECAST_VERIFY", "SANCTIONS_SCREENING_MATCH"];
+const INTENTS = ["FX_NOW_EUR", "WEATHER_CHECK_TEMPERATURE", "SANCTIONS_SCREENING_MATCH_GENERAL"];
 const SAMPLER_INTERVAL_MS = 60 * 1000; // 60 seconds
 async function main() {
     console.log("==========================================");
@@ -33,7 +33,7 @@ async function main() {
     await mongoClient.connect();
     const db = mongoClient.db(env.DB_NAME || "halflife");
     console.log(`[Worker] Connected to MongoDB database: ${db.databaseName}`);
-    const telegraphClient = new MockTelegraphClient();
+    const telegraphClient = createTelegraphClient();
     const samplerPolicy = {
         perAskCapUsdc: 0.05,
         dailyCapUsdc: env.SAMPLER_DAILY_CAP_USDC ?? 10.0,
