@@ -7,7 +7,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { sepolia } from "viem/chains";
 import type { Miner } from "@half-life/shared";
 import { guardTransaction, type ChainGuardConfig } from "@half-life/chain";
-import type { AskRequest, TelegraphClient, TelegraphReceipt, PurchaseOutcome } from "./client.js";
+import type { AskRequest, TelegraphClient, TelegraphQuote, TelegraphReceipt, PurchaseOutcome } from "./client.js";
 import { validateAnswerForIntent } from "./schemas.js";
 
 export interface LiveTelegraphConfig {
@@ -19,6 +19,7 @@ export interface LiveTelegraphConfig {
 }
 
 export class LiveTelegraphClient implements TelegraphClient {
+  readonly source = "live" as const;
   private nodeUrl: string;
   private account: PrivateKeyAccount;
   private walletClient: ReturnType<typeof createWalletClient>;
@@ -65,6 +66,71 @@ export class LiveTelegraphClient implements TelegraphClient {
       agreementScore: 0.98,
       lastActive: new Date(),
     }));
+  }
+
+  async quote(request: AskRequest): Promise<TelegraphQuote> {
+    const askEndpoint = request.minerId
+      ? `${this.nodeUrl}/engine/v1/ask/${encodeURIComponent(request.minerId)}`
+      : `${this.nodeUrl}/engine/v1/ask`;
+
+    const res = await fetch(askEndpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        intent: request.intent,
+        params: request.params,
+      }),
+      signal: AbortSignal.timeout(15000),
+    });
+
+    if (res.status === 200) {
+      return {
+        priceUsdc: 0.0,
+        payTo: this.telegraphContract,
+        asset: this.usdcContract,
+        network: "eip155:11155111",
+        amountRaw: 0n,
+        resource: askEndpoint,
+      };
+    }
+
+    if (res.status !== 402) {
+      const errText = await res.text();
+      throw new Error(`Telegraph quote failed with status ${res.status}: ${errText}`);
+    }
+
+    const paymentRequiredHeader = res.headers.get("payment-required");
+    let challengeData: any;
+    if (paymentRequiredHeader) {
+      challengeData = JSON.parse(Buffer.from(paymentRequiredHeader, "base64").toString("utf-8"));
+    } else {
+      challengeData = await res.json();
+    }
+
+    const accepts = challengeData.accepts || [];
+    const exactOption = accepts.find(
+      (a: any) => a.network === "eip155:11155111" && a.scheme === "exact"
+    );
+
+    if (!exactOption) {
+      throw new Error("No compatible exact payment option found for eip155:11155111");
+    }
+
+    if (!exactOption.amount || !/^\d+$/.test(String(exactOption.amount))) {
+      throw new Error("Challenge exactOption.amount is missing or invalid");
+    }
+
+    const amountRaw = BigInt(exactOption.amount);
+    const priceUsdc = Number(amountRaw) / 1_000_000;
+
+    return {
+      priceUsdc,
+      payTo: (exactOption.payTo || "").toLowerCase(),
+      asset: (exactOption.asset || this.usdcContract).toLowerCase(),
+      network: exactOption.network,
+      amountRaw,
+      resource: challengeData.resource || askEndpoint,
+    };
   }
 
   async ask(request: AskRequest): Promise<TelegraphReceipt> {

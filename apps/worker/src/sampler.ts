@@ -128,6 +128,7 @@ export async function sampleIntent(
 
         const { valueNorm, hash } = normalizeAnswerValue(intent, receipt.answer);
         const outcomeState = receipt.outcome || (receipt.txHash ? "paid" : "failed");
+        const verification = receipt.verification || (outcomeState === "paid" ? (receipt.txHash ? "unverified" : "failed") : "failed");
 
         // Record in atlas_samples
         await db.collection("atlas_samples").insertOne({
@@ -142,6 +143,8 @@ export async function sampleIntent(
           signalHash: receipt.signalHash,
           priceUsdc: receipt.priceUsdc,
           outcomeState,
+          source: client.source,
+          verification,
         });
 
         return {

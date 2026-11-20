@@ -11,6 +11,15 @@ export interface AskRequest {
   minerId?: string; // named miner path for deterministic sampling
 }
 
+export interface TelegraphQuote {
+  priceUsdc: number;
+  payTo: string;
+  asset: string;
+  network: string;
+  amountRaw: bigint;
+  resource: string;
+}
+
 export interface TelegraphReceipt {
   minerId: string;
   minerName?: string;
@@ -25,10 +34,16 @@ export interface TelegraphReceipt {
   askedAt: Date;
   answeredAt: Date;
   outcome: PurchaseOutcome;
+  source?: "live" | "mock";
+  verification?: "confirmed" | "unverified" | "failed";
+  signalVerification?: string;
+  error?: string;
 }
 
 export interface TelegraphClient {
+  readonly source: "live" | "mock";
   listIntents(): Promise<string[]>;
   listMiners(intent: string): Promise<Miner[]>;
+  quote(request: AskRequest): Promise<TelegraphQuote>;
   ask(request: AskRequest): Promise<TelegraphReceipt>;
 }

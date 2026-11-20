@@ -277,6 +277,7 @@ export async function POST(req: NextRequest) {
       outcome: receipt.outcome || "paid",
       askedAt: receipt.askedAt,
       answeredAt: receipt.answeredAt,
+      source: telegraphClient.source,
       verification: verificationStatus,
       verifiedAt: new Date(),
       createdAt: new Date(),

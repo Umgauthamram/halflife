@@ -1,8 +1,9 @@
 import type { Miner } from "@half-life/shared";
-import type { AskRequest, TelegraphClient, TelegraphReceipt } from "./client.js";
+import type { AskRequest, TelegraphClient, TelegraphQuote, TelegraphReceipt } from "./client.js";
 import { validateAnswerForIntent } from "./schemas.js";
 
 export class MockTelegraphClient implements TelegraphClient {
+  readonly source = "mock" as const;
   private requests = new Map<string, TelegraphReceipt>();
 
   constructor(
@@ -41,6 +42,20 @@ export class MockTelegraphClient implements TelegraphClient {
 
   async listMiners(intent: string): Promise<Miner[]> {
     return this.mockMiners[intent] || [];
+  }
+
+  async quote(request: AskRequest): Promise<TelegraphQuote> {
+    const miners = await this.listMiners(request.intent);
+    const topMiner = miners[0];
+    const price = topMiner ? topMiner.priceUsdc : 0.01;
+    return {
+      priceUsdc: price,
+      payTo: "0x3624EB012B5E998BB57B6bE6C9Cfc9c4bc5eb99b",
+      asset: "0xcc194e1a843B658526D0D5C431f670028582Ae17",
+      network: "ethereum-sepolia",
+      amountRaw: BigInt(Math.round(price * 1_000_000)),
+      resource: `http://localhost/mock/${request.intent}`,
+    };
   }
 
   async ask(request: AskRequest): Promise<TelegraphReceipt> {
@@ -128,6 +143,8 @@ export class MockTelegraphClient implements TelegraphClient {
       askedAt: new Date(),
       answeredAt: new Date(),
       outcome: "paid",
+      source: "mock",
+      verification: "unverified",
     };
 
     this.requests.set(request.requestId, receipt);

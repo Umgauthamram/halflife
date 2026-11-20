@@ -89,7 +89,10 @@ export const MinerSchema = z.object({
 });
 export type Miner = z.infer<typeof MinerSchema>;
 
-export const PurchaseVerificationStatusSchema = z.enum(["pending", "confirmed", "failed"]);
+export const DataSourceSchema = z.enum(["live", "mock"]);
+export type DataSource = z.infer<typeof DataSourceSchema>;
+
+export const PurchaseVerificationStatusSchema = z.enum(["confirmed", "unverified", "failed", "pending"]);
 export type PurchaseVerificationStatus = z.infer<typeof PurchaseVerificationStatusSchema>;
 
 export const PurchaseSchema = z.object({
@@ -108,6 +111,7 @@ export const PurchaseSchema = z.object({
   confidence: z.number().min(0).max(1).optional(),
   askedAt: z.date(),
   answeredAt: z.date(),
+  source: DataSourceSchema,
   verification: PurchaseVerificationStatusSchema,
   verifiedAt: z.date().optional(),
   verifyDetail: z.string().optional(),
@@ -159,6 +163,8 @@ export const AtlasSampleSchema = z.object({
   rawAnswerHash: z.string(),
   purchaseId: z.string(),
   priceUsdc: z.number().nonnegative(),
+  source: DataSourceSchema,
+  verification: PurchaseVerificationStatusSchema,
 });
 export type AtlasSample = z.infer<typeof AtlasSampleSchema>;
 
