@@ -582,6 +582,9 @@ export default function PlaygroundClient({
                           >
                             GOVERNOR: {executionResult.action}
                           </span>
+                          <span className="rounded border border-amber-600/50 bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-200 px-2 py-0.5 text-[11px] font-mono font-bold uppercase tracking-wider">
+                            SIMULATED, no real purchase
+                          </span>
                           <span className="text-xs font-semibold">
                             {executionResult.action === "reuse"
                               ? "Saved 100% of Ask Price"

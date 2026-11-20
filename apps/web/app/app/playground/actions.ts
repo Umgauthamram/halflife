@@ -4,12 +4,10 @@ import { requireUser } from "../../../lib/dal";
 import { getDb } from "../../../lib/mongodb";
 import { authenticateApiKey } from "../../../lib/api-key";
 import { decide, type CachedAnswer } from "@half-life/governor";
-import { MockTelegraphClient } from "@half-life/telegraph";
+import { createTelegraphClient } from "@half-life/telegraph";
 import type { AtlasStats } from "@half-life/shared";
 import crypto from "node:crypto";
 import { ObjectId } from "mongodb";
-
-const telegraphClient = new MockTelegraphClient();
 
 export interface AiCodeGenerationResult {
   intent: string;
@@ -285,6 +283,7 @@ export async function executeTestAskAction(
     };
   }
 
+  const telegraphClient = createTelegraphClient();
   const miners = await telegraphClient.listMiners(intent);
   const topMiner = miners[0];
   const priceUsdc = topMiner?.priceUsdc ?? 0.01;
@@ -374,6 +373,7 @@ export async function executeTestAskAction(
     answer: finalAnswer,
     txHash: finalTxHash,
     inputs: decisionResult.inputs,
+    simulated: true,
     createdAt: new Date(),
   });
 
@@ -389,6 +389,7 @@ export async function executeTestAskAction(
       savingsUsdc,
       txHash: finalTxHash,
       inputs: decisionResult.inputs,
+      simulated: true,
     },
   };
 }

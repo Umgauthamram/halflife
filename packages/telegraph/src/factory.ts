@@ -4,8 +4,12 @@ import type { TelegraphClient } from "./client.js";
 
 export function createTelegraphClient(): TelegraphClient {
   const mode = process.env.TELEGRAPH_MODE?.toLowerCase();
+  const nodeEnv = process.env.NODE_ENV?.toLowerCase();
 
   if (mode === "mock") {
+    if (nodeEnv === "production") {
+      throw new Error("TELEGRAPH_MODE='mock' is strictly forbidden in production");
+    }
     return new MockTelegraphClient();
   }
 
@@ -13,9 +17,9 @@ export function createTelegraphClient(): TelegraphClient {
   const pk = (rawPk.startsWith("0x") ? rawPk : `0x${rawPk}`) as `0x${string}`;
 
   if (!pk || pk === "0x") {
-    // If running in an environment without wallet keys (e.g. CI or mock testing), fallback to Mock
-    console.warn("[Telegraph] No private key provided; falling back to MockTelegraphClient");
-    return new MockTelegraphClient();
+    throw new Error(
+      "Missing operator private key (metamask_private_key or OPERATOR_PRIVATE_KEY) for live Telegraph client"
+    );
   }
 
   return new LiveTelegraphClient({
