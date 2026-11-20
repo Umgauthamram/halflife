@@ -82,10 +82,11 @@ export type KnownIntent = z.infer<typeof IntentSchema>;
 
 export const MinerSchema = z.object({
   id: z.string(),
-  address: z.string(),
-  rank: z.number().int().positive(),
-  score: z.number().min(0).max(100),
-  priceUsdc: z.number().nonnegative(),
+  address: z.string().optional(),
+  name: z.string().optional(),
+  rank: z.number().int().positive().optional(),
+  score: z.number().min(0).max(100).optional(),
+  priceUsdc: z.number().nonnegative().optional(),
 });
 export type Miner = z.infer<typeof MinerSchema>;
 
