@@ -8,18 +8,20 @@
 **Public Freshness Atlas:** [https://halflifes.vercel.app/atlas](https://halflifes.vercel.app/atlas)  
 **Public Dataset & Merkle Root:** [https://halflifes.vercel.app/api/public/dataset](https://halflifes.vercel.app/api/public/dataset)  
 **System Status:** [https://halflifes.vercel.app/api/public/status](https://halflifes.vercel.app/api/public/status)  
+**Telegraph Contract:** `0x3624EB012B5E998BB57B6bE6C9Cfc9c4bc5eb99b`  
+**Telegraph Sepolia USDC:** `0xcc194e1a843B658526D0D5C431f670028582Ae17`  
 **Verified On-Chain Purchase:** [Sepolia Etherscan 0xbf2834...](https://sepolia.etherscan.io/tx/0xbf283485aacb2e2964bf53fbd7eba05e080e710a77a756711a3f596a78989c1b)
 
 ---
 
-## 1. Five-Line Quickstart
+## 1. Quickstart
 
 ```bash
 git clone https://github.com/Umgauthamram/halflife.git && cd halflife
-cp .env.example .env && pnpm install
-pnpm test                                 # Run all 53+ unit & safety tests
-pnpm --filter @half-life/bench replay     # Run side-by-side benchmark
-pnpm tsx scripts/first-purchase.ts        # Execute live verified Sepolia ask
+pnpm install
+pnpm test                                 # Run all unit & safety tests across all 8 packages
+pnpm --filter @half-life/bench replay     # Run side-by-side simulated benchmark replay
+pnpm tsx scripts/first-purchase.ts        # Execute live verified Sepolia ask (requires testnet key)
 ```
 
 ---
@@ -73,16 +75,18 @@ Half-Life provides an end-to-end measurement and decision infrastructure:
 | **Cached Reuse Cost** | $0.000 USDC | Served from validated cache; saves $0.010 with zero info loss |
 | **Default Per-Ask Cap** | $0.050 USDC | Hard limit enforced by ChainGuard before signature |
 | **Default Daily Cap** | $10.00 USDC | Atomic reservation in MongoDB |
-| **Supported Intents** | `FX_NOW_EUR`, `WEATHER_CHECK_TEMPERATURE`, `SANCTIONS_SCREENING_MATCH_GENERAL` | Extensible to all 136+ Telegraph intents |
+| **Active Target Intents** | `FX_NOW_EUR`, `WEATHER_CHECK_TEMPERATURE`, `SANCTIONS_SCREENING_MATCH_GENERAL` | Extensible to all 136+ Telegraph intents |
 
 ---
 
-## 5. Known Limitations & Observed Miner Issues
+## 5. Known Limitations & Evidence Standards
 
-Documented fully in [`docs/bounties.md`](docs/bounties.md) with receipts ready for the Telegraph bounties repo:
-1. **Miner Parameter Discrepancies**: Miner `31005 (fx-boc)` rejects requests missing `currency: "EUR"`. Half-Life client routes to named miner `31002 (Open ER-API)` by default.
-2. **Sepolia Testnet RPC Latency**: Public Sepolia RPCs occasionally rate-limit blocks; Half-Life uses Alchemy with automatic exponential backoff.
-3. **Testnet USDC Scope**: All transactions use Telegraph testnet USDC (`0xcc194e1a843B658526D0D5C431f670028582Ae17`). No real customer capital is at risk.
+In accordance with our strict evidence-honesty policy:
+1. **Calibration Threshold**: Half-Life does NOT invent or fabricate decay curves. Curves are marked **"prior (not measured)"** with zero confidence until at least 30 live confirmed samples spanning $\ge 6$ hours are collected on-chain for an intent.
+2. **Live Data & Intent Coverage**: Live empirical sampling is active on Sepolia for `FX_NOW_EUR`, `WEATHER_CHECK_TEMPERATURE`, and `SANCTIONS_SCREENING_MATCH_GENERAL`. Intent calibration progresses as the background sampler runs against live miners.
+3. **Third-Party Node & RPC Uptime**: Live settlement depends on the Telegraph node (`http://13.237.89.59:7148`) and Sepolia testnet RPC providers. Network timeouts and RPC rate limits are guarded with automatic retries and 15-second abort signals.
+4. **Simulated Benchmark Replay**: Replay benchmarks (`packages/bench`) simulate decision trade-offs over historical/synthetic errand logs and are explicitly marked as **"simulated replay"**.
+5. **Testnet Token Scope**: All transactions use Telegraph Sepolia USDC (`0xcc194e1a843B658526D0D5C431f670028582Ae17`) and contract `0x3624EB012B5E998BB57B6bE6C9Cfc9c4bc5eb99b`. No real customer capital is at risk.
 
 ---
 
@@ -94,11 +98,11 @@ half-life/
   │   ├── web/          # Next.js App Router (Public Atlas, Dashboard, Auth.js, /api/v1/ask)
   │   └── worker/       # Node.js service (Atlas Sampler, Decay Estimator, Budget Reservation)
   ├── packages/
-  │   ├── shared/       # Zod schemas, types, and strict boot-time env validation
+  │   ├── shared/       # Zod schemas, types, Merkle tree math, and boot-time env validation
   │   ├── governor/     # Pure mathematical decision engine (no I/O, 100% test coverage)
-  │   ├── chain/        # Viem chain guard (Sepolia 11155111, destination allowlists, no unlimited approvals)
+  │   ├── chain/        # Viem chain guard (Sepolia 11155111, destination allowlists, settlement verification)
   │   ├── telegraph/    # Telegraph client wrapper (x402 v2 payment-signature, named miner routing)
-  │   ├── bench/        # Side-by-side replay benchmark simulator & evidence pack exporter
+  │   ├── bench/        # Side-by-side simulated replay benchmark & evidence pack exporter
   │   └── sdk/          # Public TypeScript SDK & Model Context Protocol (MCP) server
   └── docs/             # Evaluation guide (JUDGE.md), findings, tutorial, and bounty reports
 ```

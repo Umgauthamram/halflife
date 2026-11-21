@@ -71,8 +71,8 @@ Run all automated unit, integration, and security absence tests:
 pnpm test
 ```
 
-### 3. Run the Side-by-Side Benchmark Replay
-Reproduce benchmark metrics and generate an Evidence Pack in one command:
+### 3. Run the Simulated Benchmark Replay
+Reproduce simulated benchmark metrics and generate an Evidence Pack in one command:
 ```bash
 pnpm --filter @half-life/bench replay
 ```

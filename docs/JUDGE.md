@@ -28,15 +28,21 @@
 
 You can test Half-Life in two ways:
 1. **Directly via cURL against the deployed production API**
-2. **Locally via Node / TypeScript script**
+2. **Locally via Node / TypeScript script with your own credentials**
+
+### Reviewer Credential Access
+In accordance with zero-trust security and our evidence-honesty policy:
+- To test the live deployed API, reviewers sign in via Google OAuth at `https://halflifes.vercel.app/login` and generate a live agent API key in `/app/agents/new`.
+- Alternatively, reviewers can run locally by configuring `metamask_private_key` (or `TELEGRAPH_PRIVATE_KEY`) in `.env` funded with Sepolia testnet USDC (`0xcc194e1a843B658526D0D5C431f670028582Ae17`), or request a temporary evaluator credential from the team.
+- The public dashboard, Freshness Atlas (`/atlas`), and dataset endpoints (`/api/public/dataset`) require no credentials.
 
 ### Option A: Direct API Call via cURL
-Run this in any terminal:
+Run this in any terminal using your generated agent key:
 
 ```bash
 curl -X POST https://halflifes.vercel.app/api/v1/ask \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer hl_live_5e24cb11155111evaluator" \
+  -H "Authorization: Bearer YOUR_AGENT_API_KEY" \
   -d '{
     "intent": "FX_NOW_EUR",
     "params": { "currency": "EUR" },
@@ -46,7 +52,7 @@ curl -X POST https://halflifes.vercel.app/api/v1/ask \
 ```
 
 ### Option B: Local CLI Execution
-Clone and run the standalone verification script:
+Clone and run the standalone verification script with your testnet private key:
 
 ```bash
 git clone https://github.com/Umgauthamram/halflife.git
@@ -59,39 +65,33 @@ pnpm tsx scripts/first-purchase.ts
 
 ## 02. Check It (Useful Result)
 
-When you make the call:
-1. **Fresh Buy (`action: "buy"`)**:
-   The response returns the verified answer from an independent Telegraph miner (e.g., current EUR/USD exchange rate), along with:
-   ```json
-   {
-     "action": "buy",
-     "reason": "No cached answer available",
-     "answer": { "rates": { "USD": 1.0852 } },
-     "priceUsdc": 0.010,
-     "txHash": "0xbf283485aacb2e2964bf53fbd7eba05e080e710a77a756711a3f596a78989c1b",
-     "receiptHash": "0xcbd760e2e2e331f1e2cf9f3a4abc2a50ae78733ab5b8c7a1e113c75a5bd7952f",
-     "signalHash": "0xa2e5e4b475263e7efa12ec7507895a34255a551d36d9a1d4131eee07ea1326de",
-     "minerId": "31002"
-   }
-   ```
-2. **Economic Reuse (`action: "reuse"`)**:
-   If the same request is repeated within the empirical half-life window where expected drift $\le$ miner noise floor:
-   ```json
-   {
-     "action": "reuse",
-     "reason": "Expected drift (0.0005) <= noise floor (0.0018); fresh buy yields zero new information",
-     "answer": { "rates": { "USD": 1.0852 } },
-     "priceUsdc": 0.000,
-     "capitalSaved": 0.010
-   }
-   ```
-   **The user paid $0.000, saving $0.010 without information loss.**
+When you make a call to `/api/v1/ask`, the response includes structured fields reflecting the Governor's mathematical decision:
+
+### Response Schema & Expected Fields
+
+| Field Name | Type | Description |
+| :--- | :--- | :--- |
+| `action` | `"buy"` \| `"reuse"` \| `"refuse"` | Decision executed by the Governor |
+| `reason` | `string` | Mathematical rationale (drift vs noise floor vs stake) |
+| `answer` | `any` | Validated response payload from Telegraph miner or cache |
+| `priceUsdc` | `number` | Amount in USDC charged ($0.000 for reuse) |
+| `capitalSaved` | `number` | Cumulative capital saved if answer was reused |
+| `txHash` | `string` (optional) | On-chain settlement transaction hash on Sepolia (for buys) |
+| `receiptHash` | `string` | Cryptographic SHA-256 hash of the execution receipt |
+| `signalHash` | `string` | Telegraph miner verification signal hash |
+| `minerId` | `string` | Assigned miner identifier |
+| `minerName` | `string` | Descriptive name of the miner |
+| `verification` | `string` | On-chain settlement status (`"confirmed"` \| `"unverified"` \| `"failed"`) |
+| `ageSeconds` | `number` | Age of the answer in seconds (for reused answers) |
+
+1. **Fresh Buy (`action: "buy"`):** Returned when no cached answer exists, or when expected loss from staleness ($\text{Stake} \times \text{Drift}$) exceeds the fresh purchase price AND drift exceeds the miner noise floor.
+2. **Economic Reuse (`action: "reuse"`):** Returned when an existing answer is within the empirical half-life window where expected drift $\le$ miner noise floor. The caller pays $0.000 USDC.
 
 ---
 
 ## 03. Inspect It (Real Telegraph Evidence)
 
-Every purchase is verified on-chain and settled through Telegraph's x402 v2 protocol on Ethereum Sepolia.
+Every purchase is settled through Telegraph's x402 v2 protocol and verified on Ethereum Sepolia.
 
 1. **Verify On-Chain Settlement**:
    Inspect the verified live transaction on Sepolia Etherscan:
@@ -111,12 +111,12 @@ Every purchase is verified on-chain and settled through Telegraph's x402 v2 prot
 Test reasonable failure cases to verify Half-Life's resilience and budget protection.
 
 ### Test A: Budget Exceeded (Per-Ask Cap)
-Attempt to spend more than the agent's configured maximum ask cap ($0.05 USDC):
+Attempt to spend more than the agent's configured maximum ask cap:
 
 ```bash
 curl -X POST https://halflifes.vercel.app/api/v1/ask \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer hl_live_5e24cb11155111evaluator" \
+  -H "Authorization: Bearer YOUR_AGENT_API_KEY" \
   -d '{
     "intent": "FX_NOW_EUR",
     "params": { "currency": "EUR" },
@@ -125,7 +125,7 @@ curl -X POST https://halflifes.vercel.app/api/v1/ask \
     "requestId": "break_cap_'$(date +%s)'"
   }'
 ```
-**Expected Outcome**: Request is safely blocked (`400 Bad Request` or `action: "refuse"`), and $0.00 USDC is transferred.
+**Expected Outcome**: Request is rejected (`400 Bad Request` or `action: "refuse"` with budget explanation), and $0.00 USDC is spent.
 
 ### Test B: Blocked / Compromised API Key
 1. Go to Dashboard -> API Key Access -> Click **Block Key** (confirm with "delete").
@@ -133,9 +133,9 @@ curl -X POST https://halflifes.vercel.app/api/v1/ask \
 **Expected Outcome**: Immediate `403 Forbidden` (`Agent is currently paused by kill switch`).
 
 ### Test C: Miner Error / `failed_paid` Handling
-When an external miner fails to return an answer:
-- Half-Life tags the outcome as `failed_paid`.
-- The reserved budget is atomically refunded.
+When an external miner fails after payment authorization:
+- Half-Life records `outcome: "failed_paid"`.
+- The reserved in-flight budget is reconciled safely.
 - `failed_paid` is **never** cached as a valid answer.
 
 ---
