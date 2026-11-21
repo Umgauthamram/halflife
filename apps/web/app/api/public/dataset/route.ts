@@ -1,22 +1,43 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { ObjectId } from "mongodb";
 import { getDb } from "../../../../lib/mongodb";
 import { buildMerkleTree, hashLeaf } from "@half-life/shared";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const db = await getDb();
+    const searchParams = req.nextUrl.searchParams;
+
+    const limit = Math.min(Math.max(parseInt(searchParams.get("limit") || "100", 10), 1), 500);
+    const cursor = searchParams.get("cursor");
+    const format = searchParams.get("format");
+
+    // Strict filter: live source and confirmed on-chain verification
+    const filter: Record<string, any> = {
+      source: "live",
+      verification: "confirmed",
+    };
+
+    if (cursor) {
+      try {
+        filter._id = { $lt: new ObjectId(cursor) };
+      } catch {
+        filter._id = { $lt: cursor };
+      }
+    }
+
     const samples = await db
       .collection("atlas_samples")
-      .find({})
-      .sort({ ts: -1 })
-      .limit(100)
+      .find(filter)
+      .sort({ _id: -1 })
+      .limit(limit)
       .toArray();
 
-    const formattedSamples = samples.map((s) => ({
+    const rows = samples.map((s) => ({
       id: s._id.toString(),
-      ts: s.ts,
+      ts: s.ts ? new Date(s.ts).toISOString() : new Date().toISOString(),
       intent: s.intent,
       minerId: s.minerId,
       valueNorm: s.valueNorm,
@@ -25,21 +46,66 @@ export async function GET() {
       priceUsdc: s.priceUsdc,
     }));
 
-    // Compute cryptographic Merkle Root over the dataset
-    const leafHashes = formattedSamples.map((s) =>
-      hashLeaf(`${s.intent}:${s.minerId}:${s.valueNorm}:${s.rawAnswerHash}:${s.txHash}`)
-    );
+    // Cryptographic Merkle Root over confirmed live rows
+    let merkleRoot: string | null = null;
+    if (rows.length > 0) {
+      const leafHashes = rows.map((s) =>
+        hashLeaf(`${s.intent}:${s.minerId}:${s.valueNorm}:${s.rawAnswerHash}:${s.txHash}`)
+      );
+      const tree = buildMerkleTree(leafHashes);
+      merkleRoot = tree.root;
 
-    const { root: merkleRoot } = buildMerkleTree(leafHashes);
+      // Store published root snapshot in dataset_roots
+      await db.collection("dataset_roots").insertOne({
+        merkleRoot,
+        count: rows.length,
+        firstSampleId: rows[0].id,
+        lastSampleId: rows[rows.length - 1].id,
+        createdAt: new Date(),
+      });
+    }
+
+    // CSV Format support
+    if (format === "csv") {
+      const csvHeader = "id,ts,intent,minerId,valueNorm,rawAnswerHash,txHash,priceUsdc\n";
+      const csvRows = rows
+        .map((s) =>
+          [
+            s.id,
+            s.ts,
+            `"${String(s.intent).replace(/"/g, '""')}"`,
+            `"${String(s.minerId).replace(/"/g, '""')}"`,
+            `"${String(s.valueNorm ?? "").replace(/"/g, '""')}"`,
+            s.rawAnswerHash,
+            s.txHash,
+            s.priceUsdc,
+          ].join(",")
+        )
+        .join("\n");
+
+      return new Response(csvHeader + csvRows, {
+        headers: {
+          "Content-Type": "text/csv; charset=utf-8",
+          "Content-Disposition": 'attachment; filename="halflife-atlas-dataset.csv"',
+          "X-Merkle-Root": merkleRoot || "none",
+          "X-Total-Count": String(rows.length),
+          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120",
+        },
+      });
+    }
+
+    const nextCursor = rows.length === limit ? rows[rows.length - 1].id : null;
 
     return NextResponse.json(
       {
         title: "Half-Life Freshness Atlas Public Dataset",
         network: "Ethereum Sepolia (Chain ID: 11155111)",
         license: "Apache-2.0",
-        totalCount: formattedSamples.length,
+        filter: "source: live, verification: confirmed",
+        count: rows.length,
         merkleRoot,
-        samples: formattedSamples,
+        nextCursor,
+        rows,
       },
       {
         headers: {
@@ -52,4 +118,3 @@ export async function GET() {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-

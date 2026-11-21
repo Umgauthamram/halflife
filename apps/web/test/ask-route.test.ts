@@ -145,7 +145,7 @@ vi.mock("@half-life/chain", () => ({
   verifySettlementTx: vi.fn(async () => ({
     verified: true,
     status: "confirmed",
-    blockNumber: 7123456n,
+    blockNumber: BigInt(7123456),
     detail: "Confirmed",
   })),
 }));

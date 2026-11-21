@@ -47,7 +47,7 @@ export class MockTelegraphClient implements TelegraphClient {
   async quote(request: AskRequest): Promise<TelegraphQuote> {
     const miners = await this.listMiners(request.intent);
     const topMiner = miners[0];
-    const price = topMiner ? topMiner.priceUsdc : 0.01;
+    const price = typeof topMiner?.priceUsdc === "number" ? topMiner.priceUsdc : 0.01;
     return {
       priceUsdc: price,
       payTo: "0x3624EB012B5E998BB57B6bE6C9Cfc9c4bc5eb99b",
@@ -70,9 +70,10 @@ export class MockTelegraphClient implements TelegraphClient {
     }
 
     const topMiner = miners[0];
-    if (topMiner.priceUsdc > request.maxPriceUsdc) {
+    const price = typeof topMiner?.priceUsdc === "number" ? topMiner.priceUsdc : 0.01;
+    if (price > request.maxPriceUsdc) {
       throw new Error(
-        `Top miner price ($${topMiner.priceUsdc}) exceeds max allowed price ($${request.maxPriceUsdc})`
+        `Top miner price ($${price}) exceeds max allowed price ($${request.maxPriceUsdc})`
       );
     }
 
@@ -133,9 +134,9 @@ export class MockTelegraphClient implements TelegraphClient {
 
     const receipt: TelegraphReceipt = {
       minerId: topMiner.id,
-      minerAddress: topMiner.address,
-      minerRank: topMiner.rank,
-      priceUsdc: topMiner.priceUsdc,
+      minerAddress: topMiner.address || "0x1111111111111111111111111111111111111111",
+      minerRank: topMiner.rank || 1,
+      priceUsdc: price,
       txHash: `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join("")}`,
       signalHash: `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join("")}`,
       answer: validatedAnswer,

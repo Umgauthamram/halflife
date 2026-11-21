@@ -460,8 +460,8 @@ export class LiveTelegraphClient implements TelegraphClient {
           signal: AbortSignal.timeout(5000),
         });
         if (sigRes.ok) {
-          const sigData = await sigRes.json();
-          signalVerification = sigData.status || (sigData.verified ? "verified" : "confirmed");
+          const sigData: any = await sigRes.json();
+          signalVerification = sigData?.status || (sigData?.verified ? "verified" : "confirmed");
         } else {
           signalVerification = "unavailable";
         }
