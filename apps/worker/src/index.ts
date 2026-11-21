@@ -7,7 +7,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const INTENTS = ["FX_NOW_EUR", "WEATHER_CHECK_TEMPERATURE", "SANCTIONS_SCREENING_MATCH_GENERAL"];
+const DEFAULT_INTENTS = ["FX_NOW", "WEATHER_CHECK", "SANCTIONS_SCREENING_MATCH"];
 const SAMPLER_INTERVAL_MS = 60 * 1000; // 60 seconds
 
 async function main() {
@@ -39,7 +39,31 @@ async function main() {
   const db = mongoClient.db(env.DB_NAME || "halflife");
   console.log(`[Worker] Connected to MongoDB database: ${db.databaseName}`);
 
+  // 2. Initialize Telegraph Client & Enforce Fail-Fast on Mock
   const telegraphClient = createTelegraphClient();
+  if (telegraphClient.source === "mock" && process.env.ALLOW_MOCK_SAMPLER !== "1") {
+    console.error(
+      "FATAL: Half-Life Sampler Worker cannot run with Mock client. Live node credentials required. Set ALLOW_MOCK_SAMPLER=1 only for explicit isolated testing."
+    );
+    process.exit(1);
+  }
+
+  // 3. Configure Intents & Validate against Node
+  const rawIntents = process.env.SAMPLER_INTENTS
+    ? process.env.SAMPLER_INTENTS.split(",").map((s) => s.trim()).filter(Boolean)
+    : DEFAULT_INTENTS;
+  const configuredIntents = rawIntents.length > 0 ? rawIntents : DEFAULT_INTENTS;
+
+  try {
+    const nodeIntents = await telegraphClient.listIntents();
+    for (const intent of configuredIntents) {
+      if (!nodeIntents.includes(intent)) {
+        console.warn(`[Worker Warning] Intent '${intent}' is not listed by Telegraph node.`);
+      }
+    }
+  } catch (err: any) {
+    console.warn(`[Worker Warning] Could not list intents from Telegraph node: ${err.message || String(err)}`);
+  }
 
   const samplerPolicy = {
     perAskCapUsdc: 0.05,
@@ -48,28 +72,84 @@ async function main() {
   };
 
   let isRunning = true;
+  let consecutiveFailures = 0;
+  let lastSuccessAt: Date | null = null;
+  let lastError: string | null = null;
 
-  // 2. Continuous Sampling Loop
+  // 4. Continuous Sampling Loop & Heartbeat Maintenance
   async function runSamplingRound() {
     if (!isRunning) return;
+    const now = new Date();
 
     try {
       // Check Admin Kill-Switch / Pause status
       const controlDoc = await db.collection("sampler_control").findOne({ id: "platform_sampler" });
       if (controlDoc?.status === "paused") {
         console.log("[Worker] Sampler is PAUSED by administrator. Skipping sampling cycle.");
+        await db.collection("sampler_heartbeat").updateOne(
+          { id: "worker_heartbeat" },
+          {
+            $set: {
+              lastLoopAt: now,
+              paused: true,
+              runningIntents: configuredIntents,
+              updatedAt: now,
+            },
+          },
+          { upsert: true }
+        );
         return;
       }
 
-      for (const intent of INTENTS) {
+      let anySuccess = false;
+      for (const intent of configuredIntents) {
         console.log(`[Worker] Sampling intent: ${intent}...`);
         const result = await sampleIntent(db, telegraphClient, intent, "system_sampler", samplerPolicy);
         if (result.samplesCount > 0) {
           console.log(`[Worker] Collected ${result.samplesCount} samples for ${intent}`);
+          anySuccess = true;
         }
       }
-    } catch (err) {
+
+      if (anySuccess) {
+        lastSuccessAt = new Date();
+        consecutiveFailures = 0;
+        lastError = null;
+      }
+
+      await db.collection("sampler_heartbeat").updateOne(
+        { id: "worker_heartbeat" },
+        {
+          $set: {
+            lastLoopAt: now,
+            lastSuccessAt,
+            consecutiveFailures,
+            lastError,
+            runningIntents: configuredIntents,
+            paused: false,
+            updatedAt: new Date(),
+          },
+        },
+        { upsert: true }
+      );
+    } catch (err: any) {
+      consecutiveFailures += 1;
+      lastError = err.message || String(err);
       console.error("[Worker] Error in sampling round:", err);
+
+      await db.collection("sampler_heartbeat").updateOne(
+        { id: "worker_heartbeat" },
+        {
+          $set: {
+            lastLoopAt: now,
+            consecutiveFailures,
+            lastError,
+            runningIntents: configuredIntents,
+            updatedAt: new Date(),
+          },
+        },
+        { upsert: true }
+      );
     }
   }
 
@@ -77,7 +157,7 @@ async function main() {
   runSamplingRound();
   const intervalId = setInterval(runSamplingRound, SAMPLER_INTERVAL_MS);
 
-  // 3. Optional HTTP Health Server (Allows deployment as Free Web Service or Worker on Render)
+  // 5. Optional HTTP Health Server
   const port = process.env.PORT || 10000;
   const server = http.createServer((req, res) => {
     if (req.url === "/health" || req.url === "/") {
@@ -87,6 +167,8 @@ async function main() {
           status: "healthy",
           service: "half-life-worker",
           uptime: process.uptime(),
+          consecutiveFailures,
+          lastSuccessAt,
           timestamp: new Date().toISOString(),
         })
       );

@@ -14,24 +14,54 @@ export interface AtlasStatsDoc {
   confidence: number;
   computedAt: Date;
   calibrated: boolean;
+  statusLabel?: string;
 }
 
 const DEFAULT_BUCKETS = [0, 60, 300, 1800, 3600, 86400]; // 0s, 1m, 5m, 30m, 1h, 24h
 
 /**
  * Fits an empirical monotonic drift curve from historical atlas_samples.
+ * Requires at least 30 real live samples spanning at least 6 hours to mark calibrated.
  */
 export async function updateDecayEstimates(db: Db, intent: string): Promise<AtlasStatsDoc | null> {
-  // 1. Fetch recent samples for this intent (last 500 samples)
+  // 1. Fetch recent live samples for this intent (last 500 samples)
   const samples = await db
     .collection("atlas_samples")
-    .find({ intent })
+    .find({
+      intent,
+      source: "live",
+      valueNorm: { $ne: null },
+    })
     .sort({ ts: -1 })
     .limit(500)
     .toArray();
 
+  // If no live samples exist yet, provide a conservative prior
   if (samples.length === 0) {
-    return null;
+    const priorCurve: DecayCurvePoint[] = DEFAULT_BUCKETS.map((b) => ({
+      ageSeconds: b,
+      expectedDrift: Number((0.002 * (b === 0 ? 1 : 1 + (b / 3600) * 0.05)).toFixed(6)),
+    }));
+
+    const statsDoc: AtlasStatsDoc = {
+      intent,
+      window: 86400,
+      driftCurve: priorCurve,
+      noiseFloor: 0.002,
+      sampleCount: 0,
+      confidence: 0.0,
+      computedAt: new Date(),
+      calibrated: false,
+      statusLabel: "prior (not measured)",
+    };
+
+    await db.collection("atlas_stats").updateOne(
+      { intent },
+      { $set: statsDoc },
+      { upsert: true }
+    );
+
+    return statsDoc;
   }
 
   // 2. Fetch noise measurements for noise floor
@@ -42,9 +72,12 @@ export async function updateDecayEstimates(db: Db, intent: string): Promise<Atla
     .limit(100)
     .toArray();
 
-  let noiseFloor = 0.002; // safe fallback
+  let noiseFloor = 0.002;
   if (noiseDocs.length > 0) {
-    const sum = noiseDocs.reduce((acc, d) => acc + (typeof d.disagreement === "number" ? d.disagreement : 0), 0);
+    const sum = noiseDocs.reduce(
+      (acc, d) => acc + (typeof d.disagreement === "number" ? d.disagreement : 0),
+      0
+    );
     noiseFloor = sum / noiseDocs.length;
   }
 
@@ -68,7 +101,6 @@ export async function updateDecayEstimates(db: Db, intent: string): Promise<Atla
   }
 
   for (const [_mId, group] of minerGroups.entries()) {
-    // Sort chronologically
     group.sort((a, b) => a.ts - b.ts);
     for (let i = 0; i < group.length - 1; i++) {
       for (let j = i + 1; j < Math.min(group.length, i + 10); j++) {
@@ -76,7 +108,6 @@ export async function updateDecayEstimates(db: Db, intent: string): Promise<Atla
         const refVal = Math.abs(group[i].val) || 1.0;
         const drift = Math.abs(group[j].val - group[i].val) / refVal;
 
-        // Assign to closest bucket
         let closestBucket = DEFAULT_BUCKETS[0];
         let minDiff = Infinity;
         for (const b of DEFAULT_BUCKETS) {
@@ -103,7 +134,6 @@ export async function updateDecayEstimates(db: Db, intent: string): Promise<Atla
       const median = arr[Math.floor(arr.length / 2)];
       expectedDrift = Math.max(median, prevDrift); // Monotonic isotonic constraint
     } else {
-      // Conservative growth if bucket is empty
       expectedDrift = prevDrift * (b === 0 ? 1 : 1.15);
     }
     prevDrift = expectedDrift;
@@ -113,9 +143,18 @@ export async function updateDecayEstimates(db: Db, intent: string): Promise<Atla
     });
   }
 
+  // 5. Calibration check: At least 30 samples spanning at least 6 hours
+  let timeSpanHours = 0;
+  if (samples.length >= 2) {
+    const ts0 = new Date(samples[0].ts).getTime();
+    const tsEnd = new Date(samples[samples.length - 1].ts).getTime();
+    timeSpanHours = Math.abs(ts0 - tsEnd) / (1000 * 3600);
+  }
+
   const sampleCount = samples.length;
-  const confidence = Math.min(1.0, Number((sampleCount / 50).toFixed(2)));
-  const calibrated = sampleCount >= 20;
+  const isCalibrated = sampleCount >= 30 && timeSpanHours >= 6.0;
+  const confidence = isCalibrated ? Math.min(1.0, Number((sampleCount / 100).toFixed(2))) : 0.0;
+  const statusLabel = isCalibrated ? "calibrated" : "prior (not measured)";
 
   const statsDoc: AtlasStatsDoc = {
     intent,
@@ -125,7 +164,8 @@ export async function updateDecayEstimates(db: Db, intent: string): Promise<Atla
     sampleCount,
     confidence,
     computedAt: new Date(),
-    calibrated,
+    calibrated: isCalibrated,
+    statusLabel,
   };
 
   // Upsert into atlas_stats
