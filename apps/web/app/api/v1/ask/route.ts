@@ -9,14 +9,23 @@ import { verifySettlementTx, createSepoliaClient } from "@half-life/chain";
 import type { AtlasStats } from "@half-life/shared";
 
 export async function POST(req: NextRequest) {
+  let db;
+  let inFlightClaimed = false;
+  let agentId = "";
+  let ownerId = "";
+  let requestId = "";
+
   try {
     // 1. Authenticate API Key
     const authHeader = req.headers.get("Authorization");
-    const { agentId, ownerId } = await authenticateApiKey(authHeader, "ask");
+    const authResult = await authenticateApiKey(authHeader, "ask");
+    agentId = authResult.agentId;
+    ownerId = authResult.ownerId;
 
     // 2. Validate JSON Request Body
     const body = await req.json().catch(() => ({}));
-    const { intent, params, stake: requestedStake, requestId } = body;
+    const { intent, params, stake: requestedStake } = body;
+    requestId = body.requestId;
 
     if (!intent || typeof intent !== "string") {
       return NextResponse.json({ error: "Missing or invalid 'intent'" }, { status: 400 });
@@ -28,11 +37,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing or invalid 'requestId' for idempotency" }, { status: 400 });
     }
 
-    const db = await getDb();
+    db = await getDb();
 
-    // 3. Check Idempotency
+    // 3. Idempotency Check & Atomic In-Flight Reservation
     const existingDecision = await db.collection("decisions").findOne({ agentId, requestId });
     if (existingDecision) {
+      if (existingDecision.status === "in_flight") {
+        return NextResponse.json(
+          { error: "Request currently being processed", requestId },
+          { status: 409 }
+        );
+      }
       return NextResponse.json({
         idempotent: true,
         action: existingDecision.action,
@@ -43,7 +58,30 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // 4. Fetch Agent & Check Kill Switch
+    try {
+      await db.collection("decisions").insertOne({
+        agentId,
+        ownerId,
+        requestId,
+        intent,
+        status: "in_flight",
+        createdAt: new Date(),
+      });
+      inFlightClaimed = true;
+    } catch (insertErr: any) {
+      if (insertErr.code === 11000) {
+        const racedDecision = await db.collection("decisions").findOne({ agentId, requestId });
+        return NextResponse.json({
+          idempotent: true,
+          action: racedDecision?.action || "in_flight",
+          reason: racedDecision?.reason,
+          purchaseId: racedDecision?.purchaseId,
+        });
+      }
+      throw insertErr;
+    }
+
+    // 4. Fetch Agent & Check Status & Policy
     let agentQueryId: string | ObjectId = agentId;
     try {
       agentQueryId = new ObjectId(agentId);
@@ -55,10 +93,12 @@ export async function POST(req: NextRequest) {
     });
 
     if (!agent) {
+      await db.collection("decisions").deleteOne({ agentId, requestId });
       return NextResponse.json({ error: "Agent not found" }, { status: 404 });
     }
 
     if (agent.status !== "active") {
+      await db.collection("decisions").deleteOne({ agentId, requestId });
       return NextResponse.json(
         { action: "refuse", reason: "Agent is currently paused by kill switch" },
         { status: 403 }
@@ -66,6 +106,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (agent.allowedIntents && !agent.allowedIntents.includes(intent)) {
+      await db.collection("decisions").deleteOne({ agentId, requestId });
       return NextResponse.json(
         { action: "refuse", reason: `Intent '${intent}' is not permitted by agent policy` },
         { status: 403 }
@@ -108,13 +149,31 @@ export async function POST(req: NextRequest) {
       };
     }
 
-    // 7. Get Miners and Price
+    // 7. Obtain Real Pre-Quote from Telegraph Client
     const telegraphClient = createTelegraphClient();
-    const miners = await telegraphClient.listMiners(intent);
-    const topMiner = miners[0];
-    const priceUsdc = topMiner?.priceUsdc ?? 0.01;
+    const dailyCap = agent.policy?.dailyCapUsdc ?? 1.0;
+    const perAskCap = agent.policy?.perAskCapUsdc ?? 0.05;
 
-    // 8. Decide Action
+    let quote;
+    try {
+      quote = await telegraphClient.quote({
+        intent,
+        params,
+        maxPriceUsdc: perAskCap,
+        paymentMode: "x402",
+        requestId,
+      });
+    } catch (quoteErr: any) {
+      await db.collection("decisions").deleteOne({ agentId, requestId });
+      return NextResponse.json(
+        { action: "failed", error: `Telegraph quote pre-check failed: ${quoteErr.message || String(quoteErr)}` },
+        { status: 502 }
+      );
+    }
+
+    const priceUsdc = quote.priceUsdc;
+
+    // 8. Governor Decide Action
     let decisionResult;
     if (agent.mode === "naive") {
       decisionResult = {
@@ -132,25 +191,27 @@ export async function POST(req: NextRequest) {
       decisionResult = decide({ intent, now, stake }, cached, stats, priceUsdc);
     }
 
-    // 9. Process Decision
+    // 9. Process Reuse Decision
     if (decisionResult.action === "reuse" && cachedEntry) {
-      // Record Decision
-      await db.collection("decisions").insertOne({
-        agentId,
-        ownerId,
-        requestId,
-        intent,
-        stake,
-        action: "reuse",
-        reason: decisionResult.reason,
-        inputs: decisionResult.inputs,
-        purchaseId: cachedEntry.purchaseId,
-        cacheEntryId: cachedEntry._id.toString(),
-        cachedAnswer: cachedEntry.answer,
-        shadowCostUsdc: priceUsdc,
-        savedUsdc: priceUsdc,
-        createdAt: new Date(),
-      });
+      // Update Decision record to completed
+      await db.collection("decisions").updateOne(
+        { agentId, requestId },
+        {
+          $set: {
+            status: "completed",
+            stake,
+            action: "reuse",
+            reason: decisionResult.reason,
+            inputs: decisionResult.inputs,
+            purchaseId: cachedEntry.purchaseId,
+            cacheEntryId: cachedEntry._id.toString(),
+            cachedAnswer: cachedEntry.answer,
+            shadowCostUsdc: priceUsdc,
+            savedUsdc: priceUsdc,
+            updatedAt: new Date(),
+          },
+        }
+      );
 
       // Record in Shadow Ledger (Live Savings)
       await db.collection("shadow_ledger").insertOne({
@@ -188,17 +249,15 @@ export async function POST(req: NextRequest) {
     }
 
     // 10. Execute Fresh Buy
-    // Atomic budget reservation
-    const dailyCap = agent.policy?.dailyCapUsdc ?? 1.0;
-    const perAskCap = agent.policy?.perAskCapUsdc ?? 0.05;
-
     if (priceUsdc > perAskCap) {
+      await db.collection("decisions").deleteOne({ agentId, requestId });
       return NextResponse.json(
         { action: "refuse", reason: `Price ($${priceUsdc}) exceeds per-ask cap ($${perAskCap})` },
         { status: 400 }
       );
     }
 
+    // Atomic budget reservation
     const todayPeriod = new Date().toISOString().slice(0, 10).replace(/-/g, "");
     const budgetRes = await db.collection("budget_counters").updateOne(
       {
@@ -214,6 +273,7 @@ export async function POST(req: NextRequest) {
     );
 
     if (budgetRes.modifiedCount === 0 && budgetRes.upsertedCount === 0) {
+      await db.collection("decisions").deleteOne({ agentId, requestId });
       return NextResponse.json(
         { action: "refuse", reason: `Daily spending cap of $${dailyCap.toFixed(2)} exceeded` },
         { status: 400 }
@@ -231,28 +291,49 @@ export async function POST(req: NextRequest) {
         requestId,
       });
     } catch (askErr: any) {
-      // Release the reserved budget on failure
+      // Release budget reservation on unhandled exception
       await db.collection("budget_counters").updateOne(
         { agentId, period: todayPeriod },
         { $inc: { spentUsdc: -priceUsdc } }
       );
+      await db.collection("decisions").deleteOne({ agentId, requestId });
       return NextResponse.json(
         { action: "failed", error: `Telegraph execution failed: ${askErr.message || String(askErr)}` },
         { status: 502 }
       );
     }
 
-    // Verify settlement transaction on Sepolia
-    let verificationStatus: "confirmed" | "failed" | "pending" | "unverified" = "confirmed";
+    // Budget release rule:
+    // If outcome is "failed" or "blocked" (payment was NOT signed), release budget.
+    // If outcome is "failed_paid", do NOT release budget: funds were signed/spent.
+    if (receipt.outcome === "failed" || receipt.outcome === "blocked") {
+      await db.collection("budget_counters").updateOne(
+        { agentId, period: todayPeriod },
+        { $inc: { spentUsdc: -priceUsdc } }
+      );
+    }
+
+    // Default verificationStatus to "unverified"
+    let verificationStatus: "confirmed" | "failed" | "unverified" = "unverified";
+    let verifiedAt: Date | undefined;
+    let verifyDetail: string | undefined;
+
     if (receipt.txHash && receipt.txHash.startsWith("0x")) {
       try {
         const sepoliaClient = createSepoliaClient(process.env.SEPOLIA_RPC_URL || "https://rpc.sepolia.org");
         const vResult = await verifySettlementTx(
           sepoliaClient,
           receipt.txHash as `0x${string}`,
-          process.env.TELEGRAPH_CONTRACT || "0x3624EB012B5E998BB57B6bE6C9Cfc9c4bc5eb99b"
+          {
+            usdc: quote.asset || process.env.USDC_ADDRESS || "0xcc194e1a843B658526D0D5C431f670028582Ae17",
+            payer: agent.walletAddress,
+            payTo: quote.payTo || process.env.TELEGRAPH_CONTRACT || "0x3624EB012B5E998BB57B6bE6C9Cfc9c4bc5eb99b",
+            amountRaw: quote.amountRaw,
+          }
         );
         verificationStatus = vResult.status;
+        verifiedAt = new Date();
+        verifyDetail = vResult.detail;
       } catch {
         verificationStatus = "unverified";
       }
@@ -279,7 +360,8 @@ export async function POST(req: NextRequest) {
       answeredAt: receipt.answeredAt,
       source: telegraphClient.source,
       verification: verificationStatus,
-      verifiedAt: new Date(),
+      verifiedAt,
+      verifyDetail,
       createdAt: new Date(),
     };
 
@@ -288,7 +370,6 @@ export async function POST(req: NextRequest) {
 
     // Only update cache if the answer is valid (never cache failed_paid)
     if (receipt.outcome === "paid") {
-      // Check if this was replacing a stale cache entry and compare drift
       if (cachedEntry?.answer) {
         try {
           const oldVal = typeof cachedEntry.answer === "number" ? cachedEntry.answer : parseFloat(cachedEntry.answer?.rate || cachedEntry.answer?.rates?.USD || cachedEntry.answer?.value);
@@ -333,19 +414,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Record decision
-    await db.collection("decisions").insertOne({
-      agentId,
-      ownerId,
-      requestId,
-      intent,
-      stake,
-      action: receipt.outcome === "paid" ? "buy" : "failed_paid",
-      reason: decisionResult.reason,
-      inputs: decisionResult.inputs,
-      purchaseId,
-      createdAt: new Date(),
-    });
+    // Finalize decision record
+    await db.collection("decisions").updateOne(
+      { agentId, requestId },
+      {
+        $set: {
+          status: "completed",
+          stake,
+          action: receipt.outcome === "paid" ? "buy" : "failed_paid",
+          reason: decisionResult.reason,
+          inputs: decisionResult.inputs,
+          purchaseId,
+          updatedAt: new Date(),
+        },
+      }
+    );
 
     return NextResponse.json({
       action: receipt.outcome === "paid" ? "buy" : "failed_paid",
@@ -361,9 +444,11 @@ export async function POST(req: NextRequest) {
       inputs: decisionResult.inputs,
     });
   } catch (err: unknown) {
+    if (db && inFlightClaimed && agentId && requestId) {
+      await db.collection("decisions").deleteOne({ agentId, requestId }).catch(() => {});
+    }
     console.error("[API v1 ask error]:", err);
     const message = err instanceof Error ? err.message : "Internal server error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-
