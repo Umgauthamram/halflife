@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    name: Build & Test
+    name: Build, Lint & Test
     runs-on: ubuntu-latest
 
     steps:
@@ -20,18 +20,23 @@ jobs:
         with:
           node-version: 22
 
-      - name: Install Pinned pnpm
-        run: npx --yes pnpm@10.28.0 --version
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.0
 
       - name: Install Workspace Dependencies
-        run: npx --yes pnpm@10.28.0 install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
-      - name: Typecheck
-        run: npx --yes pnpm@10.28.0 --filter "@half-life/*" typecheck
+      - name: Verify No MockTelegraphClient in Production Source
+        run: |
+          if grep -rn --exclude="*.test.ts" --exclude="*.spec.ts" "MockTelegraphClient" apps/worker/src apps/web/app/api; then
+            echo "CRITICAL: MockTelegraphClient detected in production source directories. Build rejected."
+            exit 1
+          fi
 
-      - name: Run All Tests (Vitest)
-        run: npx --yes pnpm@10.28.0 test
+      - name: Build All Workspace Packages
+        run: pnpm -r build
 
-      - name: Build Web Application
-        run: npx --yes pnpm@10.28.0 --filter @half-life/web build
-
+      - name: Run All Tests Across Workspace
+        run: pnpm -r test
