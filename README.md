@@ -81,12 +81,14 @@ Half-Life provides an end-to-end measurement and decision infrastructure:
 
 ## 5. Known Limitations & Evidence Standards
 
+> **Scope Statement:** Half-Life performs no external actions on the user's behalf; it only returns answers and decisions. Any external effect remains the operator's explicit decision.
+
 In accordance with our strict evidence-honesty policy:
-1. **Calibration Threshold**: Half-Life does NOT invent or fabricate decay curves. Curves are marked **"prior (not measured)"** with zero confidence until at least 30 live confirmed samples spanning $\ge 6$ hours are collected on-chain for an intent.
-2. **Live Data & Intent Coverage**: Live empirical sampling is active on Sepolia for `FX_NOW_EUR`, `WEATHER_CHECK_TEMPERATURE`, and `SANCTIONS_SCREENING_MATCH_GENERAL`. Intent calibration progresses as the background sampler runs against live miners.
-3. **Third-Party Node & RPC Uptime**: Live settlement depends on the Telegraph node (`http://13.237.89.59:7148`) and Sepolia testnet RPC providers. Network timeouts and RPC rate limits are guarded with automatic retries and 15-second abort signals.
-4. **Simulated Benchmark Replay**: Replay benchmarks (`packages/bench`) simulate decision trade-offs over historical/synthetic errand logs and are explicitly marked as **"simulated replay"**.
-5. **Testnet Token Scope**: All transactions use Telegraph Sepolia USDC (`0xcc194e1a843B658526D0D5C431f670028582Ae17`) and contract `0x3624EB012B5E998BB57B6bE6C9Cfc9c4bc5eb99b`. No real customer capital is at risk.
+1. **Testnet Only**: All transactions use Telegraph Sepolia testnet USDC (`0xcc194e1a843B658526D0D5C431f670028582Ae17`) and contract `0x3624EB012B5E998BB57B6bE6C9Cfc9c4bc5eb99b`. No real customer capital is at risk.
+2. **Plain HTTP Node Endpoint**: The Telegraph testnet node endpoint (`http://13.237.89.59:7148`) is plain HTTP. All client calls enforce 15-second abort timeouts and fail-closed validation.
+3. **Calibration Threshold & Priors**: Half-Life does NOT invent or fabricate decay curves. Curves require $\ge 30$ live confirmed samples spanning $\ge 6$ hours before being marked calibrated; uncalibrated priors are explicitly labeled **"prior (not measured)"** with zero confidence.
+4. **Live Sampler State & Intent Catalogue**: Target intents are `FX_NOW_EUR`, `WEATHER_CHECK_TEMPERATURE`, and `SANCTIONS_SCREENING_MATCH_GENERAL` — see `/api/public/status` for current sampler state. Intent names must match the live node catalogue; unknown names can return HTTP 200 with a null schema and are rejected by Half-Life.
+5. **Simulated Benchmark Replay**: Replay benchmarks (`packages/bench`) simulate decision trade-offs over errand logs and are explicitly marked as **"simulated replay"**.
 
 ---
 
@@ -120,7 +122,7 @@ Half-Life includes a ready-to-use Model Context Protocol (MCP) wrapper in `@half
       "command": "node",
       "args": ["./packages/sdk/dist/mcp-server.js"],
       "env": {
-        "HALFLIFE_API_KEY": "hl_live_YOUR_API_KEY",
+        "HALFLIFE_API_KEY": "YOUR_HALFLIFE_API_KEY",
         "HALFLIFE_BASE_URL": "https://halflifes.vercel.app"
       }
     }

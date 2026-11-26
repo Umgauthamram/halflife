@@ -13,7 +13,7 @@
 | Chain Name | Ethereum Sepolia Testnet | Confirmed per Bounty Tracker |
 | Chain ID | `11155111` | Enforced by Viem Chain Guard |
 | Telegraph Contract | `0x3624EB012B5E998BB57B6bE6C9Cfc9c4bc5eb99b` | Configured in `.env.example` |
-| Settlement Token | USDC (Testnet) `0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238` | Configured in `.env.example` |
+| Settlement Token | USDC (Testnet) `0xcc194e1a843B658526D0D5C431f670028582Ae17` | Configured in `.env.example` |
 | RPC Transport | JSON-RPC over HTTPS (`SEPOLIA_RPC_URL`) | Verified with Viem Client |
 
 > **Warning regarding Base Sepolia:** The older documentation and registration button on `integrate.telegraphprotocol.com` referenced Base Sepolia. For Season II, all deployments and miner settlements operate exclusively on **Ethereum Sepolia (Chain ID: 11155111)**.

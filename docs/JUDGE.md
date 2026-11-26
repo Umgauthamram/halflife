@@ -10,6 +10,8 @@
 **Telegraph Contract**: `0x3624EB012B5E998BB57B6bE6C9Cfc9c4bc5eb99b`  
 **Telegraph Sepolia USDC**: `0xcc194e1a843B658526D0D5C431f670028582Ae17`  
 
+> **Scope & Intent Note:** Half-Life performs no external actions on the user's behalf; it only returns answers and decisions. Any external effect remains the operator's explicit decision. Intent names must match the live node catalogue (`FX_NOW_EUR`, `WEATHER_CHECK_TEMPERATURE`, `SANCTIONS_SCREENING_MATCH_GENERAL`); unknown names can return HTTP 200 with a null schema and are rejected by Half-Life.
+
 ---
 
 ## Acceptance Criteria Checklist (Season II Rules)
@@ -155,4 +157,4 @@ pnpm test
 pnpm --filter @half-life/bench test
 ```
 
-All 53+ test suites verify deterministic math, EIP-712 payment signatures, and isotonic decay curves.
+All automated test suites verify deterministic math, EIP-712 payment signatures, and isotonic decay curves.

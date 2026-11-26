@@ -12,7 +12,7 @@
 | Timestamp | Segment | Visual Scene | Narration & Key Message |
 |-----------|---------|--------------|-------------------------|
 | **0:00 – 0:40** | **Act I: The Problem** | Terminal logs showing rapid `$0.05 USDC` charges + Landing Page hero | "Autonomous agents are bleeding money paying a blind heartbeat tax on Telegraph." |
-| **0:40 – 1:25** | **Act II: Freshness Atlas** | `/atlas` empirical curves for `FX_NOW`, `WEATHER`, `SANCTIONS` | "We don't guess decay. We measured empirical half-lives across three mandatory intents." |
+| **0:40 – 1:25** | **Act II: Freshness Atlas** | `/atlas` curves for `FX_NOW_EUR`, `WEATHER_CHECK_TEMPERATURE`, `SANCTIONS_SCREENING_MATCH_GENERAL` | "We don't guess decay. We measure empirical half-lives or mark priors as not measured." |
 | **1:25 – 2:20** | **Act III: Live Purchase & Governor** | `/app/agents/new` -> Live Sepolia Settlement on Etherscan | "The Governor only pays when Stake × Expected Drift > Price AND Drift > Miner Noise." |
 | **2:20 – 3:15** | **Act IV: Replay Benchmark** | CLI running `pnpm --filter @half-life/bench replay` + `/app/benchmarks` | "66.7% redundant asks eliminated with 0.0% stale decisions." |
 | **3:15 – 3:45** | **Act V: Defensive Security** | `/app/admin/audit` + Budget Cap & Hardware Kill Switch demo | "No demo backdoors, envelope-encrypted wallet custody, atomic daily budget ceiling." |
@@ -38,7 +38,7 @@ Welcome to **Half-Life**—the autonomous decision engine that measures answer d
 ### Act II: The Freshness Atlas — Empirical Decay Curves (0:40 – 1:25)
 **[Visual Cue: 0:40]**  
 Cut to the Half-Life Web Application (`apps/web`). Smooth transition to the public **Freshness Atlas** (`/atlas`).  
-Mouse scrolls over the three intent cards: `FX_NOW`, `WEATHER_FORECAST_VERIFY`, and `SANCTIONS_SCREENING_MATCH`.  
+Mouse scrolls over the three intent cards: `FX_NOW_EUR`, `WEATHER_CHECK_TEMPERATURE`, and `SANCTIONS_SCREENING_MATCH_GENERAL`.  
 Hover over the interactive decay curves showing half-life ($t_{1/2}$) and miner noise floor.
 
 **[Voiceover]**  
@@ -56,7 +56,7 @@ These empirical curves feed directly into our mathematical decision core."
 **[Visual Cue: 1:25]**  
 Navigate to `/app/agents/new`. Create a new agent:
 - Name: `Portfolio-Risk-Sentinel`
-- Intent: `FX_NOW`
+- Intent: `FX_NOW_EUR`
 - Stake: `$10.00 USDC`
 - Daily Spending Cap: `$5.00 USDC`
 - Per-Ask Cap: `$0.10 USDC`
@@ -123,14 +123,14 @@ Show VS Code opening an agent project. Highlight 3 lines of code:
 ```typescript
 import { HalfLifeClient } from "@half-life/sdk";
 const hl = new HalfLifeClient({ apiKey: process.env.HALFLIFE_API_KEY });
-const { answer, decision } = await hl.ask({ intent: "FX_NOW", stakeUsdc: 10.0 });
+const { answer, action } = await hl.ask({ intent: "FX_NOW_EUR", params: { currency: "EUR" }, stake: 10.0 });
 ```
 Show MCP Server tool `halflife_decide` registered in Claude/Gemini IDE agent sidecar.  
 Finally, show `/api/public/dataset` returning Merkle-anchored decay records.
 
 **[Voiceover]**  
 "Integrating Half-Life requires just three lines of TypeScript or our turnkey Model Context Protocol server for AI coding assistants.  
-The entire codebase—all 8 monorepo packages, 53 automated test suites, and the open Freshness Atlas dataset—is fully open-source and ready for production on Ethereum Sepolia.  
+The entire codebase—all 8 monorepo packages, automated test suites, and the open Freshness Atlas dataset—is fully open-source and ready for Ethereum Sepolia.  
 Stop paying the blind heartbeat tax. Build economically rational agents with Half-Life."
 
 **[Visual Cue: 4:10 – 4:15]**  

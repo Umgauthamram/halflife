@@ -103,7 +103,7 @@ const paymentSignatureHeader = Buffer.from(JSON.stringify(paymentPayload)).toStr
 - **Verified Purchase TX:** [`0xbf283485aacb2e2964bf53fbd7eba05e080e710a77a756711a3f596a78989c1b`](https://sepolia.etherscan.io/tx/0xbf283485aacb2e2964bf53fbd7eba05e080e710a77a756711a3f596a78989c1b)
 
 ### Observation
-Telegraph onboarding documentation occasionally references legacy or alternate token contracts (e.g. `0x1c7D4B...`). Live Sepolia miners strictly accept `0xcc194e1a843B658526D0D5C431f670028582Ae17`. Documenting the public `mint(address, uint256)` method on the active testnet USDC token will streamline developer onboarding.
+Telegraph onboarding documentation occasionally references legacy or alternate token contracts. Live Sepolia miners strictly accept `0xcc194e1a843B658526D0D5C431f670028582Ae17`. Documenting the public `mint(address, uint256)` method on the active testnet USDC token will streamline developer onboarding.
 
 ### Exact Evidence Required Before Filing
 1. Direct links to outdated token references in official Telegraph documentation or discord guides.

@@ -2,7 +2,9 @@
 
 Autonomous agents query external intelligence repeatedly. Without decay management, an agent running a 5-minute loop executes 288 paid requests per day per check.
 
-In this tutorial, you will learn how to integrate the **Half-Life SDK** into an agent to reduce redundant queries by 60%+ while preventing decisions on expired data.
+In this tutorial, you will learn how to integrate the **Half-Life SDK** into an agent to eliminate redundant queries while preventing decisions on expired data.
+
+> **Scope & Intent Note:** Half-Life performs no external actions on the user's behalf; it only returns answers and decisions. Any external effect remains the operator's explicit decision. Intent names must match the live node catalogue (`FX_NOW_EUR`, `WEATHER_CHECK_TEMPERATURE`, `SANCTIONS_SCREENING_MATCH_GENERAL`); unknown names can return HTTP 200 with a null schema and are rejected by Half-Life.
 
 ---
 
@@ -14,7 +16,7 @@ In this tutorial, you will learn how to integrate the **Half-Life SDK** into an 
    - Per-ask cap: `$0.05`
    - Daily cap: `$1.00`
    - Default stake: `$100.00`
-4. Copy your agent API key (`hl_live_...`). This key is shown only once and stored as a salted SHA-256 hash.
+4. Copy your generated agent API key. This key is shown only once and stored as a salted SHA-256 hash.
 
 ---
 
@@ -87,7 +89,7 @@ $$\text{Buy if } (\text{Stake} \times \text{Expected Drift} > \text{Price}) \qua
 ## 5. Summary
 
 By replacing blind static TTLs with measured answer decay and miner noise floors, your agents:
-1. Cut unnecessary testnet/mainnet asks by **60% to 80%**.
+1. Eliminate redundant asks when expected drift is below the miner noise floor (tracked live in the dashboard).
 2. Bound staleness strictly to the economic value of each decision.
 3. Automatically adhere to hard per-ask and daily spending limits.
 
