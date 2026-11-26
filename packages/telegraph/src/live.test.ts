@@ -374,4 +374,96 @@ describe("LiveTelegraphClient x402 Security & Robustness", () => {
       })
     ).rejects.toThrow(/aborted/);
   });
+
+  it("11. unpaid 200 with null schema -> returns failed", async () => {
+    const fetchMock = vi.fn();
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ request_schema: null }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+    );
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ request_schema: null, result: { rate: 1.08 } }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+    );
+    global.fetch = fetchMock;
+
+    const receipt = await client.ask({
+      intent: "UNKNOWN_INTENT",
+      params: {},
+      maxPriceUsdc: 0.05,
+      paymentMode: "x402",
+      requestId: "req_free_null_schema",
+    });
+
+    expect(receipt.outcome).toBe("failed");
+    expect(receipt.error).toMatch(/without a usable schema or answer/);
+  });
+
+  it("12. unpaid 200 with valid FX answer -> returns paid with free: true and unverified", async () => {
+    const fetchMock = vi.fn();
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ result: { rate: 1.085, pair: "EUR/USD" } }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+    );
+    fetchMock.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          miner_id: "miner_free",
+          result: { rate: 1.085, pair: "EUR/USD" },
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }
+      )
+    );
+    global.fetch = fetchMock;
+
+    const receipt = await client.ask({
+      intent: "FX_NOW_EUR",
+      params: { currency: "EUR" },
+      maxPriceUsdc: 0.05,
+      paymentMode: "x402",
+      requestId: "req_free_valid",
+    });
+
+    expect(receipt.outcome).toBe("paid");
+    expect(receipt.free).toBe(true);
+    expect(receipt.priceUsdc).toBe(0);
+    expect(receipt.verification).toBe("unverified");
+  });
+
+  it("13. unpaid 200 with null answer -> returns failed", async () => {
+    const fetchMock = vi.fn();
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ result: null }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+    );
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ result: null }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+    );
+    global.fetch = fetchMock;
+
+    const receipt = await client.ask({
+      intent: "FX_NOW_EUR",
+      params: { currency: "EUR" },
+      maxPriceUsdc: 0.05,
+      paymentMode: "x402",
+      requestId: "req_free_null_answer",
+    });
+
+    expect(receipt.outcome).toBe("failed");
+    expect(receipt.error).toMatch(/without a usable schema or answer/);
+  });
 });

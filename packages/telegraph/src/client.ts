@@ -34,6 +34,7 @@ export interface TelegraphReceipt {
   askedAt: Date;
   answeredAt: Date;
   outcome: PurchaseOutcome;
+  free?: boolean;
   source?: "live" | "mock";
   verification?: "confirmed" | "unverified" | "failed";
   signalVerification?: string;

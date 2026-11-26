@@ -303,4 +303,25 @@ describe("POST /api/v1/ask Production Correctness", () => {
     expect(purchases[0].source).toBe("live");
     expect(purchases[0].verification).toBe("confirmed");
   });
+
+  it("6. does NOT write purchase document when outcome is failed", async () => {
+    mockAskOutcome = "failed";
+    const req = new NextRequest("http://localhost/api/v1/ask", {
+      method: "POST",
+      headers: { Authorization: "Bearer key_123", "Content-Type": "application/json" },
+      body: JSON.stringify({
+        intent: "FX_NOW",
+        params: { pair: "EUR/USD" },
+        requestId: "req_failed_no_purchase",
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.action).toBe("failed");
+
+    const purchases = mockDb.collections.get("purchases") || [];
+    expect(purchases.length).toBe(0);
+  });
 });

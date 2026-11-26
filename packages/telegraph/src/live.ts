@@ -206,7 +206,100 @@ export class LiveTelegraphClient implements TelegraphClient {
         body: JSON.stringify({ intent: request.intent, params: request.params }),
         signal: AbortSignal.timeout(15000),
       });
-      const body: any = await freeRes.json();
+
+      if (!freeRes.ok) {
+        return {
+          minerId: request.minerId || "unknown",
+          minerAddress: this.telegraphContract,
+          minerRank: 1,
+          priceUsdc: 0.0,
+          txHash: "",
+          signalHash: "",
+          answer: null,
+          askedAt,
+          answeredAt: new Date(),
+          outcome: "failed",
+          source: "live",
+          verification: "failed",
+          error: `Intent returned ${freeRes.status} without a usable schema or answer`,
+        };
+      }
+
+      let body: any;
+      try {
+        body = await freeRes.json();
+      } catch {
+        return {
+          minerId: request.minerId || "unknown",
+          minerAddress: this.telegraphContract,
+          minerRank: 1,
+          priceUsdc: 0.0,
+          txHash: "",
+          signalHash: "",
+          answer: null,
+          askedAt,
+          answeredAt: new Date(),
+          outcome: "failed",
+          source: "live",
+          verification: "failed",
+          error: "Intent returned 200 without a usable schema or answer (invalid JSON)",
+        };
+      }
+
+      const hasNullSchema =
+        body === null ||
+        typeof body !== "object" ||
+        ("request_schema" in body && body.request_schema === null) ||
+        ("schema" in body && body.schema === null);
+
+      const rawAnswer = body?.result !== undefined ? body.result : body;
+      const isEmptyObject =
+        typeof rawAnswer === "object" &&
+        rawAnswer !== null &&
+        !Array.isArray(rawAnswer) &&
+        Object.keys(rawAnswer).length === 0;
+
+      if (hasNullSchema || rawAnswer === null || rawAnswer === undefined || isEmptyObject) {
+        return {
+          minerId: String(body?.miner_id || request.minerId || "unknown"),
+          minerName: body?.miner_name,
+          minerAddress: this.telegraphContract,
+          minerRank: body?.rank || 1,
+          priceUsdc: 0.0,
+          txHash: "",
+          signalHash: body?.signal_hash || "",
+          answer: null,
+          askedAt,
+          answeredAt: new Date(),
+          outcome: "failed",
+          source: "live",
+          verification: "failed",
+          error: "Intent returned 200 without a usable schema or answer",
+        };
+      }
+
+      let validatedAnswer: unknown;
+      try {
+        validatedAnswer = validateAnswerForIntent(request.intent, rawAnswer);
+      } catch (err: any) {
+        return {
+          minerId: String(body?.miner_id || request.minerId || "unknown"),
+          minerName: body?.miner_name,
+          minerAddress: this.telegraphContract,
+          minerRank: body?.rank || 1,
+          priceUsdc: 0.0,
+          txHash: "",
+          signalHash: body?.signal_hash || "",
+          answer: null,
+          askedAt,
+          answeredAt: new Date(),
+          outcome: "failed",
+          source: "live",
+          verification: "failed",
+          error: `Intent returned 200 without a usable schema or answer: ${err.message || String(err)}`,
+        };
+      }
+
       return {
         minerId: String(body.miner_id || request.minerId || "default"),
         minerName: body.miner_name,
@@ -215,11 +308,12 @@ export class LiveTelegraphClient implements TelegraphClient {
         priceUsdc: 0.0,
         txHash: "",
         signalHash: body.signal_hash || "",
-        answer: body.result ?? body,
+        answer: validatedAnswer,
         confidence: 1.0,
         askedAt,
         answeredAt: new Date(),
         outcome: "paid",
+        free: true,
         source: "live",
         verification: "unverified",
       };

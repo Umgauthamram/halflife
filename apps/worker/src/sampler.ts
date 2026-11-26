@@ -172,22 +172,24 @@ export async function sampleIntent(
           receipt.verification ||
           (outcomeState === "paid" ? (receipt.txHash ? "unverified" : "failed") : "failed");
 
-        // Record in atlas_samples
-        await db.collection("atlas_samples").insertOne({
-          ts: now,
-          intent,
-          paramsKey: JSON.stringify(params),
-          minerId: miner.id,
-          valueNorm,
-          rawAnswerHash: hash,
-          txHash: receipt.txHash,
-          receiptHash: receipt.receiptHash,
-          signalHash: receipt.signalHash,
-          priceUsdc: receipt.priceUsdc,
-          outcomeState,
-          source: client.source,
-          verification,
-        });
+        // Never write failed/blocked/free rows into atlas_samples
+        if (outcomeState !== "failed" && outcomeState !== "blocked" && !receipt.free) {
+          await db.collection("atlas_samples").insertOne({
+            ts: now,
+            intent,
+            paramsKey: JSON.stringify(params),
+            minerId: miner.id,
+            valueNorm,
+            rawAnswerHash: hash,
+            txHash: receipt.txHash,
+            receiptHash: receipt.receiptHash,
+            signalHash: receipt.signalHash,
+            priceUsdc: receipt.priceUsdc,
+            outcomeState,
+            source: client.source,
+            verification,
+          });
+        }
 
         return {
           minerId: miner.id,

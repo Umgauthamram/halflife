@@ -304,13 +304,35 @@ export async function POST(req: NextRequest) {
     }
 
     // Budget release rule:
-    // If outcome is "failed" or "blocked" (payment was NOT signed), release budget.
+    // If outcome is "failed" or "blocked" (payment was NOT signed), release budget and never write to purchases.
     // If outcome is "failed_paid", do NOT release budget: funds were signed/spent.
     if (receipt.outcome === "failed" || receipt.outcome === "blocked") {
       await db.collection("budget_counters").updateOne(
         { agentId, period: todayPeriod },
         { $inc: { spentUsdc: -priceUsdc } }
       );
+      await db.collection("decisions").updateOne(
+        { agentId, requestId },
+        {
+          $set: {
+            status: "completed",
+            stake,
+            action: receipt.outcome,
+            reason: receipt.error || decisionResult.reason,
+            inputs: decisionResult.inputs,
+            updatedAt: new Date(),
+          },
+        }
+      );
+      return NextResponse.json({
+        action: receipt.outcome,
+        outcome: receipt.outcome,
+        reason: receipt.error || decisionResult.reason,
+        error: receipt.error,
+        ageSeconds: 0,
+        verification: "failed",
+        inputs: decisionResult.inputs,
+      });
     }
 
     // Default verificationStatus to "unverified"
