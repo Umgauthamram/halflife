@@ -33,6 +33,7 @@ export interface TelegraphReceipt {
   confidence?: number;
   askedAt: Date;
   answeredAt: Date;
+  latencyMs?: number;
   outcome: PurchaseOutcome;
   free?: boolean;
   source?: "live" | "mock";

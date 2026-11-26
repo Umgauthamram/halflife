@@ -185,6 +185,7 @@ export async function sampleIntent(
             receiptHash: receipt.receiptHash,
             signalHash: receipt.signalHash,
             priceUsdc: receipt.priceUsdc,
+            latencyMs: receipt.latencyMs,
             outcomeState,
             source: client.source,
             verification,

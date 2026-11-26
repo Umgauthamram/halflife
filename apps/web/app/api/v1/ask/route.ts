@@ -9,6 +9,7 @@ import { verifySettlementTx, createSepoliaClient } from "@half-life/chain";
 import type { AtlasStats } from "@half-life/shared";
 
 export async function POST(req: NextRequest) {
+  const routeStartMs = performance.now();
   let db;
   let inFlightClaimed = false;
   let agentId = "";
@@ -193,6 +194,7 @@ export async function POST(req: NextRequest) {
 
     // 9. Process Reuse Decision
     if (decisionResult.action === "reuse" && cachedEntry) {
+      const reuseLatencyMs = Math.max(0, Math.round(performance.now() - routeStartMs));
       // Update Decision record to completed
       await db.collection("decisions").updateOne(
         { agentId, requestId },
@@ -208,6 +210,7 @@ export async function POST(req: NextRequest) {
             cachedAnswer: cachedEntry.answer,
             shadowCostUsdc: priceUsdc,
             savedUsdc: priceUsdc,
+            latencyMs: reuseLatencyMs,
             updatedAt: new Date(),
           },
         }
@@ -245,6 +248,7 @@ export async function POST(req: NextRequest) {
         purchaseId: cachedEntry.purchaseId,
         inputs: decisionResult.inputs,
         capitalSavedUsdc: priceUsdc,
+        latencyMs: reuseLatencyMs,
       });
     }
 
@@ -303,6 +307,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const buyLatencyMs = receipt.latencyMs ?? Math.max(0, Math.round(performance.now() - routeStartMs));
+
     // Budget release rule:
     // If outcome is "failed" or "blocked" (payment was NOT signed), release budget and never write to purchases.
     // If outcome is "failed_paid", do NOT release budget: funds were signed/spent.
@@ -320,6 +326,7 @@ export async function POST(req: NextRequest) {
             action: receipt.outcome,
             reason: receipt.error || decisionResult.reason,
             inputs: decisionResult.inputs,
+            latencyMs: buyLatencyMs,
             updatedAt: new Date(),
           },
         }
@@ -330,6 +337,7 @@ export async function POST(req: NextRequest) {
         reason: receipt.error || decisionResult.reason,
         error: receipt.error,
         ageSeconds: 0,
+        latencyMs: buyLatencyMs,
         verification: "failed",
         inputs: decisionResult.inputs,
       });
@@ -380,6 +388,7 @@ export async function POST(req: NextRequest) {
       outcome: receipt.outcome || "paid",
       askedAt: receipt.askedAt,
       answeredAt: receipt.answeredAt,
+      latencyMs: buyLatencyMs,
       source: telegraphClient.source,
       verification: verificationStatus,
       verifiedAt,
@@ -447,6 +456,7 @@ export async function POST(req: NextRequest) {
           reason: decisionResult.reason,
           inputs: decisionResult.inputs,
           purchaseId,
+          latencyMs: buyLatencyMs,
           updatedAt: new Date(),
         },
       }
@@ -463,6 +473,8 @@ export async function POST(req: NextRequest) {
       signalHash: receipt.signalHash,
       outcome: receipt.outcome,
       verification: verificationStatus,
+      priceUsdc: receipt.priceUsdc,
+      latencyMs: buyLatencyMs,
       inputs: decisionResult.inputs,
     });
   } catch (err: unknown) {

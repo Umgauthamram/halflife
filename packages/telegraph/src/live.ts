@@ -191,6 +191,8 @@ export class LiveTelegraphClient implements TelegraphClient {
   }
 
   async ask(request: AskRequest): Promise<TelegraphReceipt> {
+    const startMs = performance.now();
+    const getLatencyMs = () => Math.max(0, Math.round(performance.now() - startMs));
     const askedAt = new Date();
     const askEndpoint = request.minerId
       ? `${this.nodeUrl}/engine/v1/ask/${encodeURIComponent(request.minerId)}`
@@ -217,7 +219,7 @@ export class LiveTelegraphClient implements TelegraphClient {
           signalHash: "",
           answer: null,
           askedAt,
-          answeredAt: new Date(),
+          answeredAt: new Date(), latencyMs: getLatencyMs(),
           outcome: "failed",
           source: "live",
           verification: "failed",
@@ -238,7 +240,7 @@ export class LiveTelegraphClient implements TelegraphClient {
           signalHash: "",
           answer: null,
           askedAt,
-          answeredAt: new Date(),
+          answeredAt: new Date(), latencyMs: getLatencyMs(),
           outcome: "failed",
           source: "live",
           verification: "failed",
@@ -270,7 +272,7 @@ export class LiveTelegraphClient implements TelegraphClient {
           signalHash: body?.signal_hash || "",
           answer: null,
           askedAt,
-          answeredAt: new Date(),
+          answeredAt: new Date(), latencyMs: getLatencyMs(),
           outcome: "failed",
           source: "live",
           verification: "failed",
@@ -292,7 +294,7 @@ export class LiveTelegraphClient implements TelegraphClient {
           signalHash: body?.signal_hash || "",
           answer: null,
           askedAt,
-          answeredAt: new Date(),
+          answeredAt: new Date(), latencyMs: getLatencyMs(),
           outcome: "failed",
           source: "live",
           verification: "failed",
@@ -311,7 +313,7 @@ export class LiveTelegraphClient implements TelegraphClient {
         answer: validatedAnswer,
         confidence: 1.0,
         askedAt,
-        answeredAt: new Date(),
+        answeredAt: new Date(), latencyMs: getLatencyMs(),
         outcome: "paid",
         free: true,
         source: "live",
@@ -415,7 +417,7 @@ export class LiveTelegraphClient implements TelegraphClient {
         signalHash: "",
         answer: null,
         askedAt,
-        answeredAt: new Date(),
+        answeredAt: new Date(), latencyMs: getLatencyMs(),
         outcome: "failed_paid",
         source: "live",
         verification: "unverified",
@@ -455,7 +457,7 @@ export class LiveTelegraphClient implements TelegraphClient {
         signalHash: "",
         answer: null,
         askedAt,
-        answeredAt: new Date(),
+        answeredAt: new Date(), latencyMs: getLatencyMs(),
         outcome: "failed_paid",
         source: "live",
         verification: "unverified",
@@ -499,7 +501,7 @@ export class LiveTelegraphClient implements TelegraphClient {
         signalHash: "",
         answer: null,
         askedAt,
-        answeredAt: new Date(),
+        answeredAt: new Date(), latencyMs: getLatencyMs(),
         outcome: "failed_paid",
         source: "live",
         verification: "unverified",
@@ -522,7 +524,7 @@ export class LiveTelegraphClient implements TelegraphClient {
         signalHash: "",
         answer: null,
         askedAt,
-        answeredAt: new Date(),
+        answeredAt: new Date(), latencyMs: getLatencyMs(),
         outcome: "failed_paid",
         source: "live",
         verification: "unverified",
@@ -576,7 +578,7 @@ export class LiveTelegraphClient implements TelegraphClient {
       answer: validatedAnswer,
       confidence: body?.confidence ?? 1.0,
       askedAt,
-      answeredAt: new Date(),
+      answeredAt: new Date(), latencyMs: getLatencyMs(),
       outcome,
       source: "live",
       verification: "unverified",

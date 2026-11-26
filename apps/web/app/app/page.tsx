@@ -11,12 +11,30 @@ export default async function DashboardPage() {
   const user = await requireUser();
   const db = await getDb();
 
-  const [agents, apiKeys, decisions, playgroundRuns] = await Promise.all([
+  const [agents, apiKeys, decisions, playgroundRuns, purchaseLatencies] = await Promise.all([
     db.collection("agents").find({ ownerId: user.id }).toArray(),
     db.collection("api_keys").find({ ownerId: user.id }).sort({ createdAt: -1 }).toArray(),
     db.collection("decisions").find({ ownerId: user.id }).sort({ createdAt: -1 }).limit(100).toArray(),
     db.collection("playground_runs").find({ userId: user.id }).sort({ createdAt: -1 }).limit(100).toArray(),
+    db
+      .collection("purchases")
+      .find({ ownerId: user.id, latencyMs: { $type: "number" } }, { projection: { latencyMs: 1 } })
+      .toArray(),
   ]);
+
+  const sortedLatencies = purchaseLatencies
+    .map((p) => Number(p.latencyMs))
+    .filter((n) => Number.isFinite(n) && n >= 0)
+    .sort((a, b) => a - b);
+
+  let medianLatencyMs: number | null = null;
+  if (sortedLatencies.length > 0) {
+    const mid = Math.floor(sortedLatencies.length / 2);
+    medianLatencyMs =
+      sortedLatencies.length % 2 === 1
+        ? sortedLatencies[mid]
+        : Math.round((sortedLatencies[mid - 1] + sortedLatencies[mid]) / 2);
+  }
 
   const agentMap = new Map<string, string>();
   for (const ag of agents) {
@@ -100,6 +118,7 @@ export default async function DashboardPage() {
       agentsCount={agents.length}
       totalSpendUsdc={totalSpendUsdc}
       totalSavedUsdc={totalSavedUsdc}
+      medianLatencyMs={medianLatencyMs}
     />
   );
 }

@@ -79,6 +79,8 @@ describe("LiveTelegraphClient x402 Security & Robustness", () => {
     expect(receipt.txHash).toBe("0xsettlement123");
     expect(receipt.source).toBe("live");
     expect(receipt.signalVerification).toBe("confirmed");
+    expect(typeof receipt.latencyMs).toBe("number");
+    expect(receipt.latencyMs).toBeGreaterThanOrEqual(0);
   });
 
   it("2. 402 with wrong network -> rejects before signing", async () => {

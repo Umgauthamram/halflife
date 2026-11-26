@@ -48,6 +48,7 @@ interface DashboardClientProps {
   agentsCount: number;
   totalSpendUsdc: number;
   totalSavedUsdc: number;
+  medianLatencyMs: number | null;
 }
 
 const QUICK_REASONS = [
@@ -113,6 +114,7 @@ export default function DashboardClient({
   agentsCount,
   totalSpendUsdc,
   totalSavedUsdc,
+  medianLatencyMs,
 }: DashboardClientProps) {
   const [isMounted, setIsMounted] = useState(false);
   useEffect(() => {
@@ -295,8 +297,8 @@ export default function DashboardClient({
         </div>
       </div>
 
-      {/* 4 High-Level Metric Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+      {/* 5 High-Level Metric Cards */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-5">
         <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
           <span className="font-mono text-xs uppercase tracking-wider text-[var(--secondary)] font-semibold">
             Total API Calls
@@ -343,6 +345,25 @@ export default function DashboardClient({
           </div>
           <p className="mt-1 text-xs text-[var(--secondary)] font-mono">
             Across {agentsCount} active agents
+          </p>
+        </div>
+
+        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
+          <span className="font-mono text-xs uppercase tracking-wider text-[var(--secondary)] font-semibold">
+            Median Latency
+          </span>
+          <div className="mt-2 text-3xl font-semibold">
+            {medianLatencyMs !== null ? (
+              <>
+                {medianLatencyMs}{" "}
+                <span className="text-xs text-[var(--secondary)] font-normal font-mono">ms</span>
+              </>
+            ) : (
+              <span className="text-lg text-[var(--secondary)] font-mono">no data yet</span>
+            )}
+          </div>
+          <p className="mt-1 text-xs text-[var(--secondary)] font-mono">
+            From live purchases
           </p>
         </div>
       </div>
