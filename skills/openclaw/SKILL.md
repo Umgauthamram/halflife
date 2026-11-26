@@ -40,7 +40,7 @@ Or configure in your OpenClaw agent config (`claw.json`):
 {
   "skills": ["half-life-governor"],
   "halfLife": {
-    "apiKey": "hl_live_...",
+    "apiKey": "YOUR_HALFLIFE_API_KEY",
     "endpoint": "http://localhost:3000",
     "stakeUsdc": 10.0,
     "intents": ["WEB_SEARCH", "CRYPTO_PRICE", "WEATHER_CHECK"]

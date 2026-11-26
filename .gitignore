@@ -1,6 +1,12 @@
-# Veeshree local config & search index (auto-generated)
-/.vee/config.json
-/.vee/index.json
+# Veeshree & AI assistant local config/rules
+.vee/
+.agents/
+.cursorrules
+GEMINI.md
+CLAUDE.md
+AGENTS.md
+apps/web/AGENTS.md
+.github/copilot-instructions.md
 
 # dependencies
 node_modules/
