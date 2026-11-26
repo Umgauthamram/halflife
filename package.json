@@ -8,7 +8,8 @@
     "build": "pnpm --filter \"@half-life/*\" build",
     "build:worker": "pnpm --filter @half-life/worker... build",
     "test": "pnpm --filter \"@half-life/*\" test",
-    "lint": "pnpm --filter \"@half-life/*\" lint"
+    "lint": "pnpm --filter \"@half-life/*\" lint",
+    "evidence": "tsx scripts/capture-evidence.ts"
   },
   "devDependencies": {
     "dotenv": "^16.6.1",
