@@ -178,4 +178,21 @@ describe("verifySettlementTx", () => {
     expect(result.status).toBe("unverified");
     expect(result.reason).toBe("Receipt not found");
   });
+
+  it("returns unverified when getTransactionReceipt throws an RPC error", async () => {
+    const mockClient = {
+      getTransactionReceipt: vi.fn().mockRejectedValue(new Error("RPC timeout 504")),
+    } as unknown as PublicClient;
+
+    const result = await verifySettlementTx(mockClient, REAL_TX, {
+      usdc: USDC,
+      payer: PAYER,
+      payTo: TELEGRAPH_PAY_TO,
+      amountRaw: 10000n,
+    });
+
+    expect(result.verified).toBe(false);
+    expect(result.status).toBe("unverified");
+    expect(result.reason).toContain("RPC timeout 504");
+  });
 });

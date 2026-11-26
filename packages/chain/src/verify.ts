@@ -173,8 +173,8 @@ export async function verifySettlementTx(
     const reason = err instanceof Error ? err.message : String(err);
     return {
       verified: false,
-      status: "failed",
-      detail: `Verification check error: ${reason}`,
+      status: "unverified",
+      detail: `Verification check RPC error: ${reason}`,
       reason,
     };
   }
