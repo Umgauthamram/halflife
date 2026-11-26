@@ -20,6 +20,12 @@ export interface AskResponse<T = unknown> {
   purchaseId?: string;
   txHash?: string;
   verification?: string;
+  priceUsdc?: number;
+  capitalSavedUsdc?: number;
+  latencyMs?: number;
+  requestId?: string;
+  agreement?: "agree" | "conflict" | "unchecked";
+  uncertainty?: string;
   error?: string;
 }
 
