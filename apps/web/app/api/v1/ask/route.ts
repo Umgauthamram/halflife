@@ -6,7 +6,33 @@ import { authenticateApiKey } from "../../../../lib/api-key";
 import { decide, type CachedAnswer } from "@half-life/governor";
 import { createTelegraphClient, type TelegraphReceipt } from "@half-life/telegraph";
 import { verifySettlementTx, createSepoliaClient } from "@half-life/chain";
-import type { AtlasStats } from "@half-life/shared";
+import { normalizeAnswerValue, type AtlasStats } from "@half-life/shared";
+
+async function verifyReceiptOnChain(
+  receipt: TelegraphReceipt,
+  quote: { asset: string; payTo: string; amountRaw: bigint },
+  payer?: string
+): Promise<{ verificationStatus: "confirmed" | "failed" | "unverified"; verifiedAt?: Date; verifyDetail?: string }> {
+  if (!receipt.txHash || !receipt.txHash.startsWith("0x")) {
+    return { verificationStatus: "unverified" };
+  }
+  try {
+    const sepoliaClient = createSepoliaClient(process.env.SEPOLIA_RPC_URL || "https://rpc.sepolia.org");
+    const vResult = await verifySettlementTx(sepoliaClient, receipt.txHash as `0x${string}`, {
+      usdc: quote.asset || process.env.USDC_ADDRESS || "0xcc194e1a843B658526D0D5C431f670028582Ae17",
+      payer,
+      payTo: quote.payTo || process.env.TELEGRAPH_CONTRACT || "0x3624EB012B5E998BB57B6bE6C9Cfc9c4bc5eb99b",
+      amountRaw: quote.amountRaw,
+    });
+    return {
+      verificationStatus: vResult.status,
+      verifiedAt: new Date(),
+      verifyDetail: vResult.detail,
+    };
+  } catch {
+    return { verificationStatus: "unverified" };
+  }
+}
 
 export async function POST(req: NextRequest) {
   const routeStartMs = performance.now();
@@ -263,18 +289,23 @@ export async function POST(req: NextRequest) {
 
     // Atomic budget reservation
     const todayPeriod = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-    const budgetRes = await db.collection("budget_counters").updateOne(
-      {
-        agentId,
-        period: todayPeriod,
-        spentUsdc: { $lte: dailyCap - priceUsdc },
-      },
-      {
-        $inc: { spentUsdc: priceUsdc },
-        $setOnInsert: { createdAt: new Date() },
-      },
-      { upsert: true }
-    );
+    let budgetRes = { modifiedCount: 0, upsertedCount: 0 };
+    try {
+      budgetRes = await db.collection("budget_counters").updateOne(
+        {
+          agentId,
+          period: todayPeriod,
+          spentUsdc: { $lte: dailyCap - priceUsdc },
+        },
+        {
+          $inc: { spentUsdc: priceUsdc },
+          $setOnInsert: { createdAt: new Date() },
+        },
+        { upsert: true }
+      );
+    } catch (budgetErr: any) {
+      if (budgetErr?.code !== 11000) throw budgetErr;
+    }
 
     if (budgetRes.modifiedCount === 0 && budgetRes.upsertedCount === 0) {
       await db.collection("decisions").deleteOne({ agentId, requestId });
@@ -343,31 +374,11 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Default verificationStatus to "unverified"
-    let verificationStatus: "confirmed" | "failed" | "unverified" = "unverified";
-    let verifiedAt: Date | undefined;
-    let verifyDetail: string | undefined;
-
-    if (receipt.txHash && receipt.txHash.startsWith("0x")) {
-      try {
-        const sepoliaClient = createSepoliaClient(process.env.SEPOLIA_RPC_URL || "https://rpc.sepolia.org");
-        const vResult = await verifySettlementTx(
-          sepoliaClient,
-          receipt.txHash as `0x${string}`,
-          {
-            usdc: quote.asset || process.env.USDC_ADDRESS || "0xcc194e1a843B658526D0D5C431f670028582Ae17",
-            payer: agent.walletAddress,
-            payTo: quote.payTo || process.env.TELEGRAPH_CONTRACT || "0x3624EB012B5E998BB57B6bE6C9Cfc9c4bc5eb99b",
-            amountRaw: quote.amountRaw,
-          }
-        );
-        verificationStatus = vResult.status;
-        verifiedAt = new Date();
-        verifyDetail = vResult.detail;
-      } catch {
-        verificationStatus = "unverified";
-      }
-    }
+    const { verificationStatus, verifiedAt, verifyDetail } = await verifyReceiptOnChain(
+      receipt,
+      quote,
+      agent.walletAddress
+    );
 
     // Store in purchases ledger
     const purchaseDoc = {
@@ -399,8 +410,166 @@ export async function POST(req: NextRequest) {
     const purchaseInsert = await db.collection("purchases").insertOne(purchaseDoc);
     const purchaseId = purchaseInsert.insertedId.toString();
 
-    // Only update cache if the answer is valid (never cache failed_paid)
-    if (receipt.outcome === "paid") {
+    // Optional Cross-Check for conflicting answers when crossCheck policy is enabled
+    let crossCheckMeta: {
+      agreement?: "agree" | "conflict" | "unchecked";
+      uncertainty?: string;
+      disagreementRatio?: number;
+      tolerance?: number;
+      minerIds?: string[];
+      answers?: Array<{ minerId: string; answer: unknown }>;
+    } = {};
+
+    if (agent.policy?.crossCheck && receipt.outcome === "paid") {
+      const tolerance = agent.policy?.crossCheckTolerance ?? stats?.noiseFloor ?? 0.005;
+      try {
+        const miners = await telegraphClient.listMiners(intent);
+        const secondMiner = miners.find((m) => m.id && m.id !== receipt.minerId);
+
+        if (!secondMiner) {
+          crossCheckMeta = { agreement: "unchecked", uncertainty: "single_source" };
+        } else {
+          const secondReqId = `${requestId}_crosscheck`;
+          let secondQuote: Awaited<ReturnType<typeof telegraphClient.quote>> | null = null;
+          try {
+            secondQuote = await telegraphClient.quote({
+              intent,
+              params,
+              minerId: secondMiner.id,
+              maxPriceUsdc: perAskCap,
+              paymentMode: "x402",
+              requestId: secondReqId,
+            });
+          } catch {
+            secondQuote = null;
+          }
+
+          if (!secondQuote || secondQuote.priceUsdc > perAskCap) {
+            crossCheckMeta = { agreement: "unchecked", uncertainty: "single_source" };
+          } else {
+            let secondBudgetRes = { modifiedCount: 0, upsertedCount: 0 };
+            try {
+              secondBudgetRes = await db.collection("budget_counters").updateOne(
+                {
+                  agentId,
+                  period: todayPeriod,
+                  spentUsdc: { $lte: dailyCap - secondQuote.priceUsdc },
+                },
+                {
+                  $inc: { spentUsdc: secondQuote.priceUsdc },
+                  $setOnInsert: { createdAt: new Date() },
+                },
+                { upsert: true }
+              );
+            } catch (budgetErr: any) {
+              if (budgetErr?.code !== 11000) throw budgetErr;
+            }
+
+            if (secondBudgetRes.modifiedCount === 0 && secondBudgetRes.upsertedCount === 0) {
+              crossCheckMeta = { agreement: "unchecked", uncertainty: "single_source" };
+            } else {
+              let secondReceipt: TelegraphReceipt | null = null;
+              try {
+                secondReceipt = await telegraphClient.ask({
+                  intent,
+                  params,
+                  minerId: secondMiner.id,
+                  maxPriceUsdc: perAskCap,
+                  paymentMode: "x402",
+                  requestId: secondReqId,
+                });
+              } catch {
+                await db.collection("budget_counters").updateOne(
+                  { agentId, period: todayPeriod },
+                  { $inc: { spentUsdc: -secondQuote.priceUsdc } }
+                );
+                crossCheckMeta = { agreement: "unchecked", uncertainty: "single_source" };
+              }
+
+              if (secondReceipt) {
+                if (secondReceipt.outcome === "failed" || secondReceipt.outcome === "blocked") {
+                  await db.collection("budget_counters").updateOne(
+                    { agentId, period: todayPeriod },
+                    { $inc: { spentUsdc: -secondQuote.priceUsdc } }
+                  );
+                  crossCheckMeta = { agreement: "unchecked", uncertainty: "single_source" };
+                } else {
+                  const secondVerif = await verifyReceiptOnChain(
+                    secondReceipt,
+                    secondQuote,
+                    agent.walletAddress
+                  );
+                  await db.collection("purchases").insertOne({
+                    agentId,
+                    ownerId,
+                    intent,
+                    params,
+                    minerId: secondReceipt.minerId,
+                    minerName: secondReceipt.minerName,
+                    minerRank: secondReceipt.minerRank,
+                    priceUsdc: secondReceipt.priceUsdc,
+                    paymentMode: "x402",
+                    txHash: secondReceipt.txHash,
+                    receiptHash: secondReceipt.receiptHash,
+                    signalHash: secondReceipt.signalHash,
+                    answer: secondReceipt.answer,
+                    confidence: secondReceipt.confidence,
+                    outcome: secondReceipt.outcome || "paid",
+                    askedAt: secondReceipt.askedAt,
+                    answeredAt: secondReceipt.answeredAt,
+                    latencyMs: secondReceipt.latencyMs,
+                    source: telegraphClient.source,
+                    verification: secondVerif.verificationStatus,
+                    verifiedAt: secondVerif.verifiedAt,
+                    verifyDetail: secondVerif.verifyDetail,
+                    createdAt: new Date(),
+                  });
+
+                  if (secondReceipt.outcome === "paid") {
+                    const v1 = normalizeAnswerValue(intent, receipt.answer).valueNorm;
+                    const v2 = normalizeAnswerValue(intent, secondReceipt.answer).valueNorm;
+                    let disagreementRatio = 1;
+                    if (typeof v1 === "number" && typeof v2 === "number") {
+                      const avg = (Math.abs(v1) + Math.abs(v2)) / 2 || 1;
+                      disagreementRatio = Math.abs(v1 - v2) / avg;
+                    } else if (v1 !== null && v2 !== null) {
+                      disagreementRatio = v1 === v2 ? 0 : 1;
+                    }
+
+                    if (disagreementRatio <= tolerance) {
+                      crossCheckMeta = {
+                        agreement: "agree",
+                        disagreementRatio,
+                        tolerance,
+                        minerIds: [receipt.minerId, secondReceipt.minerId],
+                      };
+                    } else {
+                      crossCheckMeta = {
+                        agreement: "conflict",
+                        disagreementRatio,
+                        tolerance,
+                        minerIds: [receipt.minerId, secondReceipt.minerId],
+                        answers: [
+                          { minerId: receipt.minerId, answer: receipt.answer },
+                          { minerId: secondReceipt.minerId, answer: secondReceipt.answer },
+                        ],
+                      };
+                    }
+                  } else {
+                    crossCheckMeta = { agreement: "unchecked", uncertainty: "single_source" };
+                  }
+                }
+              }
+            }
+          }
+        }
+      } catch {
+        crossCheckMeta = { agreement: "unchecked", uncertainty: "single_source" };
+      }
+    }
+
+    // Only update cache if the answer is valid and NOT in conflict (never cache failed_paid or conflict)
+    if (receipt.outcome === "paid" && crossCheckMeta.agreement !== "conflict") {
       if (cachedEntry?.answer) {
         try {
           const oldVal = typeof cachedEntry.answer === "number" ? cachedEntry.answer : parseFloat(cachedEntry.answer?.rate || cachedEntry.answer?.rates?.USD || cachedEntry.answer?.value);
@@ -465,7 +634,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       action: receipt.outcome === "paid" ? "buy" : "failed_paid",
       reason: decisionResult.reason,
-      answer: receipt.answer,
+      answer: crossCheckMeta.agreement === "conflict" ? null : receipt.answer,
       ageSeconds: 0,
       purchaseId,
       txHash: receipt.txHash,
@@ -476,6 +645,7 @@ export async function POST(req: NextRequest) {
       priceUsdc: receipt.priceUsdc,
       latencyMs: buyLatencyMs,
       inputs: decisionResult.inputs,
+      ...crossCheckMeta,
     });
   } catch (err: unknown) {
     if (db && inFlightClaimed && agentId && requestId) {

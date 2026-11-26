@@ -35,6 +35,8 @@ export const AgentPolicySchema = z.object({
   dailyCapUsdc: z.number().positive(),
   stakeDefault: z.number().nonnegative().default(100),
   escrowCapUsdc: z.number().positive().optional(),
+  crossCheck: z.boolean().optional(),
+  crossCheckTolerance: z.number().nonnegative().optional(),
 });
 export type AgentPolicy = z.infer<typeof AgentPolicySchema>;
 

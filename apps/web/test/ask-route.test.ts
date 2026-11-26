@@ -63,6 +63,14 @@ const mockDb = {
         });
 
         if (!doc && options.upsert) {
+          if (name === "budget_counters") {
+            const exists = docs.find((d) => d.agentId === filter.agentId && d.period === filter.period);
+            if (exists) {
+              const err: any = new Error("Duplicate key");
+              err.code = 11000;
+              throw err;
+            }
+          }
           doc = { ...filter, ...update.$setOnInsert, spentUsdc: 0 };
           docs.push(doc);
         }
@@ -111,10 +119,14 @@ vi.mock("../lib/api-key", () => ({
 let mockQuotePrice = 0.015;
 let mockAskOutcome: "paid" | "failed" | "failed_paid" = "paid";
 let mockClientSource: "live" | "mock" = "live";
+let mockMiners: Array<{ id: string; name?: string }> = [{ id: "miner_1" }, { id: "miner_2" }];
+let mockSecondAskOutcome: "paid" | "failed" | "failed_paid" = "paid";
+let mockSecondAnswer: any = { pair: "EUR/USD", rate: 1.0854 };
 
 vi.mock("@half-life/telegraph", () => ({
   createTelegraphClient: vi.fn(() => ({
     source: mockClientSource,
+    listMiners: vi.fn(async () => mockMiners),
     quote: vi.fn(async () => ({
       priceUsdc: mockQuotePrice,
       payTo: "0x3624eb012b5e998bb57b6be6c9cfc9c4bc5eb99b",
@@ -123,20 +135,24 @@ vi.mock("@half-life/telegraph", () => ({
       amountRaw: BigInt(Math.round(mockQuotePrice * 1_000_000)),
       resource: "http://mock-node/engine/v1/ask",
     })),
-    ask: vi.fn(async () => ({
-      minerId: "miner_1",
-      minerAddress: "0x3624eb012b5e998bb57b6be6c9cfc9c4bc5eb99b",
-      minerRank: 1,
-      priceUsdc: mockQuotePrice,
-      txHash: "0xsettlement_hash_123",
-      signalHash: "0xsignal_hash_123",
-      answer: { pair: "EUR/USD", rate: 1.0854 },
-      askedAt: new Date(),
-      answeredAt: new Date(),
-      outcome: mockAskOutcome,
-      source: mockClientSource,
-      verification: "unverified",
-    })),
+    ask: vi.fn(async (req: any) => {
+      const isSecond = req?.minerId && req.minerId !== "miner_1";
+      return {
+        minerId: isSecond ? req.minerId : "miner_1",
+        minerAddress: "0x3624eb012b5e998bb57b6be6c9cfc9c4bc5eb99b",
+        minerRank: 1,
+        priceUsdc: mockQuotePrice,
+        txHash: "0xsettlement_hash_123",
+        signalHash: "0xsignal_hash_123",
+        answer: isSecond ? mockSecondAnswer : { pair: "EUR/USD", rate: 1.0854 },
+        askedAt: new Date(),
+        answeredAt: new Date(),
+        latencyMs: 12,
+        outcome: isSecond ? mockSecondAskOutcome : mockAskOutcome,
+        source: mockClientSource,
+        verification: "unverified",
+      };
+    }),
   })),
 }));
 
@@ -158,6 +174,9 @@ describe("POST /api/v1/ask Production Correctness", () => {
     mockQuotePrice = 0.015;
     mockAskOutcome = "paid";
     mockClientSource = "live";
+    mockMiners = [{ id: "miner_1" }, { id: "miner_2" }];
+    mockSecondAskOutcome = "paid";
+    mockSecondAnswer = { pair: "EUR/USD", rate: 1.0854 };
 
     // Setup active agent
     mockDb.collection("agents").insertOne({
@@ -323,5 +342,143 @@ describe("POST /api/v1/ask Production Correctness", () => {
 
     const purchases = mockDb.collections.get("purchases") || [];
     expect(purchases.length).toBe(0);
+  });
+
+  it("7. crossCheck agree: buys from second miner, records both purchases, caches answer", async () => {
+    await mockDb.collection("agents").updateOne(
+      { id: "agent_123" },
+      { $set: { policy: { perAskCapUsdc: 0.05, dailyCapUsdc: 1.0, stakeDefault: 100, crossCheck: true, crossCheckTolerance: 0.005 } } }
+    );
+    mockSecondAnswer = { pair: "EUR/USD", rate: 1.086 }; // diff ~0.00055 <= 0.005
+
+    const req = new NextRequest("http://localhost/api/v1/ask", {
+      method: "POST",
+      headers: { Authorization: "Bearer key_123", "Content-Type": "application/json" },
+      body: JSON.stringify({
+        intent: "FX_NOW",
+        params: { pair: "EUR/USD" },
+        requestId: "req_cc_agree",
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.action).toBe("buy");
+    expect(data.agreement).toBe("agree");
+    expect(data.answer).toEqual({ pair: "EUR/USD", rate: 1.0854 });
+    expect(data.minerIds).toEqual(["miner_1", "miner_2"]);
+    expect(mockDb.collections.get("purchases")!.length).toBe(2);
+    expect(mockDb.collections.get("budget_counters")![0].spentUsdc).toBeCloseTo(0.03);
+    expect(mockDb.collections.get("cache_entries")!.length).toBe(1);
+  });
+
+  it("8. crossCheck conflict: returns both answers and minerIds, does NOT cache", async () => {
+    await mockDb.collection("agents").updateOne(
+      { id: "agent_123" },
+      { $set: { policy: { perAskCapUsdc: 0.05, dailyCapUsdc: 1.0, stakeDefault: 100, crossCheck: true, crossCheckTolerance: 0.005 } } }
+    );
+    mockSecondAnswer = { pair: "EUR/USD", rate: 1.25 }; // large disagreement
+
+    const req = new NextRequest("http://localhost/api/v1/ask", {
+      method: "POST",
+      headers: { Authorization: "Bearer key_123", "Content-Type": "application/json" },
+      body: JSON.stringify({
+        intent: "FX_NOW",
+        params: { pair: "EUR/USD" },
+        requestId: "req_cc_conflict",
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.action).toBe("buy");
+    expect(data.agreement).toBe("conflict");
+    expect(data.answer).toBeNull();
+    expect(data.answers).toHaveLength(2);
+    expect(data.minerIds).toEqual(["miner_1", "miner_2"]);
+    expect(data.disagreementRatio).toBeGreaterThan(0.1);
+    expect(mockDb.collections.get("purchases")!.length).toBe(2);
+    expect(mockDb.collections.get("cache_entries") || []).toHaveLength(0);
+  });
+
+  it("9. crossCheck second miner missing: marks unchecked and single_source", async () => {
+    await mockDb.collection("agents").updateOne(
+      { id: "agent_123" },
+      { $set: { policy: { perAskCapUsdc: 0.05, dailyCapUsdc: 1.0, stakeDefault: 100, crossCheck: true } } }
+    );
+    mockMiners = [{ id: "miner_1" }];
+
+    const req = new NextRequest("http://localhost/api/v1/ask", {
+      method: "POST",
+      headers: { Authorization: "Bearer key_123", "Content-Type": "application/json" },
+      body: JSON.stringify({
+        intent: "FX_NOW",
+        params: { pair: "EUR/USD" },
+        requestId: "req_cc_no_second",
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.agreement).toBe("unchecked");
+    expect(data.uncertainty).toBe("single_source");
+    expect(data.answer).toEqual({ pair: "EUR/USD", rate: 1.0854 });
+    expect(mockDb.collections.get("purchases")!.length).toBe(1);
+  });
+
+  it("10. crossCheck second purchase failed_paid: keeps budget, records both purchases, marks unchecked", async () => {
+    await mockDb.collection("agents").updateOne(
+      { id: "agent_123" },
+      { $set: { policy: { perAskCapUsdc: 0.05, dailyCapUsdc: 1.0, stakeDefault: 100, crossCheck: true } } }
+    );
+    mockSecondAskOutcome = "failed_paid";
+
+    const req = new NextRequest("http://localhost/api/v1/ask", {
+      method: "POST",
+      headers: { Authorization: "Bearer key_123", "Content-Type": "application/json" },
+      body: JSON.stringify({
+        intent: "FX_NOW",
+        params: { pair: "EUR/USD" },
+        requestId: "req_cc_failed_paid",
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.agreement).toBe("unchecked");
+    expect(data.uncertainty).toBe("single_source");
+    expect(data.answer).toEqual({ pair: "EUR/USD", rate: 1.0854 });
+    expect(mockDb.collections.get("purchases")!.length).toBe(2);
+    expect(mockDb.collections.get("budget_counters")![0].spentUsdc).toBeCloseTo(0.03);
+  });
+
+  it("11. crossCheck budget exhausted before second buy: skips second buy, marks unchecked", async () => {
+    await mockDb.collection("agents").updateOne(
+      { id: "agent_123" },
+      { $set: { policy: { perAskCapUsdc: 0.05, dailyCapUsdc: 0.02, stakeDefault: 100, crossCheck: true } } }
+    );
+    mockQuotePrice = 0.015; // 0.015 fits in 0.02, second 0.015 does not
+
+    const req = new NextRequest("http://localhost/api/v1/ask", {
+      method: "POST",
+      headers: { Authorization: "Bearer key_123", "Content-Type": "application/json" },
+      body: JSON.stringify({
+        intent: "FX_NOW",
+        params: { pair: "EUR/USD" },
+        requestId: "req_cc_budget_exhausted",
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.agreement).toBe("unchecked");
+    expect(data.uncertainty).toBe("single_source");
+    expect(mockDb.collections.get("purchases")!.length).toBe(1);
+    expect(mockDb.collections.get("budget_counters")![0].spentUsdc).toBeCloseTo(0.015);
   });
 });
