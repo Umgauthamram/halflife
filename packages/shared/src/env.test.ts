@@ -17,7 +17,7 @@ describe("Strict Environment Boot Validation", () => {
     SEPOLIA_RPC_URL: "https://rpc.sepolia.org",
     TELEGRAPH_CONTRACT: "0x3624EB012B5E998BB57B6bE6C9Cfc9c4bc5eb99b",
     TELEGRAPH_NODE_URL: "http://127.0.0.1:8000",
-    USDC_ADDRESS: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+    USDC_ADDRESS: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238", // fixture
     SAMPLER_DAILY_CAP_USDC: "10.0",
   };
 

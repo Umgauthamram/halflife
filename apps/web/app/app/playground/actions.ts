@@ -140,7 +140,7 @@ const decision = await client.ask({
 });
 
 if (decision.action === "reuse") {
-  console.log("Cached answer reused for $0.00! Latency: <5ms");
+  console.log("Cached answer reused for $0.00!");
 } else {
   console.log("Fresh answer purchased from Telegraph miner: " + decision.answer);
 }`;
@@ -164,7 +164,7 @@ print("Answer:", data.get("answer"))
 print("Cost:", data.get("priceUsdc"))`;
 
   let why = `Selected intent ${intent} with a $${stake} financial stake. This parameterization reflects the risk exposure where stale data could cause transaction loss.`;
-  let how = `The Governor checks your local cache for ${intent} (${JSON.stringify(params)}). If an answer exists and its expected drift d(Δt) is lower than the miner noise floor η, the cached answer is returned in <5ms for $0.00. If drift exceeds η or no cached data exists, a live $0.01 ask is dispatched to Telegraph miners.`;
+  let how = `The Governor checks your local cache for ${intent} (${JSON.stringify(params)}). If an answer exists and its expected drift d(Δt) is lower than the miner noise floor η, the cached answer is returned from cache for $0.00. If drift exceeds η or no cached data exists, a live $0.01 ask is dispatched to Telegraph miners.`;
 
   if (intent === "FX_NOW_EUR") {
     why = `Real-time FX rates experience high market volatility. A stake of $${stake} means small basis point deviations matter. The Governor monitors the calibrated Atlas half-life curve to decide whether to re-sample Telegraph miners or reuse fresh ticks.`;

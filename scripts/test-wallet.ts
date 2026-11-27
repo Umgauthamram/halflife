@@ -21,7 +21,7 @@ async function main() {
   const balance = await client.getBalance({ address: account.address });
   console.log("Sepolia ETH Balance:", formatEther(balance), "ETH");
 
-  // Check USDC balance on 0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238 and 0xcc194e1a843B658526D0D5C431f670028582Ae17
+  // Check USDC balance on 0xcc194e1a843B658526D0D5C431f670028582Ae17 and 0xcc194e1a843B658526D0D5C431f670028582Ae17
   const erc20Abi = [
     {
       name: "balanceOf",
@@ -33,7 +33,7 @@ async function main() {
   ] as const;
 
   for (const usdcAddr of [
-    "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+    "0xcc194e1a843B658526D0D5C431f670028582Ae17",
     "0xcc194e1a843B658526D0D5C431f670028582Ae17",
   ] as const) {
     try {

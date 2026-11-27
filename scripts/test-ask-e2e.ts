@@ -133,7 +133,7 @@ async function main() {
   if (decision.action === "reuse") {
     console.log(`SUCCESS: Governor correctly reused cached answer!`);
     console.log(`- Cost to User: $0.000 USDC`);
-    console.log(`- Real Capital Saved: $0.010 USDC`);
+    console.log(`- Real Capital Saved (USDC): ${reuseData.capitalSavedUsdc ?? "unknown"}`);
   } else {
     console.error(`Unexpected decision: ${decision.action}`);
   }

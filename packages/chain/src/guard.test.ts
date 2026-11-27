@@ -9,7 +9,7 @@ import {
 
 describe("Chain Guard Security Controls", () => {
   const allowedTelegraph = "0x3624EB012B5E998BB57B6bE6C9Cfc9c4bc5eb99b";
-  const allowedUSDC = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
+  const allowedUSDC = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"; // fixture
 
   const config: ChainGuardConfig = {
     allowedChainId: SEPOLIA_CHAIN_ID,

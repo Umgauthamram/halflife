@@ -25,7 +25,7 @@ export default function HalfLifeLandingPage() {
       drift: "0.00000",
       noiseFloor: "0.0000",
       payload: { pair: "EURUSD", rate: 1.0854, timestamp: 1794170246 },
-      proof: "0x13522a15fd5bf7c67406bbd63e118b7aba4677d29229ca4a89f91f4552b976f0",
+      proof: "0xbf283485aacb2e2964bf53fbd7eba05e080e710a77a756711a3f596a78989c1b",
       explanation: "The first time an agent requests an intent, the Governor buys from Telegraph miners and commits the verified answer to cache.",
     },
     reuse: {
@@ -44,7 +44,7 @@ export default function HalfLifeLandingPage() {
       drift: "0.00000",
       noiseFloor: "0.0000",
       payload: { pair: "EURUSD", rate: 1.0854, cached: true },
-      proof: "0x13522a15fd5bf7c67406bbd63e118b7aba4677d29229ca4a89f91f4552b976f0",
+      proof: "0xbf283485aacb2e2964bf53fbd7eba05e080e710a77a756711a3f596a78989c1b",
       explanation: "Instead of paying $0.010 again, the Governor serves the cached rate in 2ms for $0.00. Across 86,400 daily polls, this saves $864/day!",
     },
     compliance: {
@@ -63,7 +63,7 @@ export default function HalfLifeLandingPage() {
       drift: "0.00000",
       noiseFloor: "0.0020",
       payload: { entity: "Acme International", status: "CLEAR", ofacListVersion: "2026-11-10" },
-      proof: "0x78a1bc92e44f801bc93411a098ef32470129bc4891a27e7f80b91cb45a9018e4",
+      proof: "0xbf283485aacb2e2964bf53fbd7eba05e080e710a77a756711a3f596a78989c1b",
       explanation: "When financial loss from stale data exceeds the ask price, the Governor forces a fresh buy to protect high-value transactions.",
     },
   };

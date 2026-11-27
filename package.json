@@ -9,7 +9,8 @@
     "build:worker": "pnpm --filter @half-life/worker... build",
     "test": "pnpm --filter \"@half-life/*\" test",
     "lint": "pnpm --filter \"@half-life/*\" lint",
-    "evidence": "tsx scripts/capture-evidence.ts"
+    "evidence": "tsx scripts/capture-evidence.ts",
+    "verify": "tsx scripts/verify-repo.ts && pnpm -r build && pnpm -r test"
   },
   "devDependencies": {
     "dotenv": "^16.6.1",

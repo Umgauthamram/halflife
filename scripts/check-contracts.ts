@@ -11,7 +11,7 @@ const client = createPublicClient({
 
 async function main() {
   for (const addr of [
-    "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+    "0xcc194e1a843B658526D0D5C431f670028582Ae17",
     "0xcc194e1a843B658526D0D5C431f670028582Ae17",
   ] as const) {
     try {

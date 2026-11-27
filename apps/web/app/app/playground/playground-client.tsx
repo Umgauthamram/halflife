@@ -33,7 +33,7 @@ const TEMPLATES = [
     prompt: "Check EUR/USD rate before settling a $500 cross-border supplier payment",
     badgeColor: "bg-blue-50 text-blue-800 border-blue-200",
     why: "Real-time FX rates experience high market volatility. A $500 cross-border transaction exposes the agent to slippage if the rate drifts significantly. The Governor checks whether the price change since the last miner purchase exceeds the cost of a fresh query ($0.01).",
-    how: "1. Governor looks up cached EUR/USD rate for this agent.\n2. Computes elapsed time Δt and queries the calibrated Atlas drift model.\n3. If expected drift d(Δt) is within the miner noise floor η, the cached rate is returned in <5ms for $0.00.\n4. If drift exceeds η or no cached rate exists, a fresh $0.01 ask is dispatched to Telegraph miners.",
+    how: "1. Governor looks up cached EUR/USD rate for this agent.\n2. Computes elapsed time Δt and queries the calibrated Atlas drift model.\n3. If expected drift d(Δt) is within the miner noise floor η, the cached rate is returned from cache for $0.00.\n4. If drift exceeds η or no cached rate exists, a fresh $0.01 ask is dispatched to Telegraph miners.",
   },
   {
     id: "defi-arbitrage",
@@ -81,7 +81,7 @@ const TEMPLATES = [
     prompt: "Run continuous heartbeat check. Observe first query BUY, subsequent immediate query REUSE at $0.00",
     badgeColor: "bg-indigo-50 text-indigo-800 border-indigo-200",
     why: "High-frequency agents often poll rates in loops. Without Half-Life, an agent querying every second pays $0.01/sec ($864/day). With Half-Life, intermediate queries are satisfied from cache for $0.00.",
-    how: "1. First call finds no cached tick; Governor buys from Telegraph for $0.01.\n2. Second call within seconds finds Δt ≈ 0, where drift is far below the miner noise floor.\n3. Governor returns action: REUSE at $0.00 with <5ms latency.",
+    how: "1. First call finds no cached tick; Governor buys from Telegraph for $0.01.\n2. Second call within seconds finds Δt ≈ 0, where drift is far below the miner noise floor.\n3. Governor returns action: REUSE at $0.00 from cache.",
   },
 ];
 
@@ -303,7 +303,7 @@ export default function PlaygroundClient({
             <div className="mt-3 flex gap-2">
               <input
                 type="text"
-                placeholder="hl_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                placeholder="Paste your Half-Life agent API key"
                 value={apiKey}
                 onChange={(e) => handleApiKeyChange(e.target.value)}
                 className="w-full rounded border border-[var(--border)] bg-[var(--background)] px-3.5 py-2 font-mono text-xs focus-visible:outline-2 focus-visible:outline-[var(--border-strong)]"

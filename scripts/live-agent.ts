@@ -79,7 +79,7 @@ async function runAgentCycle() {
             typeof res.capitalSavedUsdc === "number"
               ? `$${res.capitalSavedUsdc.toFixed(3)} USDC`
               : "unknown";
-          console.log(`Capital Saved: ${saved}`);
+          console.log(`Capital Saved (USDC): ${saved}`);
         }
         console.log(`Answer:`, JSON.stringify(res.answer));
       }
