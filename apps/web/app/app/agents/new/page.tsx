@@ -61,23 +61,23 @@ export default function NewAgentPage() {
           <label className="text-sm font-medium">Permitted Intents</label>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 rounded border border-[var(--border)] bg-[var(--surface)] p-6">
             <label className="flex items-center gap-2.5 text-sm cursor-pointer">
-              <input type="checkbox" name="intents" value="FX_NOW" defaultChecked className="accent-[var(--foreground)]" />
+              <input type="checkbox" name="intents" value="FX_NOW_EUR" defaultChecked className="accent-[var(--foreground)]" />
               <div>
-                <span className="font-mono text-xs font-semibold">FX_NOW</span>
-                <span className="block text-xs text-[var(--secondary)]">Real-time foreign exchange</span>
+                <span className="font-mono text-xs font-semibold">FX_NOW_EUR</span>
+                <span className="block text-xs text-[var(--secondary)]">Real-time EUR foreign exchange</span>
               </div>
             </label>
             <label className="flex items-center gap-2.5 text-sm cursor-pointer">
-              <input type="checkbox" name="intents" value="WEATHER_FORECAST_VERIFY" defaultChecked className="accent-[var(--foreground)]" />
+              <input type="checkbox" name="intents" value="WEATHER_CHECK_TEMPERATURE" defaultChecked className="accent-[var(--foreground)]" />
               <div>
-                <span className="font-mono text-xs font-semibold">WEATHER_FORECAST_VERIFY</span>
-                <span className="block text-xs text-[var(--secondary)]">Meteorological forecasts</span>
+                <span className="font-mono text-xs font-semibold">WEATHER_CHECK_TEMPERATURE</span>
+                <span className="block text-xs text-[var(--secondary)]">Meteorological temperature checks</span>
               </div>
             </label>
             <label className="flex items-center gap-2.5 text-sm cursor-pointer">
-              <input type="checkbox" name="intents" value="SANCTIONS_SCREENING_MATCH" defaultChecked className="accent-[var(--foreground)]" />
+              <input type="checkbox" name="intents" value="SANCTIONS_SCREENING_MATCH_GENERAL" defaultChecked className="accent-[var(--foreground)]" />
               <div>
-                <span className="font-mono text-xs font-semibold">SANCTIONS_SCREENING_MATCH</span>
+                <span className="font-mono text-xs font-semibold">SANCTIONS_SCREENING_MATCH_GENERAL</span>
                 <span className="block text-xs text-[var(--secondary)]">Compliance screening</span>
               </div>
             </label>
@@ -93,13 +93,6 @@ export default function NewAgentPage() {
               <div>
                 <span className="font-mono text-xs font-semibold">WEB_SEARCH</span>
                 <span className="block text-xs text-[var(--secondary)]">Live search with citations</span>
-              </div>
-            </label>
-            <label className="flex items-center gap-2.5 text-sm cursor-pointer">
-              <input type="checkbox" name="intents" value="QUESTION_ANSWERING" defaultChecked className="accent-[var(--foreground)]" />
-              <div>
-                <span className="font-mono text-xs font-semibold">QUESTION_ANSWERING</span>
-                <span className="block text-xs text-[var(--secondary)]">Open-domain QA</span>
               </div>
             </label>
           </div>

@@ -30,7 +30,7 @@ export async function createAgentAction(formData: FormData) {
     mode,
     walletAddress: account.address,
     walletKeyRef: "local_dev_ref", // In worker flow, encrypted key record is stored in wallet_keys
-    allowedIntents: allowedIntents.length > 0 ? allowedIntents : ["FX_NOW"],
+    allowedIntents: allowedIntents.length > 0 ? allowedIntents : ["FX_NOW_EUR"],
     policy: {
       perAskCapUsdc,
       dailyCapUsdc,
