@@ -1,13 +1,8 @@
 import { MongoClient } from "mongodb";
 import dotenv from "dotenv";
+import { LEGACY_INTENT_MAP } from "@half-life/shared";
 
 dotenv.config();
-
-const INTENT_MAP: Record<string, string> = {
-  FX_NOW: "FX_NOW_EUR",
-  WEATHER_FORECAST_VERIFY: "WEATHER_CHECK_TEMPERATURE",
-  SANCTIONS_SCREENING_MATCH: "SANCTIONS_SCREENING_MATCH_GENERAL",
-};
 
 async function main() {
   const apply = process.argv.includes("--apply");
@@ -23,7 +18,7 @@ async function main() {
 
   for (const agent of agents) {
     const current: string[] = Array.isArray(agent.allowedIntents) ? agent.allowedIntents : [];
-    const mapped = Array.from(new Set(current.map((i) => INTENT_MAP[i] || i)));
+    const mapped = Array.from(new Set(current.map((i) => LEGACY_INTENT_MAP[i] || i)));
     const changed =
       mapped.length !== current.length || mapped.some((val, idx) => val !== current[idx]);
 

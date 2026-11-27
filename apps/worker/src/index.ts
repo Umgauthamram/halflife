@@ -1,4 +1,4 @@
-import { validateEnv } from "@half-life/shared";
+import { validateEnv, parseSamplerIntents } from "@half-life/shared";
 import { MongoClient } from "mongodb";
 import { createTelegraphClient } from "@half-life/telegraph";
 import { sampleIntent } from "./sampler.js";
@@ -7,7 +7,6 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const DEFAULT_INTENTS = ["FX_NOW_EUR", "WEATHER_CHECK_TEMPERATURE", "SANCTIONS_SCREENING_MATCH_GENERAL"];
 const MINERS_PER_INTENT = 2;
 
 async function main() {
@@ -51,10 +50,7 @@ async function main() {
   }
 
   // 3. Configure Intents & Validate against Node
-  const rawIntents = process.env.SAMPLER_INTENTS
-    ? process.env.SAMPLER_INTENTS.split(",").map((s) => s.trim()).filter(Boolean)
-    : DEFAULT_INTENTS;
-  const configuredIntents = rawIntents.length > 0 ? rawIntents : DEFAULT_INTENTS;
+  const configuredIntents = parseSamplerIntents(process.env.SAMPLER_INTENTS);
 
   try {
     const nodeIntents = await telegraphClient.listIntents();
