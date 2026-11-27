@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getDb } from "../../../../lib/mongodb";
+import { PUBLIC_DATASET_FILTER } from "../../../../lib/dataset-filter";
 import { buildMerkleTree, hashLeaf } from "@half-life/shared";
 
 export const dynamic = "force-dynamic";
@@ -14,10 +15,9 @@ export async function GET(req: NextRequest) {
     const cursor = searchParams.get("cursor");
     const format = searchParams.get("format");
 
-    // Strict filter: live source and confirmed on-chain verification
+    // Strict filter: live source, confirmed on-chain verification, non-null valueNorm, no mock miner_ prefix
     const filter: Record<string, any> = {
-      source: "live",
-      verification: "confirmed",
+      ...PUBLIC_DATASET_FILTER,
     };
 
     if (cursor) {
