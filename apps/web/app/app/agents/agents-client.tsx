@@ -12,6 +12,7 @@ export interface SerializedAgent {
   walletAddress?: string;
   dailyCapUsdc: number;
   perAskCapUsdc: number;
+  crossCheck?: boolean;
 }
 
 interface AgentsClientProps {
@@ -81,6 +82,7 @@ export default function AgentsClient({
             <tr>
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Mode</th>
+              <th className="px-4 py-3">Cross-Check</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Wallet Address</th>
               <th className="px-4 py-3">API Key</th>
@@ -107,6 +109,17 @@ export default function AgentsClient({
                       }`}
                     >
                       {agent.mode}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`inline-block rounded px-2 py-0.5 text-xs font-mono ${
+                        agent.crossCheck
+                          ? "border border-amber-700 bg-amber-50 text-amber-900"
+                          : "border border-gray-300 bg-gray-50 text-gray-600"
+                      }`}
+                    >
+                      cross-check: {agent.crossCheck ? "on" : "off"}
                     </span>
                   </td>
                   <td className="px-4 py-3">

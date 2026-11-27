@@ -48,6 +48,7 @@ export default async function AgentsPage({ searchParams }: AgentsPageProps) {
     walletAddress: agent.walletAddress,
     dailyCapUsdc: agent.policy?.dailyCapUsdc ?? 1.0,
     perAskCapUsdc: agent.policy?.perAskCapUsdc ?? 0.05,
+    crossCheck: Boolean(agent.policy?.crossCheck),
   }));
 
   return (

@@ -157,4 +157,22 @@ describe("createAgentAction + POST /api/v1/ask intent alignment", () => {
     const data = await res.json();
     expect(data.action).toBe("buy");
   });
+
+  it("createAgentAction saves crossCheck and crossCheckTolerance policy fields", async () => {
+    const formData = new FormData();
+    formData.set("name", "CrossCheck Agent");
+    formData.set("mode", "halflife");
+    formData.set("perAskCapUsdc", "0.05");
+    formData.set("dailyCapUsdc", "1.00");
+    formData.set("stakeDefault", "100");
+    formData.set("crossCheck", "on");
+    formData.set("crossCheckTolerance", "0.0025");
+
+    await expect(createAgentAction(formData)).rejects.toThrow(/NEXT_REDIRECT/);
+
+    const agents = collections.get("agents")!;
+    expect(agents).toHaveLength(1);
+    expect(agents[0].policy.crossCheck).toBe(true);
+    expect(agents[0].policy.crossCheckTolerance).toBe(0.0025);
+  });
 });

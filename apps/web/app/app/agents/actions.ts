@@ -17,6 +17,11 @@ export async function createAgentAction(formData: FormData) {
   const perAskCapUsdc = parseFloat(formData.get("perAskCapUsdc") as string) || 0.05;
   const dailyCapUsdc = parseFloat(formData.get("dailyCapUsdc") as string) || 1.00;
   const stakeDefault = parseFloat(formData.get("stakeDefault") as string) || 100.0;
+  const crossCheck = formData.get("crossCheck") === "on";
+  const rawTolerance = (formData.get("crossCheckTolerance") as string)?.trim();
+  const parsedTolerance = rawTolerance ? parseFloat(rawTolerance) : NaN;
+  const crossCheckTolerance =
+    !isNaN(parsedTolerance) && parsedTolerance >= 0 ? parsedTolerance : undefined;
 
   const allowedIntents = formData.getAll("intents") as string[];
 
@@ -35,6 +40,8 @@ export async function createAgentAction(formData: FormData) {
       perAskCapUsdc,
       dailyCapUsdc,
       stakeDefault,
+      crossCheck,
+      ...(crossCheckTolerance !== undefined ? { crossCheckTolerance } : {}),
     },
     status: "active",
     createdAt: new Date(),

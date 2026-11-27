@@ -149,6 +149,33 @@ export default function NewAgentPage() {
           </div>
         </div>
 
+        {/* Cross-Check Policy */}
+        <div className="rounded border border-[var(--border)] bg-[var(--surface)] p-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex flex-col gap-1">
+            <label className="flex items-center gap-2.5 text-sm font-medium cursor-pointer">
+              <input type="checkbox" name="crossCheck" className="accent-[var(--foreground)]" />
+              <span>Cross-check with a second miner on buy</span>
+            </label>
+            <p className="text-xs text-[var(--secondary)] pl-6">
+              Doubles the cost of each buy.
+            </p>
+          </div>
+          <div className="flex flex-col gap-1.5 sm:w-64">
+            <label htmlFor="crossCheckTolerance" className="text-xs font-medium text-[var(--secondary)]">
+              Cross-check tolerance (blank = noise floor)
+            </label>
+            <input
+              id="crossCheckTolerance"
+              name="crossCheckTolerance"
+              type="number"
+              step="0.0001"
+              min="0"
+              placeholder="Use intent noise floor"
+              className="w-full rounded border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-xs font-mono focus-visible:outline-2 focus-visible:outline-[var(--border-strong)]"
+            />
+          </div>
+        </div>
+
         {/* Submit */}
         <div className="flex items-center justify-end gap-4 border-t border-[var(--border)] pt-6">
           <Link
