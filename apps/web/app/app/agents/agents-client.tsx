@@ -13,6 +13,9 @@ export interface SerializedAgent {
   dailyCapUsdc: number;
   perAskCapUsdc: number;
   crossCheck?: boolean;
+  policy?: {
+    crossCheck?: boolean;
+  };
 }
 
 interface AgentsClientProps {
@@ -114,12 +117,12 @@ export default function AgentsClient({
                   <td className="px-4 py-3">
                     <span
                       className={`inline-block rounded px-2 py-0.5 text-xs font-mono ${
-                        agent.crossCheck
+                        agent.policy?.crossCheck ?? agent.crossCheck
                           ? "border border-amber-700 bg-amber-50 text-amber-900"
                           : "border border-gray-300 bg-gray-50 text-gray-600"
                       }`}
                     >
-                      cross-check: {agent.crossCheck ? "on" : "off"}
+                      cross-check: {agent.policy?.crossCheck ?? agent.crossCheck ? "on" : "off"}
                     </span>
                   </td>
                   <td className="px-4 py-3">
