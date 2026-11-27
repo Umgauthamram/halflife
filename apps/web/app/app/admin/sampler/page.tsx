@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireAdmin } from "../../../../lib/dal";
 import { getDb } from "../../../../lib/mongodb";
+import { getActiveAtlasIntents } from "../../../../lib/intents";
 import { toggleSamplerAction } from "../actions";
 
 export const dynamic = "force-dynamic";
@@ -13,12 +14,12 @@ export default async function AdminSamplerPage() {
   const samplerStatus = controlDoc?.status ?? "active";
   const isPaused = samplerStatus === "paused";
 
-  const intents = ["FX_NOW", "WEATHER_FORECAST_VERIFY", "SANCTIONS_SCREENING_MATCH"];
+  const intents = await getActiveAtlasIntents(db);
   const intentStats = await Promise.all(
     intents.map(async (intent) => {
       const [lastSample, totalCount, gapsCount] = await Promise.all([
-        db.collection("atlas_samples").findOne({ intent }, { sort: { ts: -1 } }),
-        db.collection("atlas_samples").countDocuments({ intent }),
+        db.collection("atlas_samples").findOne({ intent, source: "live" }, { sort: { ts: -1 } }),
+        db.collection("atlas_samples").countDocuments({ intent, source: "live" }),
         db.collection("atlas_gaps").countDocuments({ intent }),
       ]);
 

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getDb } from "../../lib/mongodb";
+import { getActiveAtlasIntents } from "../../lib/intents";
 
 export const dynamic = "force-dynamic";
 
@@ -10,11 +11,7 @@ export default async function AtlasPage() {
     .collection("atlas_samples")
     .countDocuments({ source: "live", valueNorm: { $ne: null } });
 
-  const intents = [
-    "FX_NOW",
-    "WEATHER_CHECK",
-    "SANCTIONS_SCREENING_MATCH",
-  ];
+  const intents = await getActiveAtlasIntents(db);
 
   const stats = await Promise.all(
     intents.map(async (intent) => {
@@ -37,10 +34,13 @@ export default async function AtlasPage() {
       const isCalibrated = Boolean(statsDoc?.calibrated && liveSampleCount >= 30 && timeSpanHours >= 6.0);
       const label = isCalibrated
         ? `CALIBRATED (${liveSampleCount} samples over ${timeSpanHours.toFixed(1)}h)`
-        : `PRIOR (not measured) - ${liveSampleCount}/30 samples`;
+        : `PRIOR (not measured) - ${liveSampleCount} samples`;
 
-      const noiseFloor = statsDoc?.noiseFloor ?? 0.002;
-      const driftCurve = statsDoc?.driftCurve || [];
+      const noiseFloor: number | null =
+        typeof statsDoc?.noiseFloor === "number" && (isCalibrated || noiseDocs.length > 0)
+          ? statsDoc.noiseFloor
+          : null;
+      const driftCurve = isCalibrated && Array.isArray(statsDoc?.driftCurve) ? statsDoc.driftCurve : [];
 
       return {
         intent,
@@ -48,7 +48,7 @@ export default async function AtlasPage() {
         timeSpanHours: Number(timeSpanHours.toFixed(1)),
         lastUpdated: latestSample?.ts
           ? new Date(latestSample.ts).toISOString().replace("T", " ").slice(0, 19) + " UTC"
-          : "No live data yet",
+          : "no data yet",
         noiseFloor,
         driftCurve,
         isCalibrated,
@@ -109,102 +109,108 @@ export default async function AtlasPage() {
           <span>Telegraph Contract: <strong>0x3624...b99b</strong></span>
         </div>
 
-        {/* Empty State when 0 live samples */}
-        {totalLiveSamples === 0 ? (
-          <div className="mt-12 rounded border border-amber-900/40 bg-amber-950/20 p-8 text-center font-mono">
-            <div className="text-base font-semibold text-amber-300">
+        {/* Notice when 0 live samples */}
+        {totalLiveSamples === 0 && (
+          <div className="mt-6 rounded border border-amber-900/40 bg-amber-950/20 p-4 text-center font-mono">
+            <div className="text-sm font-semibold text-amber-300">
               No live empirical measurements yet.
             </div>
-            <p className="mt-2 text-xs text-amber-200/80 max-w-xl mx-auto leading-relaxed">
-              The background sampler runs every 60s against the live Telegraph node.
+            <p className="mt-1 text-xs text-amber-200/80 max-w-xl mx-auto leading-relaxed">
               Empirical decay curves and noise floors are calibrated only from real, cryptographically-confirmed
-              live samples on Ethereum Sepolia. Prior estimates remain uncalibrated until at least 30 samples spanning 6+ hours are collected.
+              live samples on Ethereum Sepolia (at least 30 samples spanning 6+ hours).
             </p>
           </div>
-        ) : (
-          /* Intent Cards */
-          <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
-            {stats.map((item) => (
-              <div key={item.intent} className="border border-[var(--border)] bg-[var(--surface)] p-6">
-                <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
-                  <span className="font-mono text-base font-semibold">{item.intent}</span>
-                  <span
-                    className={`rounded px-2.5 py-1 text-[11px] font-mono uppercase font-semibold ${
-                      item.isCalibrated
-                        ? "border border-green-800 bg-green-50 text-green-800"
-                        : "border border-amber-800 bg-amber-50 text-amber-800"
-                    }`}
-                  >
-                    {item.label}
+        )}
+
+        {/* Intent Cards */}
+        <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+          {stats.map((item) => (
+            <div key={item.intent} className="border border-[var(--border)] bg-[var(--surface)] p-6">
+              <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
+                <span className="font-mono text-base font-semibold">{item.intent}</span>
+                <span
+                  className={`rounded px-2.5 py-1 text-[11px] font-mono uppercase font-semibold ${
+                    item.isCalibrated
+                      ? "border border-green-800 bg-green-50 text-green-800"
+                      : "border border-amber-800 bg-amber-50 text-amber-800"
+                  }`}
+                >
+                  {item.label}
+                </span>
+              </div>
+
+              {/* Stats Grid */}
+              <div className="mt-4 grid grid-cols-2 gap-4 font-mono text-xs sm:grid-cols-4">
+                <div className="flex flex-col border border-[var(--border)] bg-[var(--background)] p-3">
+                  <span className="text-[var(--secondary)]">Live Samples</span>
+                  <span className="mt-1 font-semibold text-sm">{item.liveSampleCount} samples</span>
+                </div>
+                <div className="flex flex-col border border-[var(--border)] bg-[var(--background)] p-3">
+                  <span className="text-[var(--secondary)]">Noise Floor</span>
+                  <span className="mt-1 font-semibold text-sm">
+                    {item.noiseFloor !== null ? item.noiseFloor.toFixed(4) : "no data yet"}
                   </span>
                 </div>
+                <div className="flex flex-col border border-[var(--border)] bg-[var(--background)] p-3">
+                  <span className="text-[var(--secondary)]">Time Window</span>
+                  <span className="mt-1 font-semibold text-sm">{item.timeSpanHours}h</span>
+                </div>
+                <div className="flex flex-col border border-[var(--border)] bg-[var(--background)] p-3">
+                  <span className="text-[var(--secondary)]">Last Sample</span>
+                  <span className="mt-1 font-semibold text-xs truncate" title={item.lastUpdated}>
+                    {item.lastUpdated}
+                  </span>
+                </div>
+              </div>
 
-                {/* Stats Grid */}
-                <div className="mt-4 grid grid-cols-2 gap-4 font-mono text-xs sm:grid-cols-4">
-                  <div className="flex flex-col border border-[var(--border)] bg-[var(--background)] p-3">
-                    <span className="text-[var(--secondary)]">Live Samples</span>
-                    <span className="mt-1 font-semibold text-sm">{item.liveSampleCount}</span>
+              {/* Decay Curve Table */}
+              {item.driftCurve.length > 0 && item.noiseFloor !== null ? (
+                <div className="mt-6">
+                  <div className="font-mono text-xs font-semibold text-[var(--secondary)] mb-2">
+                    EMPIRICAL DECAY CURVE (Measured Drift)
                   </div>
-                  <div className="flex flex-col border border-[var(--border)] bg-[var(--background)] p-3">
-                    <span className="text-[var(--secondary)]">Noise Floor</span>
-                    <span className="mt-1 font-semibold text-sm">{item.noiseFloor.toFixed(4)}</span>
-                  </div>
-                  <div className="flex flex-col border border-[var(--border)] bg-[var(--background)] p-3">
-                    <span className="text-[var(--secondary)]">Time Window</span>
-                    <span className="mt-1 font-semibold text-sm">{item.timeSpanHours}h</span>
-                  </div>
-                  <div className="flex flex-col border border-[var(--border)] bg-[var(--background)] p-3">
-                    <span className="text-[var(--secondary)]">Last Sample</span>
-                    <span className="mt-1 font-semibold text-xs truncate" title={item.lastUpdated}>
-                      {item.lastUpdated}
-                    </span>
+                  <div className="overflow-x-auto border border-[var(--border)] bg-[var(--background)]">
+                    <table className="w-full text-left font-mono text-xs">
+                      <thead className="border-b border-[var(--border)] text-[var(--secondary)]">
+                        <tr>
+                          <th className="px-3 py-2">Age Bucket</th>
+                          <th className="px-3 py-2 text-right">Expected Drift (Δ)</th>
+                          <th className="px-3 py-2 text-right">vs. Noise Floor</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[var(--border)]">
+                        {item.driftCurve.map((pt: { ageSeconds: number; expectedDrift: number }) => {
+                          const exceedsNoise = pt.expectedDrift > item.noiseFloor!;
+                          return (
+                            <tr key={pt.ageSeconds}>
+                              <td className="px-3 py-1.5">
+                                {pt.ageSeconds}s (
+                                {pt.ageSeconds >= 60 ? `${(pt.ageSeconds / 60).toFixed(0)}m` : `${pt.ageSeconds}s`})
+                              </td>
+                              <td className="px-3 py-1.5 text-right font-semibold">
+                                {pt.expectedDrift.toFixed(4)}
+                              </td>
+                              <td className="px-3 py-1.5 text-right">
+                                <span
+                                  className={`text-[10px] ${
+                                    exceedsNoise ? "text-amber-500" : "text-green-500"
+                                  }`}
+                                >
+                                  {exceedsNoise ? "> Noise (Buy justified)" : "≤ Noise (Reuse justified)"}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
-
-                {/* Decay Curve Table */}
-                {item.driftCurve.length > 0 && (
-                  <div className="mt-6">
-                    <div className="font-mono text-xs font-semibold text-[var(--secondary)] mb-2">
-                      {item.isCalibrated ? "EMPIRICAL DECAY CURVE (Measured Drift)" : "PRIOR CURVE (Uncalibrated Baseline)"}
-                    </div>
-                    <div className="overflow-x-auto border border-[var(--border)] bg-[var(--background)]">
-                      <table className="w-full text-left font-mono text-xs">
-                        <thead className="border-b border-[var(--border)] text-[var(--secondary)]">
-                          <tr>
-                            <th className="px-3 py-2">Age Bucket</th>
-                            <th className="px-3 py-2 text-right">Expected Drift (Δ)</th>
-                            <th className="px-3 py-2 text-right">vs. Noise Floor</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-[var(--border)]">
-                          {item.driftCurve.map((pt: { ageSeconds: number; expectedDrift: number }) => {
-                            const exceedsNoise = pt.expectedDrift > item.noiseFloor;
-                            return (
-                              <tr key={pt.ageSeconds}>
-                                <td className="px-3 py-1.5">
-                                  {pt.ageSeconds}s (
-                                  {pt.ageSeconds >= 60 ? `${(pt.ageSeconds / 60).toFixed(0)}m` : `${pt.ageSeconds}s`})
-                                </td>
-                                <td className="px-3 py-1.5 text-right font-semibold">
-                                  {pt.expectedDrift.toFixed(4)}
-                                </td>
-                                <td className="px-3 py-1.5 text-right">
-                                  <span
-                                    className={`text-[10px] ${
-                                      exceedsNoise ? "text-amber-500" : "text-green-500"
-                                    }`}
-                                  >
-                                    {exceedsNoise ? "> Noise (Buy justified)" : "≤ Noise (Reuse justified)"}
-                                  </span>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
+              ) : (
+                <div className="mt-6 rounded border border-[var(--border)] bg-[var(--background)] p-3 font-mono text-xs text-[var(--secondary)]">
+                  Empirical decay curve: no data yet
+                </div>
+              )}
 
                 {/* Top Disagreeing Miners */}
                 {item.disagreeingMiners.length > 0 && (
@@ -228,7 +234,6 @@ export default async function AtlasPage() {
               </div>
             ))}
           </div>
-        )}
 
         {/* Explanatory Callout */}
         <div className="mt-12 rounded border border-[var(--border)] bg-[var(--surface)] p-6 text-xs leading-relaxed text-[var(--secondary)]">
