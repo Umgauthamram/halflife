@@ -99,7 +99,7 @@ function RechartsCustomTooltip({ active, payload }: any) {
           </div>
           <div className="flex justify-between text-[10px] text-gray-400 pt-1.5 border-t border-gray-800 mt-1">
             <span>{data.timestamp} UTC</span>
-            <span>{data.latencyMs ? `${data.latencyMs}ms` : "<5ms"}</span>
+            <span>{typeof data.latencyMs === "number" ? `${data.latencyMs}ms` : "no data yet"}</span>
           </div>
         </div>
       </div>
@@ -664,7 +664,7 @@ export default function DashboardClient({
                       </span>
                     ) : activeCall.call.action === "buy" ? (
                       <span className="inline-block rounded border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-900">
-                        BUY ($0.010)
+                        BUY (${activeCall.call.priceUsdc.toFixed(3)})
                       </span>
                     ) : (
                       <span className="inline-block rounded border border-red-300 bg-red-50 px-2 py-0.5 text-[10px] font-bold text-red-900">
@@ -690,7 +690,7 @@ export default function DashboardClient({
                   <div>
                     <span className="text-[10px] uppercase text-[var(--secondary)] block">Latency</span>
                     <span className="text-[var(--secondary)]">
-                      {activeCall.call.latencyMs ? `${activeCall.call.latencyMs}ms` : "<5ms"}
+                      {typeof activeCall.call.latencyMs === "number" ? `${activeCall.call.latencyMs}ms` : "no data yet"}
                     </span>
                   </div>
                 </div>
@@ -877,14 +877,14 @@ export default function DashboardClient({
                           <span className="text-amber-800">${c.priceUsdc.toFixed(3)}</span>
                         ) : isReuse ? (
                           <span className="text-emerald-700">
-                            $0.000 <span className="text-[10px] font-normal">(Saved $0.010)</span>
+                            $0.000 <span className="text-[10px] font-normal">(Saved ${c.savingsUsdc.toFixed(3)})</span>
                           </span>
                         ) : (
                           <span className="text-gray-500">$0.000</span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-[var(--secondary)]">
-                        {c.latencyMs ? `${c.latencyMs}ms` : "<5ms"}
+                        {typeof c.latencyMs === "number" ? `${c.latencyMs}ms` : "no data yet"}
                       </td>
                       <td className="px-4 py-3 text-[var(--secondary)]">
                         {c.txHash ? (

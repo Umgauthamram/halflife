@@ -1,5 +1,6 @@
 import { getDb } from "../../lib/mongodb";
 import { requireUser } from "../../lib/dal";
+import { computeMedianPaidLatencyMs } from "../../lib/metrics";
 import DashboardClient, {
   type DashboardCallItem,
   type DashboardKeyItem,
@@ -18,23 +19,16 @@ export default async function DashboardPage() {
     db.collection("playground_runs").find({ userId: user.id }).sort({ createdAt: -1 }).limit(100).toArray(),
     db
       .collection("purchases")
-      .find({ ownerId: user.id, latencyMs: { $type: "number" } }, { projection: { latencyMs: 1 } })
+      .find(
+        { ownerId: user.id, outcome: "paid", latencyMs: { $type: "number" } },
+        { projection: { outcome: 1, latencyMs: 1 } }
+      )
       .toArray(),
   ]);
 
-  const sortedLatencies = purchaseLatencies
-    .map((p) => Number(p.latencyMs))
-    .filter((n) => Number.isFinite(n) && n >= 0)
-    .sort((a, b) => a - b);
-
-  let medianLatencyMs: number | null = null;
-  if (sortedLatencies.length > 0) {
-    const mid = Math.floor(sortedLatencies.length / 2);
-    medianLatencyMs =
-      sortedLatencies.length % 2 === 1
-        ? sortedLatencies[mid]
-        : Math.round((sortedLatencies[mid - 1] + sortedLatencies[mid]) / 2);
-  }
+  const medianLatencyMs = computeMedianPaidLatencyMs(
+    purchaseLatencies.map((p) => ({ outcome: p.outcome, latencyMs: p.latencyMs }))
+  );
 
   const agentMap = new Map<string, string>();
   for (const ag of agents) {
