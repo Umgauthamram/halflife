@@ -49,6 +49,7 @@ interface DashboardClientProps {
   totalSpendUsdc: number;
   totalSavedUsdc: number;
   medianLatencyMs: number | null;
+  intentOptions: string[];
 }
 
 const QUICK_REASONS = [
@@ -115,6 +116,7 @@ export default function DashboardClient({
   totalSpendUsdc,
   totalSavedUsdc,
   medianLatencyMs,
+  intentOptions,
 }: DashboardClientProps) {
   const [isMounted, setIsMounted] = useState(false);
   useEffect(() => {
@@ -802,9 +804,11 @@ export default function DashboardClient({
               className="rounded border border-[var(--border)] bg-[var(--background)] px-3 py-1.5 font-mono text-xs text-[var(--foreground)]"
             >
               <option value="ALL">All Intents</option>
-              <option value="FX_NOW">FX_NOW</option>
-              <option value="WEATHER_FORECAST_VERIFY">WEATHER_FORECAST_VERIFY</option>
-              <option value="SANCTIONS_SCREENING_MATCH">SANCTIONS_SCREENING_MATCH</option>
+              {intentOptions.map((intent) => (
+                <option key={intent} value={intent}>
+                  {intent}
+                </option>
+              ))}
             </select>
 
             <input

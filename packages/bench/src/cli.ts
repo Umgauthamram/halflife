@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// simulated-data
 
 import { runSideBySideBenchmark, type ReplayEvent } from "./simulator.js";
 import { generateEvidencePack } from "./evidence-pack.js";

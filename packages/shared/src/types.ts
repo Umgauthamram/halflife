@@ -59,13 +59,12 @@ export type Agent = z.infer<typeof AgentSchema>;
 // Telegraph Intents & Receipts
 // -----------------------------------------------------------------------------
 export const IntentSchema = z.enum([
-  "FX_NOW",
-  "WEATHER_FORECAST_VERIFY",
-  "SANCTIONS_SCREENING_MATCH",
+  "FX_NOW_EUR",
+  "WEATHER_CHECK_TEMPERATURE",
+  "SANCTIONS_SCREENING_MATCH_GENERAL",
   // Mission 09 Personal Agent Intents
   "WEB_SEARCH",
   "QUESTION_ANSWERING",
-  "WEATHER_CHECK",
   "CRYPTO_PRICE",
   "TASK_EXECUTION_QUALITY",
   "CONTENT_EXTRACTION",

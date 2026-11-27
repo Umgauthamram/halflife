@@ -20,7 +20,7 @@ function getTestAnalysis(run: {
   const isReuse = run.action === "reuse";
   const stakeFormatted = "$" + run.stake.toLocaleString();
 
-  if (run.intent === "FX_NOW") {
+  if (run.intent === "FX_NOW_EUR") {
     return {
       why: `To test whether the Governor can measure financial rate volatility and prevent paying redundant oracle fees when exchange rate drift is still within the miner disagreement floor.`,
       useCase: `Automated cross-border payments, corporate treasury rebalancing, or DeFi arbitrage liquidity swaps with ${stakeFormatted} capital at risk where currency fluctuations impact profitability.`,
@@ -31,7 +31,7 @@ function getTestAnalysis(run: {
     };
   }
 
-  if (run.intent === "WEATHER_FORECAST_VERIFY") {
+  if (run.intent === "WEATHER_CHECK_TEMPERATURE") {
     return {
       why: `To verify that physical atmospheric conditions have significantly slower decay curves than financial feeds, allowing the Governor to safely reuse certified observations across multiple contract triggers.`,
       useCase: `Parametric crop insurance and automated weather claims with ${stakeFormatted} in automated payout exposure dependent on verified localized temperature.`,
@@ -42,7 +42,7 @@ function getTestAnalysis(run: {
     };
   }
 
-  if (run.intent === "SANCTIONS_SCREENING_MATCH") {
+  if (run.intent === "SANCTIONS_SCREENING_MATCH_GENERAL") {
     return {
       why: `To test compliance auditing where regulatory decision loss is severe (${stakeFormatted} compliance exposure), but government OFAC/AML watchlists update on discrete daily cycles.`,
       useCase: `Counterparty compliance screening before clearing transfers or executing transactions against OFAC Specially Designated Nationals (SDN) watchlists.`,

@@ -1,3 +1,4 @@
+// simulated-data
 import type { Miner } from "@half-life/shared";
 import type { AskRequest, TelegraphClient, TelegraphQuote, TelegraphReceipt } from "./client.js";
 import { validateAnswerForIntent } from "./schemas.js";

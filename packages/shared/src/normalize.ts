@@ -18,7 +18,7 @@ export function normalizeAnswerValue(
 
   let val: number | string | null = null;
 
-  if (intent.startsWith("FX_NOW")) {
+  if (/^FX_NOW/i.test(intent)) {
     if (typeof answer.rate === "number" && !isNaN(answer.rate)) val = answer.rate;
     else if (typeof answer.rates?.USD === "number" && !isNaN(answer.rates.USD)) val = answer.rates.USD;
     else if (typeof answer.rates?.EUR === "number" && !isNaN(answer.rates.EUR)) val = answer.rates.EUR;

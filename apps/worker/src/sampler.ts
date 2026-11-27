@@ -69,7 +69,7 @@ export async function sampleIntent(
 
     // Determine query params per intent
     let params: Record<string, unknown> = {};
-    if (intent.startsWith("FX_NOW")) params = { currency: "EUR", pair: "EUR/USD" };
+    if (/^FX_NOW/i.test(intent)) params = { currency: "EUR", pair: "EUR/USD" };
     else if (intent.startsWith("WEATHER")) params = { location: "London" };
     else if (intent.startsWith("SANCTIONS")) params = { entity: "Acme International" };
 

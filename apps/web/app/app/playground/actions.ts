@@ -41,7 +41,7 @@ Analyze the user's intent or query and map it to one of the 3 supported Telegrap
 
 Return ONLY a valid JSON object with NO markdown formatting, NO backticks, and NO extra text:
 {
-  "intent": "FX_NOW" | "WEATHER_FORECAST_VERIFY" | "SANCTIONS_SCREENING_MATCH",
+  "intent": "FX_NOW_EUR" | "WEATHER_CHECK_TEMPERATURE" | "SANCTIONS_SCREENING_MATCH_GENERAL",
   "stake": number (financial value at risk in USD, default 100),
   "params": object,
   "why": string (clear explanation of why this intent, parameter, and stake size were selected for this scenario),
@@ -81,11 +81,11 @@ Return ONLY a valid JSON object with NO markdown formatting, NO backticks, and N
         if (text) {
           const parsed = JSON.parse(text);
           return {
-            intent: parsed.intent || "FX_NOW",
+            intent: parsed.intent || "FX_NOW_EUR",
             stake: Number(parsed.stake) || 100,
             params: parsed.params || { pair: "EURUSD" },
-            why: parsed.why || `Selected intent ${parsed.intent || "FX_NOW"} with financial stake $${parsed.stake || 100} to match the risk profile of this transaction.`,
-            how: parsed.how || `Governor checks local cache for ${parsed.intent || "FX_NOW"}. If cached answer drift d(Δt) is below the miner noise floor, it reuses the answer at $0 cost; otherwise it dispatches a buy order to Telegraph miners.`,
+            why: parsed.why || `Selected intent ${parsed.intent || "FX_NOW_EUR"} with financial stake $${parsed.stake || 100} to match the risk profile of this transaction.`,
+            how: parsed.how || `Governor checks local cache for ${parsed.intent || "FX_NOW_EUR"}. If cached answer drift d(Δt) is below the miner noise floor, it reuses the answer at $0 cost; otherwise it dispatches a buy order to Telegraph miners.`,
             explanation: parsed.explanation || "Interpreted via Google Gemini 2.5 Flash",
             pythonCode: parsed.pythonCode || "",
             typeScriptCode: parsed.typeScriptCode || "",
@@ -101,16 +101,16 @@ Return ONLY a valid JSON object with NO markdown formatting, NO backticks, and N
 
   // Deterministic Fallback if Gemini key is not set or network fails
   const lower = prompt.toLowerCase();
-  let intent = "FX_NOW";
+  let intent = "FX_NOW_EUR";
   let params: Record<string, unknown> = { pair: "EURUSD" };
   let stake = 100;
 
   if (lower.includes("weather") || lower.includes("temp") || lower.includes("rain") || lower.includes("climate")) {
-    intent = "WEATHER_FORECAST_VERIFY";
+    intent = "WEATHER_CHECK_TEMPERATURE";
     params = { location: "London" };
     stake = 1200;
   } else if (lower.includes("sanction") || lower.includes("aml") || lower.includes("compliance") || lower.includes("ofac")) {
-    intent = "SANCTIONS_SCREENING_MATCH";
+    intent = "SANCTIONS_SCREENING_MATCH_GENERAL";
     params = { entity: "Acme International" };
     stake = 10000;
   } else if (lower.includes("gbp") || lower.includes("pound")) {
@@ -166,13 +166,13 @@ print("Cost:", data.get("priceUsdc"))`;
   let why = `Selected intent ${intent} with a $${stake} financial stake. This parameterization reflects the risk exposure where stale data could cause transaction loss.`;
   let how = `The Governor checks your local cache for ${intent} (${JSON.stringify(params)}). If an answer exists and its expected drift d(Δt) is lower than the miner noise floor η, the cached answer is returned in <5ms for $0.00. If drift exceeds η or no cached data exists, a live $0.01 ask is dispatched to Telegraph miners.`;
 
-  if (intent === "FX_NOW") {
+  if (intent === "FX_NOW_EUR") {
     why = `Real-time FX rates experience high market volatility. A stake of $${stake} means small basis point deviations matter. The Governor monitors the calibrated Atlas half-life curve to decide whether to re-sample Telegraph miners or reuse fresh ticks.`;
     how = `1. Compute elapsed age Δt since previous FX quote was recorded.\n2. Calculate expected drift: d(Δt) = c * (Δt)^α from the empirical Atlas.\n3. Compare against miner disagreement noise floor η. If drift <= η, buying yields 0 net information; Governor executes REUSE at $0.00 cost.`;
-  } else if (intent === "WEATHER_FORECAST_VERIFY") {
+  } else if (intent === "WEATHER_CHECK_TEMPERATURE") {
     why = `Parametric insurance contracts require verified ground meteorological truth. A $${stake} policy requires high certainty, but physical weather observations have slower decay curves than financial ticks.`;
     how = `1. Look up previous temperature observation for ${JSON.stringify(params)}.\n2. Because weather decay has a longer half-life, the Governor reuses valid measurements within their validity window, preventing redundant miner fees.`;
-  } else if (intent === "SANCTIONS_SCREENING_MATCH") {
+  } else if (intent === "SANCTIONS_SCREENING_MATCH_GENERAL") {
     why = `Compliance screening carries severe regulatory penalties (stake $${stake}). However, OFAC Specially Designated Nationals (SDN) lists update infrequently.`;
     how = `1. Query cache for entity hash.\n2. Recent sanctions checks retain validity as list updates happen on daily cycles. If queried within the threshold, Governor returns REUSE to maximize throughput without risk.`;
   }

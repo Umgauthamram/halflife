@@ -1,3 +1,4 @@
+// simulated-data
 import Link from "next/link";
 import { runSideBySideBenchmark, generateEvidencePack, type ReplayEvent } from "@half-life/bench";
 import { requireUser } from "../../../lib/dal";

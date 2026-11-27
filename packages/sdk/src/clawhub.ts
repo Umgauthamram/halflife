@@ -40,7 +40,7 @@ export class OpenClawHeartbeatHook {
    */
   async onHeartbeat(
     ctx: OpenClawAgentContext,
-    intent: "WEB_SEARCH" | "QUESTION_ANSWERING" | "WEATHER_CHECK" | "CRYPTO_PRICE" | string,
+    intent: "WEB_SEARCH" | "QUESTION_ANSWERING" | "WEATHER_CHECK_TEMPERATURE" | "CRYPTO_PRICE" | string,
     params: Record<string, unknown>
   ): Promise<ClawHubHeartbeatResult> {
     const askOptions: AskOptions = {

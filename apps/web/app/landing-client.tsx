@@ -14,7 +14,7 @@ export default function HalfLifeLandingPage() {
       title: "1. Fresh Ask (Cache Miss)",
       badge: "Decision: BUY",
       badgeColor: "bg-emerald-600 text-white",
-      intent: "FX_NOW",
+      intent: "FX_NOW_EUR",
       stake: 500,
       query: "Check EUR/USD rate before settling $500 cross-border transfer",
       action: "buy" as const,
@@ -33,7 +33,7 @@ export default function HalfLifeLandingPage() {
       title: "2. Polling 3s Later (Cache Hit)",
       badge: "Decision: REUSE",
       badgeColor: "bg-blue-600 text-white",
-      intent: "FX_NOW",
+      intent: "FX_NOW_EUR",
       stake: 500,
       query: "Agent polls EUR/USD again 3 seconds later for real-time heartbeat check",
       action: "reuse" as const,
@@ -52,7 +52,7 @@ export default function HalfLifeLandingPage() {
       title: "3. High-Stake Compliance Check",
       badge: "Decision: BUY",
       badgeColor: "bg-emerald-600 text-white",
-      intent: "SANCTIONS_SCREENING_MATCH",
+      intent: "SANCTIONS_SCREENING_MATCH_GENERAL",
       stake: 10000,
       query: "Screen entity 'Acme International' against OFAC sanctions database before clearing $10,000 transfer",
       action: "buy" as const,
@@ -76,8 +76,8 @@ export default function HalfLifeLandingPage() {
   ];
 
   const intents = [
-    "FX_NOW",
-    "WEATHER_CHECK",
+    "FX_NOW_EUR",
+    "WEATHER_CHECK_TEMPERATURE",
     "CRYPTO_PRICE",
     "WEB_SEARCH",
     "QUESTION_ANSWERING",
@@ -114,14 +114,14 @@ export default function HalfLifeLandingPage() {
 
   const showcaseCards = [
     {
-      intent: "FX_NOW",
+      intent: "FX_NOW_EUR",
       category: "FINANCIAL DATA",
       decay: "300s Window",
       headline: "Real-time institutional foreign exchange mid-market rates & currency spreads.",
       target: "Latency < 200ms",
     },
     {
-      intent: "WEATHER_CHECK",
+      intent: "WEATHER_CHECK_TEMPERATURE",
       category: "DETERMINISTIC SENSORS",
       decay: "3,600s Window",
       headline: "Verified current atmospheric conditions and localized meteorological observations.",
@@ -470,13 +470,13 @@ const governor = new HalfLifeGovernor({
 
 // 3. Evaluate freshness before buying from Telegraph
 const decision = await governor.evaluate({
-  intent: "FX_NOW",
+  intent: "FX_NOW_EUR",
   lastAnswerTimestamp: agentState.lastAnswerTime,
   stakeUSD: 100
 });
 
 if (decision.shouldBuy) {
-  const freshAnswer = await telegraph.buy("FX_NOW");
+  const freshAnswer = await telegraph.buy("FX_NOW_EUR");
   await governor.recordPurchase(freshAnswer.receipt);
 }`}
               </pre>

@@ -16,7 +16,7 @@ export const HALF_LIFE_MCP_TOOLS: McpToolDefinition[] = [
       properties: {
         intent: {
           type: "string",
-          description: "Target Telegraph intent, e.g. 'FX_NOW', 'WEATHER_FORECAST_VERIFY', 'SANCTIONS_SCREENING_MATCH'",
+          description: "Target Telegraph intent, e.g. 'FX_NOW_EUR', 'WEATHER_CHECK_TEMPERATURE', 'SANCTIONS_SCREENING_MATCH_GENERAL'",
         },
         params: {
           type: "object",

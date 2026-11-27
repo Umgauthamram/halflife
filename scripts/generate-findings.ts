@@ -2,6 +2,7 @@ import { MongoClient } from "mongodb";
 import fs from "node:fs/promises";
 import path from "node:path";
 import dotenv from "dotenv";
+import { DEFAULT_SAMPLER_INTENTS } from "@half-life/shared";
 
 dotenv.config();
 
@@ -13,7 +14,7 @@ async function main() {
   await client.connect();
   const db = client.db(process.env.DB_NAME || "halflife");
 
-  const intents = ["FX_NOW_EUR", "WEATHER_CHECK_TEMPERATURE", "SANCTIONS_SCREENING_MATCH_GENERAL", "FX_NOW"];
+  const intents = [...DEFAULT_SAMPLER_INTENTS];
 
   const intentStats = await Promise.all(
     intents.map(async (intent) => {

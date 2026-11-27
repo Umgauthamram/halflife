@@ -1,6 +1,7 @@
 import { getDb } from "../../lib/mongodb";
 import { requireUser } from "../../lib/dal";
 import { computeMedianPaidLatencyMs } from "../../lib/metrics";
+import { DEFAULT_SAMPLER_INTENTS, mergeIntents } from "@half-life/shared";
 import DashboardClient, {
   type DashboardCallItem,
   type DashboardKeyItem,
@@ -51,7 +52,7 @@ export default async function DashboardPage() {
       agentName,
       agentId: String(d.agentId),
       apiKeyPrefix: d.apiKeyPrefix || "hl_live_...",
-      intent: d.intent || "FX_NOW",
+      intent: d.intent || "unknown",
       action: d.action || "reuse",
       priceUsdc,
       savingsUsdc,
@@ -70,7 +71,7 @@ export default async function DashboardPage() {
       agentName: r.agentName || agentMap.get(String(r.agentId)) || "Testing Studio",
       agentId: String(r.agentId || ""),
       apiKeyPrefix: r.apiKeyPrefix || "hl_live_...",
-      intent: r.intent || "FX_NOW",
+      intent: r.intent || "unknown",
       action: r.action || "buy",
       priceUsdc: Number(r.priceUsdc) || 0,
       savingsUsdc: Number(r.savingsUsdc) || 0,
@@ -105,6 +106,11 @@ export default async function DashboardPage() {
     revocationReason: k.revocationReason || null,
   }));
 
+  const intentOptions = mergeIntents(
+    calls.map((c) => c.intent),
+    [...DEFAULT_SAMPLER_INTENTS]
+  );
+
   return (
     <DashboardClient
       calls={calls}
@@ -113,6 +119,7 @@ export default async function DashboardPage() {
       totalSpendUsdc={totalSpendUsdc}
       totalSavedUsdc={totalSavedUsdc}
       medianLatencyMs={medianLatencyMs}
+      intentOptions={intentOptions}
     />
   );
 }

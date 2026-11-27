@@ -26,7 +26,7 @@ const TEMPLATES = [
   {
     id: "fx-treasury",
     title: "FX Cross-Border Treasury",
-    intent: "FX_NOW",
+    intent: "FX_NOW_EUR",
     stake: 500,
     params: { pair: "EURUSD" },
     tag: "Treasury",
@@ -38,7 +38,7 @@ const TEMPLATES = [
   {
     id: "defi-arbitrage",
     title: "DeFi Arbitrage Monitor",
-    intent: "FX_NOW",
+    intent: "FX_NOW_EUR",
     stake: 2500,
     params: { pair: "GBPUSD" },
     tag: "High Stake",
@@ -50,7 +50,7 @@ const TEMPLATES = [
   {
     id: "weather-risk",
     title: "Parametric Weather Payout",
-    intent: "WEATHER_FORECAST_VERIFY",
+    intent: "WEATHER_CHECK_TEMPERATURE",
     stake: 1200,
     params: { location: "London" },
     tag: "Insurance",
@@ -62,7 +62,7 @@ const TEMPLATES = [
   {
     id: "sanctions-compliance",
     title: "OFAC Sanctions Screener",
-    intent: "SANCTIONS_SCREENING_MATCH",
+    intent: "SANCTIONS_SCREENING_MATCH_GENERAL",
     stake: 10000,
     params: { entity: "Acme International" },
     tag: "Compliance",
@@ -74,7 +74,7 @@ const TEMPLATES = [
   {
     id: "rapid-heartbeat",
     title: "High-Frequency Heartbeat",
-    intent: "FX_NOW",
+    intent: "FX_NOW_EUR",
     stake: 50,
     params: { pair: "EURUSD" },
     tag: "Test Reuse",
@@ -198,7 +198,7 @@ export default function PlaygroundClient({
     startExecuting(async () => {
       setExecutionError(null);
       const payload = {
-        intent: codeResult?.intent || "FX_NOW",
+        intent: codeResult?.intent || "FX_NOW_EUR",
         stake: codeResult?.stake || 100,
         params: codeResult?.params || { pair: "EURUSD" },
         requestId: `test_req_${Date.now()}`,

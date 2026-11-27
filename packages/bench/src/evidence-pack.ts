@@ -1,3 +1,4 @@
+// simulated-data
 import type { SideBySideComparison } from "./simulator.js";
 
 export interface EvidencePackBundle {
