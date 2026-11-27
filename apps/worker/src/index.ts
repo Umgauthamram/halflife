@@ -7,8 +7,8 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const DEFAULT_INTENTS = ["FX_NOW", "WEATHER_CHECK", "SANCTIONS_SCREENING_MATCH"];
-const SAMPLER_INTERVAL_MS = 60 * 1000; // 60 seconds
+const DEFAULT_INTENTS = ["FX_NOW_EUR", "WEATHER_CHECK_TEMPERATURE", "SANCTIONS_SCREENING_MATCH_GENERAL"];
+const MINERS_PER_INTENT = 2;
 
 async function main() {
   console.log("==========================================");
@@ -26,6 +26,8 @@ async function main() {
     console.error("[Worker] Startup validation failed:", err instanceof Error ? err.message : err);
     process.exit(1);
   }
+
+  const samplerIntervalMs = env.SAMPLER_INTERVAL_MS;
 
   // 1. Connect to MongoDB
   const mongoUri = env.MONGODB_URI_WORKER || env.MONGODB_URI_WEB;
@@ -71,6 +73,27 @@ async function main() {
     stakeDefault: 100,
   };
 
+  // Startup Cost Control Log
+  const lastPriceSample = await db
+    .collection("atlas_samples")
+    .findOne({ source: "live", priceUsdc: { $type: "number" } }, { sort: { ts: -1 } });
+  const lastKnownPrice =
+    typeof lastPriceSample?.priceUsdc === "number" ? lastPriceSample.priceUsdc : null;
+  const estimatedDailySpend =
+    lastKnownPrice !== null
+      ? `$${(
+          configuredIntents.length *
+          MINERS_PER_INTENT *
+          (86_400_000 / samplerIntervalMs) *
+          lastKnownPrice
+        ).toFixed(4)} USDC`
+      : "unknown";
+
+  console.log(`[Worker] Configured Intents (${configuredIntents.length}): ${configuredIntents.join(", ")}`);
+  console.log(`[Worker] Miners per Intent: ${MINERS_PER_INTENT}`);
+  console.log(`[Worker] Sampler Interval: ${samplerIntervalMs}ms (${Math.round(samplerIntervalMs / 1000)}s)`);
+  console.log(`[Worker] Estimated Daily Spend: ${estimatedDailySpend}`);
+
   let isRunning = true;
   let consecutiveFailures = 0;
   let lastSuccessAt: Date | null = null;
@@ -102,9 +125,15 @@ async function main() {
       }
 
       let anySuccess = false;
+      let dailyCapReached = false;
       for (const intent of configuredIntents) {
         console.log(`[Worker] Sampling intent: ${intent}...`);
         const result = await sampleIntent(db, telegraphClient, intent, "system_sampler", samplerPolicy);
+        if (result.dailyCapReached) {
+          dailyCapReached = true;
+          console.warn("[Worker] Daily cap reached. Pausing sampler.");
+          break;
+        }
         if (result.samplesCount > 0) {
           console.log(`[Worker] Collected ${result.samplesCount} samples for ${intent}`);
           anySuccess = true;
@@ -126,7 +155,9 @@ async function main() {
             consecutiveFailures,
             lastError,
             runningIntents: configuredIntents,
-            paused: false,
+            samplerIntervalMs,
+            paused: dailyCapReached,
+            pauseReason: dailyCapReached ? "daily_cap_reached" : null,
             updatedAt: new Date(),
           },
         },
@@ -155,7 +186,7 @@ async function main() {
 
   // Initial immediate run, then recurring
   runSamplingRound();
-  const intervalId = setInterval(runSamplingRound, SAMPLER_INTERVAL_MS);
+  const intervalId = setInterval(runSamplingRound, samplerIntervalMs);
 
   // 5. Optional HTTP Health Server
   const port = process.env.PORT || 10000;

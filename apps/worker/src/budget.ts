@@ -44,18 +44,23 @@ export async function reserveBudget(
   const maxAllowedSpentBefore = policy.dailyCapUsdc - amountUsdc;
 
   // We find a document where current spent + amount <= dailyCap
-  const result = await db.collection("budget_counters").updateOne(
-    {
-      agentId,
-      period,
-      spentUsdc: { $lte: maxAllowedSpentBefore },
-    },
-    {
-      $inc: { spentUsdc: amountUsdc },
-      $setOnInsert: { createdAt: new Date() },
-    },
-    { upsert: true }
-  );
+  let result = { modifiedCount: 0, upsertedCount: 0 };
+  try {
+    result = await db.collection("budget_counters").updateOne(
+      {
+        agentId,
+        period,
+        spentUsdc: { $lte: maxAllowedSpentBefore },
+      },
+      {
+        $inc: { spentUsdc: amountUsdc },
+        $setOnInsert: { createdAt: new Date() },
+      },
+      { upsert: true }
+    );
+  } catch (err: any) {
+    if (err?.code !== 11000) throw err;
+  }
 
   const reserved = result.modifiedCount > 0 || result.upsertedCount > 0;
   if (!reserved) {

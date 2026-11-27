@@ -26,6 +26,12 @@ describe("Strict Environment Boot Validation", () => {
     expect(result.NODE_ENV).toBe("production");
     expect(result.CHAIN_ID).toBe("11155111");
     expect(result.ADMIN_EMAILS).toContain("admin@halflife.app");
+    expect(result.SAMPLER_INTERVAL_MS).toBe(600000);
+  });
+
+  it("rejects SAMPLER_INTERVAL_MS below 30000", () => {
+    const invalidEnv = { ...validProductionEnv, SAMPLER_INTERVAL_MS: "10000" };
+    expect(() => validateEnv(invalidEnv)).toThrowError(/SAMPLER_INTERVAL_MS/);
   });
 
   it("strictly throws and aborts boot in production when AUTH_SECRET is missing", () => {

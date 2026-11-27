@@ -45,6 +45,11 @@ const envSchema = z.object({
     .transform((v) => parseFloat(v))
     .refine((n) => !isNaN(n) && n > 0, "SAMPLER_DAILY_CAP_USDC must be a positive number")
     .default("10.0"),
+  SAMPLER_INTERVAL_MS: z
+    .string()
+    .default("600000")
+    .transform((v) => parseInt(v, 10))
+    .refine((n) => !isNaN(n) && n >= 30000, "SAMPLER_INTERVAL_MS must be >= 30000"),
 
   ERROR_TRACKING_DSN: z.string().optional(),
 });

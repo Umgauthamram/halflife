@@ -1,6 +1,6 @@
 import type { Db } from "mongodb";
 import type { TelegraphClient } from "@half-life/telegraph";
-import { reserveBudget, releaseBudget } from "./budget.js";
+import { reserveBudget, releaseBudget, BudgetCapError } from "./budget.js";
 import { normalizeAnswerValue, type AgentPolicy } from "@half-life/shared";
 import { updateDecayEstimates } from "./decay-estimator.js";
 
@@ -34,7 +34,7 @@ export async function sampleIntent(
   intent: string,
   systemAgentId: string,
   samplerPolicy: AgentPolicy
-): Promise<{ samplesCount: number; noiseMeasurement?: SampleDisagreement }> {
+): Promise<{ samplesCount: number; noiseMeasurement?: SampleDisagreement; dailyCapReached?: boolean }> {
   // 1. Acquire Distributed Lock with 2-minute TTL
   const lockKey = `sampler_${intent}`;
   const now = new Date();
@@ -94,12 +94,21 @@ export async function sampleIntent(
         return null;
       }
 
-      const { period, reservedAmount } = await reserveBudget(
-        db,
-        systemAgentId,
-        quote.priceUsdc,
-        samplerPolicy
-      );
+      let reserved: { period: string; reservedAmount: number };
+      try {
+        reserved = await reserveBudget(
+          db,
+          systemAgentId,
+          quote.priceUsdc,
+          samplerPolicy
+        );
+      } catch (budgetErr) {
+        if (budgetErr instanceof BudgetCapError && budgetErr.code === "DAILY_CAP_EXCEEDED") {
+          return { dailyCapReached: true } as any;
+        }
+        throw budgetErr;
+      }
+      const { period, reservedAmount } = reserved;
 
       try {
         const receipt = await client.ask({
@@ -160,11 +169,12 @@ export async function sampleIntent(
     });
 
     const results = await Promise.all(samplePromises);
+    const dailyCapReached = results.some((r: any) => r?.dailyCapReached === true);
 
     // Only compute disagreement on valid usable answers (never against null / unusable)
     const collected = results.filter(
       (r): r is NonNullable<typeof r> =>
-        r !== null && r.outcomeState === "paid" && r.valueNorm !== null
+        r !== null && !("dailyCapReached" in r) && r.outcomeState === "paid" && r.valueNorm !== null
     );
 
     // 3. Compute instantaneous noise floor if 2 distinct miners succeeded with usable values
@@ -196,7 +206,7 @@ export async function sampleIntent(
       console.warn(`[Sampler] Could not update decay estimates for ${intent}:`, err);
     });
 
-    return { samplesCount: collected.length, noiseMeasurement };
+    return { samplesCount: collected.length, noiseMeasurement, dailyCapReached };
   } finally {
     // Release Lock
     await db.collection("sampler_locks").deleteOne({ lockKey });

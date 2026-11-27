@@ -14,8 +14,18 @@ export async function GET() {
     const lastLoopAt = heartbeatDoc?.lastLoopAt ? new Date(heartbeatDoc.lastLoopAt) : null;
     const lastSuccessAt = heartbeatDoc?.lastSuccessAt ? new Date(heartbeatDoc.lastSuccessAt) : null;
 
-    // Heartbeat considered healthy if last loop was within 3x interval (180s)
-    const isFresh = lastLoopAt ? nowMs - lastLoopAt.getTime() < 180_000 : false;
+    const envIntervalMs = parseInt(process.env.SAMPLER_INTERVAL_MS || "600000", 10);
+    const samplerIntervalMs =
+      typeof heartbeatDoc?.samplerIntervalMs === "number"
+        ? heartbeatDoc.samplerIntervalMs
+        : !isNaN(envIntervalMs) && envIntervalMs >= 30000
+        ? envIntervalMs
+        : 600000;
+    const samplerIntervalSeconds = Math.round(samplerIntervalMs / 1000);
+
+    // Heartbeat considered healthy if last loop was within 3x interval (min 180s)
+    const freshThresholdMs = Math.max(180_000, samplerIntervalMs * 3);
+    const isFresh = lastLoopAt ? nowMs - lastLoopAt.getTime() < freshThresholdMs : false;
     const isRunning = Boolean(isFresh && heartbeatDoc?.paused !== true);
 
     // 2. Sample Counts (Live vs Quarantine)
@@ -95,6 +105,9 @@ export async function GET() {
         contract: process.env.TELEGRAPH_CONTRACT || "0x3624EB012B5E998BB57B6bE6C9Cfc9c4bc5eb99b",
         sampler: {
           running: isRunning,
+          paused: Boolean(heartbeatDoc?.paused),
+          pauseReason: heartbeatDoc?.pauseReason || null,
+          samplerIntervalSeconds,
           lastLoopAt: lastLoopAt?.toISOString() || null,
           lastSuccessAt: lastSuccessAt?.toISOString() || null,
           lastSampleAt,
@@ -102,6 +115,7 @@ export async function GET() {
           consecutiveFailures: heartbeatDoc?.consecutiveFailures ?? 0,
           liveSamples: liveSamplesCount,
           quarantinedSamples: quarantinedSamplesCount,
+          spentTodayUsdc: Number(dailySpendUsdc.toFixed(4)),
           dailySpendUsdc: Number(dailySpendUsdc.toFixed(4)),
           dailyCapUsdc,
         },
