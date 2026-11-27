@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getDb } from "../../../../lib/mongodb";
-import { buildMerkleTree, hashLeaf } from "@half-life/shared";
+import { buildMerkleTree, hashLeaf, estimateDailySpendUsdc, parseSamplerIntents } from "@half-life/shared";
 
 export const dynamic = "force-dynamic";
 
@@ -96,6 +96,16 @@ export async function GET() {
     const { root: merkleRoot } = buildMerkleTree(leafHashes);
 
     const dailyCapUsdc = parseFloat(process.env.SAMPLER_DAILY_CAP_USDC || "10.0");
+    const configuredIntentsCount = Array.isArray(heartbeatDoc?.runningIntents) && heartbeatDoc.runningIntents.length > 0
+      ? heartbeatDoc.runningIntents.length
+      : parseSamplerIntents(process.env.SAMPLER_INTENTS).length;
+    const lastKnownPrice = typeof latestLiveSample?.priceUsdc === "number" ? latestLiveSample.priceUsdc : null;
+    const estimatedDailySpendUsdc = estimateDailySpendUsdc({
+      intents: configuredIntentsCount,
+      minersPerIntent: 2,
+      intervalMs: samplerIntervalMs,
+      priceUsdc: lastKnownPrice,
+    });
 
     return NextResponse.json(
       {
@@ -117,6 +127,7 @@ export async function GET() {
           quarantinedSamples: quarantinedSamplesCount,
           spentTodayUsdc: Number(dailySpendUsdc.toFixed(4)),
           dailySpendUsdc: Number(dailySpendUsdc.toFixed(4)),
+          estimatedDailySpendUsdc,
           dailyCapUsdc,
         },
         calibratedIntents,

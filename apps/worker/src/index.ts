@@ -1,4 +1,4 @@
-import { validateEnv, parseSamplerIntents } from "@half-life/shared";
+import { validateEnv, parseSamplerIntents, estimateDailySpendUsdc } from "@half-life/shared";
 import { MongoClient } from "mongodb";
 import { createTelegraphClient } from "@half-life/telegraph";
 import { sampleIntent } from "./sampler.js";
@@ -75,15 +75,14 @@ async function main() {
     .findOne({ source: "live", priceUsdc: { $type: "number" } }, { sort: { ts: -1 } });
   const lastKnownPrice =
     typeof lastPriceSample?.priceUsdc === "number" ? lastPriceSample.priceUsdc : null;
+  const estimatedUsdc = estimateDailySpendUsdc({
+    intents: configuredIntents.length,
+    minersPerIntent: MINERS_PER_INTENT,
+    intervalMs: samplerIntervalMs,
+    priceUsdc: lastKnownPrice,
+  });
   const estimatedDailySpend =
-    lastKnownPrice !== null
-      ? `$${(
-          configuredIntents.length *
-          MINERS_PER_INTENT *
-          (86_400_000 / samplerIntervalMs) *
-          lastKnownPrice
-        ).toFixed(4)} USDC`
-      : "unknown";
+    estimatedUsdc !== null ? `$${estimatedUsdc.toFixed(4)} USDC` : "unknown";
 
   console.log(`[Worker] Configured Intents (${configuredIntents.length}): ${configuredIntents.join(", ")}`);
   console.log(`[Worker] Miners per Intent: ${MINERS_PER_INTENT}`);
