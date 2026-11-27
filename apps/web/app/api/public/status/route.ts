@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getDb } from "../../../../lib/mongodb";
+import { computeSamplerState } from "../../../../lib/sampler-status";
 import { buildMerkleTree, hashLeaf, estimateDailySpendUsdc, parseSamplerIntents } from "@half-life/shared";
 
 export const dynamic = "force-dynamic";
@@ -23,10 +24,18 @@ export async function GET() {
         : 600000;
     const samplerIntervalSeconds = Math.round(samplerIntervalMs / 1000);
 
-    // Heartbeat considered healthy if last loop was within 3x interval (min 180s)
-    const freshThresholdMs = Math.max(180_000, samplerIntervalMs * 3);
-    const isFresh = lastLoopAt ? nowMs - lastLoopAt.getTime() < freshThresholdMs : false;
-    const isRunning = Boolean(isFresh && heartbeatDoc?.paused !== true);
+    const { running: isRunning, status: overallStatus } = computeSamplerState({
+      now: nowMs,
+      heartbeat: heartbeatDoc
+        ? {
+            lastLoopAt: heartbeatDoc.lastLoopAt,
+            consecutiveFailures: heartbeatDoc.consecutiveFailures,
+            paused: heartbeatDoc.paused,
+          }
+        : null,
+      intervalMs: samplerIntervalMs,
+      paused: Boolean(heartbeatDoc?.paused),
+    });
 
     // 2. Sample Counts (Live vs Quarantine)
     const liveSamplesCount = await db
@@ -110,7 +119,7 @@ export async function GET() {
     return NextResponse.json(
       {
         service: "half-life-atlas",
-        status: isRunning ? "operational" : "degraded",
+        status: overallStatus,
         network: "Ethereum Sepolia (Chain ID: 11155111)",
         contract: process.env.TELEGRAPH_CONTRACT || "0x3624EB012B5E998BB57B6bE6C9Cfc9c4bc5eb99b",
         sampler: {
