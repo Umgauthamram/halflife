@@ -50,6 +50,7 @@ async function main() {
     fxRate += Math.sin(i / 10) * 0.0002;
     events.push({
       timestampMs: baseTime + i * 60 * 1000,
+      // simulated-data
       intent: "FX_NOW",
       stake: 100,
       actualFreshValue: fxRate,
@@ -59,7 +60,9 @@ async function main() {
   }
 
   const comparison = runSideBySideBenchmark(events, {
+    // simulated-data
     FX_NOW: {
+      // simulated-data
       intent: "FX_NOW",
       window: 86400,
       driftCurve: [

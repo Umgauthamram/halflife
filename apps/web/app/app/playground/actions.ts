@@ -35,9 +35,9 @@ export async function generateAiCodeAction(
     try {
       const systemInstruction = `You are the Half-Life Intelligent Integration Assistant for Telegraph Protocol.
 Analyze the user's intent or query and map it to one of the 3 supported Telegraph intents:
-- FX_NOW: Real-time foreign exchange currency rates. params: { "pair": "EURUSD" | "GBPUSD" | "USDJPY" }
-- WEATHER_FORECAST_VERIFY: Meteorological temperature and weather verification. params: { "location": "London" | "New York" | "Tokyo" }
-- SANCTIONS_SCREENING_MATCH: Anti-money laundering (AML) and OFAC compliance screening. params: { "entity": string }
+- FX_NOW_EUR: Real-time foreign exchange currency rates. params: { "currency": "EUR", "pair": "EUR/USD" }
+- WEATHER_CHECK_TEMPERATURE: Meteorological temperature verification. params: { "location": "London" | "New York" | "Tokyo" }
+- SANCTIONS_SCREENING_MATCH_GENERAL: Anti-money laundering (AML) and OFAC compliance screening. params: { "entity": string }
 
 Return ONLY a valid JSON object with NO markdown formatting, NO backticks, and NO extra text:
 {

@@ -65,15 +65,15 @@ export const WebSearchAnswerSchema = z.object({
 });
 
 export const IntentSchemas: Record<string, { params: z.ZodTypeAny; answer: z.ZodTypeAny }> = {
-  FX_NOW: { params: FxNowParamsSchema, answer: FxNowAnswerSchema },
+  FX_NOW: { params: FxNowParamsSchema, answer: FxNowAnswerSchema }, // legacy-alias
   FX_NOW_EUR: { params: FxNowParamsSchema, answer: FxNowAnswerSchema },
   FX_NOW_CAD: { params: FxNowParamsSchema, answer: FxNowAnswerSchema },
   FX_NOW_SEK: { params: FxNowParamsSchema, answer: FxNowAnswerSchema },
-  WEATHER_FORECAST_VERIFY: { params: WeatherForecastParamsSchema, answer: WeatherForecastAnswerSchema },
+  WEATHER_FORECAST_VERIFY: { params: WeatherForecastParamsSchema, answer: WeatherForecastAnswerSchema }, // legacy-alias
   WEATHER_FORECAST_VERIFY_GENERAL: { params: WeatherForecastParamsSchema, answer: WeatherForecastAnswerSchema },
-  WEATHER_CHECK: { params: WeatherForecastParamsSchema, answer: WeatherForecastAnswerSchema },
+  WEATHER_CHECK: { params: WeatherForecastParamsSchema, answer: WeatherForecastAnswerSchema }, // legacy-alias
   WEATHER_CHECK_TEMPERATURE: { params: WeatherForecastParamsSchema, answer: WeatherForecastAnswerSchema },
-  SANCTIONS_SCREENING_MATCH: { params: SanctionsScreeningParamsSchema, answer: SanctionsScreeningAnswerSchema },
+  SANCTIONS_SCREENING_MATCH: { params: SanctionsScreeningParamsSchema, answer: SanctionsScreeningAnswerSchema }, // legacy-alias
   SANCTIONS_SCREENING_MATCH_GENERAL: { params: SanctionsScreeningParamsSchema, answer: SanctionsScreeningAnswerSchema },
   CRYPTO_PRICE: { params: CryptoPriceParamsSchema, answer: CryptoPriceAnswerSchema },
   CRYPTO_PRICE_USD: { params: CryptoPriceParamsSchema, answer: CryptoPriceAnswerSchema },

@@ -9,14 +9,14 @@ export class MockTelegraphClient implements TelegraphClient {
 
   constructor(
     private mockMiners: Record<string, Miner[]> = {
-      FX_NOW: [
+      FX_NOW: [ // legacy-alias
         { id: "miner_1", address: "0x1111111111111111111111111111111111111111", rank: 1, score: 98, priceUsdc: 0.01 },
         { id: "miner_2", address: "0x2222222222222222222222222222222222222222", rank: 2, score: 94, priceUsdc: 0.01 },
       ],
-      WEATHER_FORECAST_VERIFY: [
+      WEATHER_FORECAST_VERIFY: [ // legacy-alias
         { id: "miner_w1", address: "0x3333333333333333333333333333333333333333", rank: 1, score: 95, priceUsdc: 0.01 },
       ],
-      SANCTIONS_SCREENING_MATCH: [
+      SANCTIONS_SCREENING_MATCH: [ // legacy-alias
         { id: "miner_s1", address: "0x4444444444444444444444444444444444444444", rank: 1, score: 99, priceUsdc: 0.05 },
       ],
       WEB_SEARCH: [
@@ -25,7 +25,7 @@ export class MockTelegraphClient implements TelegraphClient {
       QUESTION_ANSWERING: [
         { id: "miner_qa1", address: "0x6666666666666666666666666666666666666666", rank: 1, score: 96, priceUsdc: 0.02 },
       ],
-      WEATHER_CHECK: [
+      WEATHER_CHECK: [ // legacy-alias
         { id: "miner_wc1", address: "0x7777777777777777777777777777777777777777", rank: 1, score: 95, priceUsdc: 0.01 },
       ],
       CRYPTO_PRICE: [
@@ -80,16 +80,16 @@ export class MockTelegraphClient implements TelegraphClient {
 
     // Mock answer generation
     let rawAnswer: unknown;
-    if (request.intent === "FX_NOW") {
+    if (request.intent === "FX_NOW") { // legacy-alias
       rawAnswer = { pair: request.params.pair ?? "EUR/USD", rate: 1.0854, timestamp: Date.now() };
-    } else if (request.intent === "WEATHER_FORECAST_VERIFY") {
+    } else if (request.intent === "WEATHER_FORECAST_VERIFY") { // legacy-alias
       rawAnswer = {
         location: request.params.location ?? "London",
         temperatureC: 18.5,
         condition: "Clear",
         forecastTimestamp: Date.now() + 3600000,
       };
-    } else if (request.intent === "SANCTIONS_SCREENING_MATCH") {
+    } else if (request.intent === "SANCTIONS_SCREENING_MATCH") { // legacy-alias
       rawAnswer = {
         entity: request.params.entity ?? "Unknown Entity",
         matched: false,
@@ -108,7 +108,7 @@ export class MockTelegraphClient implements TelegraphClient {
         confidence: 0.96,
         citations: ["telegraph://whitepaper#sec-2"],
       };
-    } else if (request.intent === "WEATHER_CHECK") {
+    } else if (request.intent === "WEATHER_CHECK") { // legacy-alias
       rawAnswer = {
         location: request.params.location ?? "London",
         temperatureC: 19.2,

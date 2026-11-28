@@ -17,6 +17,7 @@ function generateSyntheticEvents(count: number = 200): ReplayEvent[] {
 
     events.push({
       timestampMs,
+      // simulated-data
       intent: "FX_NOW",
       stake: 100, // $100 value at risk
       actualFreshValue: fxRate,
@@ -29,7 +30,9 @@ function generateSyntheticEvents(count: number = 200): ReplayEvent[] {
 }
 
 const mockStatsMap: Record<string, AtlasStats> = {
+  // simulated-data
   FX_NOW: {
+    // simulated-data
     intent: "FX_NOW",
     window: 86400,
     driftCurve: [
@@ -48,7 +51,7 @@ const mockStatsMap: Record<string, AtlasStats> = {
 
 function main() {
   console.log("===============================================================");
-  console.log("   Half-Life Replay Benchmark: Naive vs. Half-Life Agent       ");
+  console.log("   Half-Life SIMULATED Replay Benchmark: Naive vs. Half-Life   ");
   console.log("   Network: Ethereum Sepolia (11155111)                        ");
   console.log("===============================================================\n");
 

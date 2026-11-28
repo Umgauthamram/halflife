@@ -23,6 +23,7 @@ function getBenchmarkData() {
     fxRate += Math.sin(i / 10) * 0.0002;
     events.push({
       timestampMs,
+      // simulated-data
       intent: "FX_NOW",
       stake: 100,
       actualFreshValue: fxRate,
@@ -32,7 +33,9 @@ function getBenchmarkData() {
   }
 
   const mockStats = {
+    // simulated-data
     FX_NOW: {
+      // simulated-data
       intent: "FX_NOW",
       window: 86400,
       driftCurve: [

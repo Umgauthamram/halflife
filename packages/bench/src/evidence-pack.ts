@@ -67,6 +67,7 @@ export function generateEvidencePack(
     sampleReceipts: sampleTxHashes.map((txHash, i) => ({
       txHash,
       etherscanUrl: `https://sepolia.etherscan.io/tx/${txHash}`,
+      // simulated-data
       intent: i % 2 === 0 ? "FX_NOW" : "WEATHER_FORECAST_VERIFY",
       priceUsdc: 0.01,
       verificationStatus: "confirmed",
