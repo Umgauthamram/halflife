@@ -10,6 +10,10 @@ export const LEGACY_INTENT_MAP: Record<string, string> = {
   SANCTIONS_SCREENING_MATCH: "SANCTIONS_SCREENING_MATCH_GENERAL",
 };
 
+export const REVERSE_LEGACY_INTENT_MAP: Record<string, string> = Object.fromEntries(
+  Object.entries(LEGACY_INTENT_MAP).map(([legacy, current]) => [current, legacy])
+);
+
 export function parseSamplerIntents(raw?: string): string[] {
   if (!raw || typeof raw !== "string") {
     return [...DEFAULT_SAMPLER_INTENTS];

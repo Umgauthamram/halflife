@@ -1,4 +1,9 @@
-import type { AtlasStats, DecisionAction, DecisionInputs } from "@half-life/shared";
+import {
+  REVERSE_LEGACY_INTENT_MAP,
+  type AtlasStats,
+  type DecisionAction,
+  type DecisionInputs,
+} from "@half-life/shared";
 
 export interface DecisionRequest {
   intent: string;
@@ -24,9 +29,12 @@ export interface DecisionResult {
  * Default conservative TTL windows (in seconds) for uncalibrated intents.
  */
 const DEFAULT_CONSERVATIVE_WINDOWS: Record<string, number> = {
-  FX_NOW: 300, // 5 minutes
-  WEATHER_FORECAST_VERIFY: 3600, // 1 hour
-  SANCTIONS_SCREENING_MATCH: 86400, // 24 hours
+  FX_NOW_EUR: 300, // 5 minutes
+  WEATHER_CHECK_TEMPERATURE: 3600, // 1 hour
+  SANCTIONS_SCREENING_MATCH_GENERAL: 86400, // 24 hours
+  FX_NOW: 300, // 5 minutes // legacy-alias
+  WEATHER_FORECAST_VERIFY: 3600, // 1 hour // legacy-alias
+  SANCTIONS_SCREENING_MATCH: 86400, // 24 hours // legacy-alias
   // Mission 09 Personal Agent Intents
   WEB_SEARCH: 1800, // 30 minutes
   QUESTION_ANSWERING: 3600, // 1 hour
@@ -45,6 +53,30 @@ const DEFAULT_CONSERVATIVE_WINDOWS: Record<string, number> = {
   SHIP_RATE_ETA: 7200, // 2 hours
   CLOUD_RESOURCE_USAGE: 300, // 5 minutes
 };
+
+/**
+ * Resolves the conservative fallback TTL window (in seconds) for an uncalibrated intent:
+ * 1. Exact match in DEFAULT_CONSERVATIVE_WINDOWS
+ * 2. Reversed LEGACY_INTENT_MAP lookup
+ * 3. Strip trailing `_GENERAL` suffix and retry
+ * 4. Default 600s
+ */
+export function conservativeWindowSeconds(intent: string): number {
+  if (intent in DEFAULT_CONSERVATIVE_WINDOWS) {
+    return DEFAULT_CONSERVATIVE_WINDOWS[intent];
+  }
+  const legacyKey = REVERSE_LEGACY_INTENT_MAP[intent];
+  if (legacyKey && legacyKey in DEFAULT_CONSERVATIVE_WINDOWS) {
+    return DEFAULT_CONSERVATIVE_WINDOWS[legacyKey];
+  }
+  if (intent.endsWith("_GENERAL")) {
+    const stripped = intent.slice(0, -"_GENERAL".length);
+    if (stripped in DEFAULT_CONSERVATIVE_WINDOWS) {
+      return DEFAULT_CONSERVATIVE_WINDOWS[stripped];
+    }
+  }
+  return 600;
+}
 
 /**
  * Computes the expected drift from the monotonic drift curve for a given age in seconds.
@@ -104,7 +136,7 @@ export function decide(
 
   // Cold-start fallback if stats do not exist or are not calibrated
   if (!stats || !stats.calibrated) {
-    const defaultWindow = DEFAULT_CONSERVATIVE_WINDOWS[req.intent] ?? 600;
+    const defaultWindow = conservativeWindowSeconds(req.intent);
     const isExpired = ageSeconds > defaultWindow;
     return {
       action: isExpired ? "buy" : "reuse",

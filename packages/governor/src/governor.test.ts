@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { decide, interpolateDrift } from "./governor.js";
+import { decide, interpolateDrift, conservativeWindowSeconds } from "./governor.js";
 import type { AtlasStats } from "@half-life/shared";
 
 describe("interpolateDrift", () => {
@@ -139,6 +139,42 @@ describe("decide()", () => {
       if (hasBought) {
         expect(res.action).toBe("buy");
       }
+    }
+  });
+
+  it("resolves conservative windows for real, legacy, _GENERAL-suffixed, and unknown intents", () => {
+    const cases: Array<{ intent: string; expectedWindow: number }> = [
+      { intent: "FX_NOW_EUR", expectedWindow: 300 },
+      { intent: "WEATHER_CHECK_TEMPERATURE", expectedWindow: 3600 },
+      { intent: "SANCTIONS_SCREENING_MATCH_GENERAL", expectedWindow: 86400 },
+      { intent: "FX_NOW", expectedWindow: 300 },
+      { intent: "WEATHER_FORECAST_VERIFY", expectedWindow: 3600 },
+      { intent: "SANCTIONS_SCREENING_MATCH", expectedWindow: 86400 },
+      { intent: "WEB_SEARCH_GENERAL", expectedWindow: 1800 },
+      { intent: "COMPLETELY_UNKNOWN_INTENT", expectedWindow: 600 },
+    ];
+
+    for (const { intent, expectedWindow } of cases) {
+      expect(conservativeWindowSeconds(intent)).toBe(expectedWindow);
+
+      const now = 200_000_000;
+      const justUnder = decide(
+        { intent, now, stake: 100 },
+        { id: "c1", purchaseId: "p1", answeredAt: now - (expectedWindow - 1) * 1000 },
+        null,
+        0.01
+      );
+      expect(justUnder.action).toBe("reuse");
+      expect(justUnder.reason).toContain(`(${expectedWindow}s)`);
+
+      const justOver = decide(
+        { intent, now, stake: 100 },
+        { id: "c1", purchaseId: "p1", answeredAt: now - (expectedWindow + 1) * 1000 },
+        null,
+        0.01
+      );
+      expect(justOver.action).toBe("buy");
+      expect(justOver.reason).toContain(`(${expectedWindow}s)`);
     }
   });
 });
