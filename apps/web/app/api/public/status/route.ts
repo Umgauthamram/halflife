@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { getDb } from "../../../../lib/mongodb";
-import { computeSamplerState } from "../../../../lib/sampler-status";
-import { buildMerkleTree, hashLeaf, estimateDailySpendUsdc, parseSamplerIntents } from "@half-life/shared";
+import { computeSamplerState, selectMerkleAndLastVerifiedTx } from "../../../../lib/sampler-status";
+import { PUBLIC_DATASET_FILTER } from "../../../../lib/dataset-filter";
+import { estimateDailySpendUsdc, parseSamplerIntents } from "@half-life/shared";
 
 export const dynamic = "force-dynamic";
 
@@ -37,15 +38,20 @@ export async function GET() {
       paused: Boolean(heartbeatDoc?.paused),
     });
 
-    // 2. Sample Counts (Live vs Quarantine)
-    const liveSamplesCount = await db
-      .collection("atlas_samples")
-      .countDocuments({ source: "live" });
-
-    const quarantinedSamplesCount = await db
-      .collection("atlas_samples_quarantine")
-      .countDocuments({})
-      .catch(() => 0);
+    // 2. Sample Counts (Live vs Verification Breakdown vs Quarantine)
+    const [
+      liveSamplesCount,
+      confirmedSamplesCount,
+      unverifiedSamplesCount,
+      failedSamplesCount,
+      quarantinedSamplesCount,
+    ] = await Promise.all([
+      db.collection("atlas_samples").countDocuments({ source: "live" }),
+      db.collection("atlas_samples").countDocuments({ source: "live", verification: "confirmed" }),
+      db.collection("atlas_samples").countDocuments({ source: "live", verification: "unverified" }),
+      db.collection("atlas_samples").countDocuments({ source: "live", verification: "failed" }),
+      db.collection("atlas_samples_quarantine").countDocuments({}).catch(() => 0),
+    ]);
 
     const latestLiveSample = await db
       .collection("atlas_samples")
@@ -56,19 +62,11 @@ export async function GET() {
       ? Math.floor((nowMs - new Date(latestLiveSample.ts).getTime()) / 1000)
       : null;
 
-    // 3. Last Verified Settlement Transaction
+    // 3. Last Verified Settlement Transaction (newest confirmed live sample or purchase)
     const latestConfirmedPurchase = await db.collection("purchases").findOne(
       { verification: "confirmed", source: "live" },
       { sort: { verifiedAt: -1, createdAt: -1 } }
     );
-
-    const lastVerifiedTx = latestConfirmedPurchase
-      ? {
-          txHash: latestConfirmedPurchase.txHash,
-          blockNumber: latestConfirmedPurchase.verifyDetail || undefined,
-          verifiedAt: latestConfirmedPurchase.verifiedAt,
-        }
-      : null;
 
     // 4. Calibrated Intents
     const calibratedDocs = await db
@@ -91,18 +89,18 @@ export async function GET() {
       0
     );
 
-    // 6. Compute Merkle Root for Live Samples
-    const recentLiveSamples = await db
+    // 6. Compute Merkle Root & lastVerifiedTx over Confirmed Dataset Rows only
+    const confirmedDatasetSamples = await db
       .collection("atlas_samples")
-      .find({ source: "live" })
+      .find(PUBLIC_DATASET_FILTER)
       .sort({ ts: -1 })
       .limit(50)
       .toArray();
 
-    const leafHashes = recentLiveSamples.map((s) =>
-      hashLeaf(`${s.intent}:${s.minerId}:${s.valueNorm}:${s.rawAnswerHash}:${s.txHash}`)
+    const { merkleRoot, lastVerifiedTx } = selectMerkleAndLastVerifiedTx(
+      confirmedDatasetSamples as any,
+      latestConfirmedPurchase as any
     );
-    const { root: merkleRoot } = buildMerkleTree(leafHashes);
 
     const dailyCapUsdc = parseFloat(process.env.SAMPLER_DAILY_CAP_USDC || "10.0");
     const configuredIntentsCount = Array.isArray(heartbeatDoc?.runningIntents) && heartbeatDoc.runningIntents.length > 0
@@ -133,6 +131,9 @@ export async function GET() {
           secondsSinceLastSample,
           consecutiveFailures: heartbeatDoc?.consecutiveFailures ?? 0,
           liveSamples: liveSamplesCount,
+          confirmedSamples: confirmedSamplesCount,
+          unverifiedSamples: unverifiedSamplesCount,
+          failedSamples: failedSamplesCount,
           quarantinedSamples: quarantinedSamplesCount,
           spentTodayUsdc: Number(dailySpendUsdc.toFixed(4)),
           dailySpendUsdc: Number(dailySpendUsdc.toFixed(4)),
@@ -141,7 +142,7 @@ export async function GET() {
         },
         calibratedIntents,
         lastVerifiedTx,
-        merkleRoot: liveSamplesCount > 0 ? merkleRoot : null,
+        merkleRoot,
         timestamp: new Date().toISOString(),
       },
       {
