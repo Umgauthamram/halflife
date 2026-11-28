@@ -22,6 +22,7 @@ interface PlaygroundClientProps {
   hasGeminiKey: boolean;
 }
 
+// simulated-data
 const TEMPLATES = [
   {
     id: "fx-treasury",

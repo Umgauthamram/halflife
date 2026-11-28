@@ -38,7 +38,7 @@ const DEFAULT_CONSERVATIVE_WINDOWS: Record<string, number> = {
   // Mission 09 Personal Agent Intents
   WEB_SEARCH: 1800, // 30 minutes
   QUESTION_ANSWERING: 3600, // 1 hour
-  WEATHER_CHECK: 3600, // 1 hour
+  WEATHER_CHECK: 3600, // 1 hour // legacy-alias
   CRYPTO_PRICE: 60, // 1 minute
   TASK_EXECUTION_QUALITY: 86400, // 24 hours
   CONTENT_EXTRACTION: 86400, // 24 hours

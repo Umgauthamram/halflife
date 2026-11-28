@@ -53,25 +53,37 @@ export function checkMockClientImports(files: FileEntry[]): Violation[] {
   return violations;
 }
 
-// Check 2: Legacy intent names as exact quoted strings outside LEGACY_INTENT_MAP, tests, and // simulated-data
+// Check 2: Legacy intent names (quoted, unquoted object keys, or template/backtick usages)
+// Allowlist only: packages/shared/src/intents.ts, *.test.ts, and lines carrying (or preceded by) // simulated-data or // legacy-alias
 export function checkLegacyIntents(files: FileEntry[]): Violation[] {
   const violations: Violation[] = [];
-  const legacyRegex = /(["'])(FX_NOW|WEATHER_FORECAST_VERIFY|WEATHER_CHECK|SANCTIONS_SCREENING_MATCH)\1/;
+  const legacyNames = "FX_NOW|WEATHER_FORECAST_VERIFY|WEATHER_CHECK|SANCTIONS_SCREENING_MATCH";
+  const quotedRegex = new RegExp(`(["'])(${legacyNames})\\1`);
+  const unquotedKeyRegex = new RegExp(`(?:^|[\\s{,])(${legacyNames})\\s*:`);
+  const backtickRegex = new RegExp(`\`[^\`]*(?<![A-Z0-9_])(${legacyNames})(?![A-Z0-9_])[^\`]*\``);
+
   for (const f of files) {
     if (isSelfVerifyFile(f.path)) continue;
     if (!/\.(ts|tsx)$/.test(f.path)) continue;
     if (f.path === "packages/shared/src/intents.ts" || isTestFile(f.path)) continue;
-    if (f.content.includes("// simulated-data")) continue;
 
     const lines = f.content.split(/\r?\n/);
     lines.forEach((line, idx) => {
-      const m = legacyRegex.exec(line);
+      const prevLine = idx > 0 ? lines[idx - 1] : "";
+      const hasMarker =
+        line.includes("// simulated-data") ||
+        line.includes("// legacy-alias") ||
+        prevLine.includes("// simulated-data") ||
+        prevLine.includes("// legacy-alias");
+      if (hasMarker) return;
+
+      const m = quotedRegex.exec(line) || unquotedKeyRegex.exec(line) || backtickRegex.exec(line);
       if (m) {
         violations.push({
           check: "2_legacy_intent_names",
           file: f.path,
           line: idx + 1,
-          detail: `Legacy intent string ${m[0]} found`,
+          detail: `Legacy intent usage (${m[0].trim()}) found without // simulated-data or // legacy-alias`,
         });
       }
     });
@@ -235,6 +247,49 @@ export function checkHardcodedTxHashes(files: FileEntry[]): Violation[] {
   return violations;
 }
 
+// Check 9: No hardcoded arrays of 2+ intent-like UPPER_SNAKE strings in apps/web/app/**/*.tsx unless marked // simulated-data
+export function checkHardcodedUiIntentArrays(files: FileEntry[]): Violation[] {
+  const violations: Violation[] = [];
+  const arrayLiteralRegex = /\[([^\[\]]*)\]/g;
+  const intentStringRegex = /(["'])([A-Z]{2,}(?:_[A-Z0-9]+)+)\1/g;
+
+  for (const f of files) {
+    if (isSelfVerifyFile(f.path) || isTestFile(f.path)) continue;
+    if (!/^apps\/web\/app\/.*\.tsx$/.test(f.path)) continue;
+
+    const lines = f.content.split(/\r?\n/);
+    let match: RegExpExecArray | null;
+    arrayLiteralRegex.lastIndex = 0;
+
+    while ((match = arrayLiteralRegex.exec(f.content)) !== null) {
+      const inner = match[1];
+      const intentsFound = Array.from(inner.matchAll(intentStringRegex)).map((m) => m[2]);
+      if (intentsFound.length < 2) continue;
+
+      const prefix = f.content.slice(0, match.index);
+      const startLineIdx = prefix.split(/\r?\n/).length - 1;
+      const prevLine = startLineIdx > 0 ? lines[startLineIdx - 1] : "";
+      const startLine = lines[startLineIdx] || "";
+
+      if (
+        inner.includes("// simulated-data") ||
+        startLine.includes("// simulated-data") ||
+        prevLine.includes("// simulated-data")
+      ) {
+        continue;
+      }
+
+      violations.push({
+        check: "9_hardcoded_ui_intent_array",
+        file: f.path,
+        line: startLineIdx + 1,
+        detail: `Hardcoded UI intent array [${intentsFound.join(", ")}] found without // simulated-data`,
+      });
+    }
+  }
+  return violations;
+}
+
 export function runAllChecks(trackedPaths: string[], files: FileEntry[]): Violation[] {
   return [
     ...checkMockClientImports(files),
@@ -245,6 +300,7 @@ export function runAllChecks(trackedPaths: string[], files: FileEntry[]): Violat
     ...checkTrackedEnvFiles(trackedPaths),
     ...checkSkippedTests(files),
     ...checkHardcodedTxHashes(files),
+    ...checkHardcodedUiIntentArrays(files),
   ];
 }
 
@@ -277,7 +333,7 @@ function main() {
     process.exit(1);
   }
 
-  console.log(`[verify-repo] PASSED all 8 repo audit checks across ${files.length} tracked files.`);
+  console.log(`[verify-repo] PASSED all 9 repo audit checks across ${files.length} tracked files.`);
 }
 
 // Only execute CLI main when run directly

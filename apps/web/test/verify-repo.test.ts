@@ -8,6 +8,7 @@ import {
   checkTrackedEnvFiles,
   checkSkippedTests,
   checkHardcodedTxHashes,
+  checkHardcodedUiIntentArrays,
 } from "../../../scripts/verify-repo";
 
 describe("verify-repo audit checks", () => {
@@ -26,17 +27,40 @@ describe("verify-repo audit checks", () => {
     ).toHaveLength(1);
   });
 
-  it("check 2: legacy intent names", () => {
+  it("check 2: legacy intent names (quoted, unquoted keys, backtick templates, line markers)", () => {
     expect(
       checkLegacyIntents([
         { path: "packages/shared/src/intents.ts", content: 'FX_NOW: "FX_NOW_EUR"' },
         { path: "packages/bench/src/cli.ts", content: '// simulated-data\nconst i = "FX_NOW";' },
+        { path: "packages/telegraph/src/mock.ts", content: "  FX_NOW: [], // legacy-alias" },
+        { path: "apps/web/app/page.tsx", content: "const t = `intent is FX_NOW_EUR`;" },
       ])
     ).toEqual([]);
 
     expect(
       checkLegacyIntents([
         { path: "apps/web/app/page.tsx", content: 'const intent = "FX_NOW";' },
+      ])
+    ).toHaveLength(1);
+
+    // Unquoted object key
+    expect(
+      checkLegacyIntents([
+        { path: "apps/web/app/page.tsx", content: "const map = {\n  FX_NOW: 300,\n};" },
+      ])
+    ).toHaveLength(1);
+
+    // === "FX_NOW" comparison
+    expect(
+      checkLegacyIntents([
+        { path: "apps/web/app/page.tsx", content: 'if (intent === "FX_NOW") {}' },
+      ])
+    ).toHaveLength(1);
+
+    // Template / backtick usage
+    expect(
+      checkLegacyIntents([
+        { path: "apps/web/app/page.tsx", content: "const s = `selected FX_NOW`;" },
       ])
     ).toHaveLength(1);
   });
@@ -115,6 +139,30 @@ describe("verify-repo audit checks", () => {
         {
           path: "apps/web/app/landing-client.tsx",
           content: 'const fake = "0x13522a15fd5bf7c67406bbd63e118b7aba4677d29229ca4a89f91f4552b976f0";',
+        },
+      ])
+    ).toHaveLength(1);
+  });
+
+  it("check 9: hardcoded UI intent arrays under apps/web/app/**/*.tsx", () => {
+    expect(
+      checkHardcodedUiIntentArrays([
+        {
+          path: "apps/web/app/app/page.tsx",
+          content: "const opts = intents.map((i) => i);",
+        },
+        {
+          path: "apps/web/app/app/benchmarks/page.tsx",
+          content: '// simulated-data\nconst demo = ["FX_NOW_EUR", "WEATHER_CHECK_TEMPERATURE"];',
+        },
+      ])
+    ).toEqual([]);
+
+    expect(
+      checkHardcodedUiIntentArrays([
+        {
+          path: "apps/web/app/app/atlas/page.tsx",
+          content: 'const HARDCODED = ["FX_NOW_EUR", "WEATHER_CHECK_TEMPERATURE"];',
         },
       ])
     ).toHaveLength(1);

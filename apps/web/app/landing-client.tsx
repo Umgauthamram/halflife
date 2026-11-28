@@ -75,6 +75,7 @@ export default function HalfLifeLandingPage() {
     { value: "3", label: "TARGET AGENTS (OPENCLAW, HERMES, KIMI)" },
   ];
 
+  // simulated-data
   const intents = [
     "FX_NOW_EUR",
     "WEATHER_CHECK_TEMPERATURE",
@@ -112,6 +113,7 @@ export default function HalfLifeLandingPage() {
     },
   ];
 
+  // simulated-data
   const showcaseCards = [
     {
       intent: "FX_NOW_EUR",
