@@ -24,17 +24,34 @@ const DEFAULT_BUCKETS = [0, 60, 300, 1800, 3600, 86400]; // 0s, 1m, 5m, 30m, 1h,
  * Requires at least 30 real live samples spanning at least 6 hours to mark calibrated.
  */
 export async function updateDecayEstimates(db: Db, intent: string): Promise<AtlasStatsDoc | null> {
-  // 1. Fetch recent live samples for this intent (last 500 samples)
-  const samples = await db
+  // 1. Fetch recent confirmed live samples for this intent (last 500 samples)
+  const rawSamples = await db
     .collection("atlas_samples")
     .find({
       intent,
       source: "live",
+      verification: "confirmed",
       valueNorm: { $ne: null },
     })
     .sort({ ts: -1 })
     .limit(500)
     .toArray();
+
+  // Filter out unverified/failed rows in JS as well (defense in depth for in-memory/mock DBs)
+  const samples = rawSamples.filter(
+    (s) => s.verification === undefined || s.verification === "confirmed"
+  );
+
+  let unverifiedCount = rawSamples.filter((s) => s.verification === "unverified").length;
+  let failedCount = rawSamples.filter((s) => s.verification === "failed").length;
+  const col = db.collection("atlas_samples") as any;
+  if (typeof col.countDocuments === "function") {
+    unverifiedCount = await col.countDocuments({ intent, source: "live", verification: "unverified" });
+    failedCount = await col.countDocuments({ intent, source: "live", verification: "failed" });
+  }
+  console.log(
+    `[DecayEstimator] ${intent}: confirmed=${samples.length}, unverified=${unverifiedCount}, failed=${failedCount}`
+  );
 
   // If no live samples exist yet, provide a conservative prior
   if (samples.length === 0) {

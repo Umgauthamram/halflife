@@ -1,10 +1,153 @@
 import type { Db } from "mongodb";
 import type { TelegraphClient } from "@half-life/telegraph";
+import {
+  verifySettlementTx,
+  createSepoliaClient,
+  type ExpectedSettlement,
+  type VerificationResult,
+} from "@half-life/chain";
+import type { Hash } from "viem";
 import { reserveBudget, releaseBudget, BudgetCapError } from "./budget.js";
 import { normalizeAnswerValue, type AgentPolicy } from "@half-life/shared";
 import { updateDecayEstimates } from "./decay-estimator.js";
 
 export { normalizeAnswerValue };
+
+const DEFAULT_USDC_ADDRESS = "0xcc194e1a843B658526D0D5C431f670028582Ae17";
+const DEFAULT_TELEGRAPH_CONTRACT = "0x3624EB012B5E998BB57B6bE6C9Cfc9c4bc5eb99b";
+
+export type SettlementVerifier = (
+  txHash: Hash,
+  expected: ExpectedSettlement
+) => Promise<VerificationResult>;
+
+export interface SamplerDependencies {
+  verifyTx?: SettlementVerifier;
+  now?: () => Date;
+}
+
+export function createDefaultSettlementVerifier(): SettlementVerifier {
+  const rpcUrl = process.env.SEPOLIA_RPC_URL || "https://rpc.sepolia.org";
+  const client = createSepoliaClient(rpcUrl);
+  return (txHash: Hash, expected: ExpectedSettlement) =>
+    verifySettlementTx(client, txHash, expected);
+}
+
+export async function verifySampleSettlement(
+  txHash: string | undefined,
+  expected: ExpectedSettlement,
+  verifyTx: SettlementVerifier
+): Promise<{ verification: "confirmed" | "failed" | "unverified"; verifiedAt?: Date; verifyDetail?: string }> {
+  if (!txHash || !txHash.startsWith("0x")) {
+    return { verification: "unverified" };
+  }
+  try {
+    const res = await verifyTx(txHash as Hash, expected);
+    if (res.verified) {
+      return {
+        verification: "confirmed",
+        verifiedAt: new Date(),
+        verifyDetail: res.detail,
+      };
+    }
+    if (res.status === "failed") {
+      return {
+        verification: "failed",
+        verifiedAt: new Date(),
+        verifyDetail: res.detail,
+      };
+    }
+    return {
+      verification: "unverified",
+      verifyDetail: res.detail,
+    };
+  } catch {
+    return { verification: "unverified" };
+  }
+}
+
+/**
+ * Re-verifies up to 20 unverified live samples whose txHash is present and ts is older than 2 minutes.
+ */
+export async function reverifyPendingSamples(
+  db: Db,
+  deps: SamplerDependencies = {}
+): Promise<{ checked: number; confirmed: number; failed: number; stillUnverified: number }> {
+  const now = deps.now ? deps.now() : new Date();
+  const cutoff = new Date(now.getTime() - 2 * 60 * 1000);
+  const verifyTx = deps.verifyTx ?? createDefaultSettlementVerifier();
+
+  const rawCandidates = await db
+    .collection("atlas_samples")
+    .find({
+      source: "live",
+      verification: "unverified",
+      txHash: { $exists: true, $ne: "" },
+      ts: { $lt: cutoff },
+    })
+    .sort({ ts: 1 })
+    .limit(20)
+    .toArray();
+
+  // Defense-in-depth JS filter so in-memory test DBs behave identically to MongoDB
+  const candidates = rawCandidates
+    .filter(
+      (s) =>
+        s.source === "live" &&
+        s.verification === "unverified" &&
+        typeof s.txHash === "string" &&
+        s.txHash.startsWith("0x") &&
+        new Date(s.ts).getTime() < cutoff.getTime()
+    )
+    .slice(0, 20);
+
+  let confirmed = 0;
+  let failed = 0;
+  let stillUnverified = 0;
+
+  for (const sample of candidates) {
+    const expected: ExpectedSettlement = {
+      usdc: sample.asset || process.env.USDC_ADDRESS || DEFAULT_USDC_ADDRESS,
+      payer: sample.payer,
+      payTo: sample.payTo || process.env.TELEGRAPH_CONTRACT || DEFAULT_TELEGRAPH_CONTRACT,
+      amountRaw:
+        sample.amountRaw !== undefined && sample.amountRaw !== null
+          ? BigInt(sample.amountRaw)
+          : BigInt(Math.round((Number(sample.priceUsdc) || 0) * 1e6)),
+    };
+
+    const result = await verifySampleSettlement(sample.txHash, expected, verifyTx);
+    if (result.verification === "confirmed") {
+      confirmed += 1;
+      await db.collection("atlas_samples").updateOne(
+        { _id: sample._id },
+        {
+          $set: {
+            verification: "confirmed",
+            verifiedAt: result.verifiedAt || now,
+            verifyDetail: result.verifyDetail,
+          },
+        }
+      );
+    } else if (result.verification === "failed") {
+      failed += 1;
+      await db.collection("atlas_samples").updateOne(
+        { _id: sample._id },
+        {
+          $set: {
+            verification: "failed",
+            verifiedAt: result.verifiedAt || now,
+            verifyDetail: result.verifyDetail,
+          },
+        }
+      );
+    } else {
+      stillUnverified += 1;
+    }
+  }
+
+  return { checked: candidates.length, confirmed, failed, stillUnverified };
+}
 
 export interface SamplerConfig {
   intents: string[];
@@ -33,11 +176,13 @@ export async function sampleIntent(
   client: TelegraphClient,
   intent: string,
   systemAgentId: string,
-  samplerPolicy: AgentPolicy
+  samplerPolicy: AgentPolicy,
+  deps: SamplerDependencies = {}
 ): Promise<{ samplesCount: number; noiseMeasurement?: SampleDisagreement; dailyCapReached?: boolean }> {
   // 1. Acquire Distributed Lock with 2-minute TTL
   const lockKey = `sampler_${intent}`;
-  const now = new Date();
+  const now = deps.now ? deps.now() : new Date();
+  const verifyTx = deps.verifyTx ?? createDefaultSettlementVerifier();
   const lockExpire = new Date(now.getTime() + 2 * 60 * 1000);
 
   const lockRes = await db.collection("sampler_locks").findOneAndUpdate(
@@ -121,18 +266,48 @@ export async function sampleIntent(
         });
 
         const { valueNorm, hash } = normalizeAnswerValue(intent, receipt.answer);
-        let outcomeState = receipt.outcome || (receipt.txHash ? "paid" : "failed");
+        let outcomeState: string = receipt.outcome || (receipt.txHash ? "paid" : "failed");
 
         if (valueNorm === null && outcomeState === "paid") {
-          outcomeState = "unusable" as any;
+          outcomeState = "unusable";
         }
 
-        const verification =
-          receipt.verification ||
-          (outcomeState === "paid" ? (receipt.txHash ? "unverified" : "failed") : "failed");
+        let verification: "confirmed" | "failed" | "unverified" = "failed";
+        let verifiedAt: Date | undefined;
+        let verifyDetail: string | undefined;
 
-        // Never write failed/blocked/free rows into atlas_samples
-        if (outcomeState !== "failed" && outcomeState !== "blocked" && !receipt.free) {
+        const expectedUsdc =
+          receipt.asset || quote.asset || process.env.USDC_ADDRESS || DEFAULT_USDC_ADDRESS;
+        const expectedPayTo =
+          receipt.payTo || quote.payTo || process.env.TELEGRAPH_CONTRACT || DEFAULT_TELEGRAPH_CONTRACT;
+        const expectedAmountRaw = receipt.amountRaw ?? quote.amountRaw;
+
+        // Never write unusable/failed/blocked/free rows into atlas_samples,
+        // and never write "confirmed" without an on-chain verifier call.
+        if (
+          outcomeState !== "failed" &&
+          outcomeState !== "blocked" &&
+          outcomeState !== "unusable" &&
+          !receipt.free
+        ) {
+          if (receipt.txHash && receipt.txHash.startsWith("0x")) {
+            const vRes = await verifySampleSettlement(
+              receipt.txHash,
+              {
+                usdc: expectedUsdc,
+                payer: receipt.payer,
+                payTo: expectedPayTo,
+                amountRaw: expectedAmountRaw,
+              },
+              verifyTx
+            );
+            verification = vRes.verification;
+            verifiedAt = vRes.verifiedAt;
+            verifyDetail = vRes.verifyDetail;
+          } else {
+            verification = "unverified";
+          }
+
           await db.collection("atlas_samples").insertOne({
             ts: now,
             intent,
@@ -148,6 +323,12 @@ export async function sampleIntent(
             outcomeState,
             source: client.source,
             verification,
+            verifiedAt,
+            verifyDetail,
+            payTo: expectedPayTo,
+            asset: expectedUsdc,
+            amountRaw: expectedAmountRaw?.toString(),
+            payer: receipt.payer,
           });
         }
 
@@ -160,6 +341,7 @@ export async function sampleIntent(
           receiptHash: receipt.receiptHash,
           signalHash: receipt.signalHash,
           outcomeState,
+          verification,
         };
       } catch (askErr) {
         await releaseBudget(db, systemAgentId, period, reservedAmount);
@@ -171,10 +353,14 @@ export async function sampleIntent(
     const results = await Promise.all(samplePromises);
     const dailyCapReached = results.some((r: any) => r?.dailyCapReached === true);
 
-    // Only compute disagreement on valid usable answers (never against null / unusable)
+    // Only compute disagreement on confirmed, valid usable answers
     const collected = results.filter(
       (r): r is NonNullable<typeof r> =>
-        r !== null && !("dailyCapReached" in r) && r.outcomeState === "paid" && r.valueNorm !== null
+        r !== null &&
+        !("dailyCapReached" in r) &&
+        r.outcomeState === "paid" &&
+        r.valueNorm !== null &&
+        r.verification === "confirmed"
     );
 
     // 3. Compute instantaneous noise floor if 2 distinct miners succeeded with usable values

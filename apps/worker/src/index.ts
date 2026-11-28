@@ -1,7 +1,7 @@
 import { validateEnv, parseSamplerIntents, estimateDailySpendUsdc } from "@half-life/shared";
 import { MongoClient } from "mongodb";
 import { createTelegraphClient } from "@half-life/telegraph";
-import { sampleIntent } from "./sampler.js";
+import { sampleIntent, reverifyPendingSamples } from "./sampler.js";
 import http from "node:http";
 import dotenv from "dotenv";
 
@@ -117,6 +117,13 @@ async function main() {
           { upsert: true }
         );
         return;
+      }
+
+      const reverifyRes = await reverifyPendingSamples(db);
+      if (reverifyRes.checked > 0) {
+        console.log(
+          `[Worker] Re-verified ${reverifyRes.checked} pending samples: confirmed=${reverifyRes.confirmed}, failed=${reverifyRes.failed}, unverified=${reverifyRes.stillUnverified}`
+        );
       }
 
       let anySuccess = false;

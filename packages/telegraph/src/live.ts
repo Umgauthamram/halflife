@@ -421,6 +421,10 @@ export class LiveTelegraphClient implements TelegraphClient {
         outcome: "failed_paid",
         source: "live",
         verification: "unverified",
+        payTo: quote.payTo,
+        amountRaw: quote.amountRaw,
+        asset: quote.asset,
+        payer: this.account.address,
         error: `Network failure after signing payment: ${netErr.message || String(netErr)}`,
       };
     }
@@ -461,6 +465,10 @@ export class LiveTelegraphClient implements TelegraphClient {
         outcome: "failed_paid",
         source: "live",
         verification: "unverified",
+        payTo: quote.payTo,
+        amountRaw: quote.amountRaw,
+        asset: quote.asset,
+        payer: this.account.address,
         error: "Server returned second 402 challenge after payment submission",
       };
     }
@@ -505,6 +513,10 @@ export class LiveTelegraphClient implements TelegraphClient {
         outcome: "failed_paid",
         source: "live",
         verification: "unverified",
+        payTo: quote.payTo,
+        amountRaw: quote.amountRaw,
+        asset: quote.asset,
+        payer: this.account.address,
         error: `Payment submitted but ask failed (${paidRes.status}): ${errText}`,
       };
     }
@@ -528,6 +540,10 @@ export class LiveTelegraphClient implements TelegraphClient {
         outcome: "failed_paid",
         source: "live",
         verification: "unverified",
+        payTo: quote.payTo,
+        amountRaw: quote.amountRaw,
+        asset: quote.asset,
+        payer: this.account.address,
         error: "Unparseable response body from Telegraph node",
       };
     }
@@ -583,6 +599,10 @@ export class LiveTelegraphClient implements TelegraphClient {
       source: "live",
       verification: "unverified",
       signalVerification,
+      payTo: quote.payTo,
+      amountRaw: quote.amountRaw,
+      asset: quote.asset,
+      payer: this.account.address,
     };
   }
 }

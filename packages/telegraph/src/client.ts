@@ -40,6 +40,10 @@ export interface TelegraphReceipt {
   verification?: "confirmed" | "unverified" | "failed";
   signalVerification?: string;
   error?: string;
+  payTo?: string;
+  amountRaw?: bigint;
+  asset?: string;
+  payer?: string;
 }
 
 export interface TelegraphClient {
